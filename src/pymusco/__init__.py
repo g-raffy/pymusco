@@ -94,6 +94,131 @@ def tiff_header_for_CCITT(width, height, img_size, CCITT_group=4):
                        )
 
 
+def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
+    """
+    :param PyPDF2.generic.EncodedStreamObject pdf_stream: a pdf node which is supposed to contain an image
+    :param str image_dir: where to save the image of the given name_object
+    :param str image_name: the name of the saved file image, without file extension
+    :return str: the saved image file path with file extension
+    """
+    assert pdf_stream['/Subtype'] == '/Image', "this function expects the subtype of this encoded_stream_object to be an image"
+    saved_image_file_path = None
+    (width, height) = (pdf_stream['/Width'], pdf_stream['/Height'])
+    print('filter = %s' % pdf_stream['/Filter'])
+    if pdf_stream['/Filter'] == '/CCITTFaxDecode':
+        # File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/PyPDF2/filters.py", line 361, in decodeStreamData
+        # raise NotImplementedError("unsupported filter %s" % filterType)
+        # NotImplementedError: unsupported filter /CCITTFaxDecode
+        """
+        The  CCITTFaxDecode filter decodes image data that has been encoded using
+        either Group 3 or Group 4 CCITT facsimile (fax) encoding. CCITT encoding is
+        designed to achieve efficient compression of monochrome (1 bit per pixel) image
+        data at relatively low resolutions, and so is useful only for bitmap image data, not
+        for color images, grayscale images, or general data.
+
+        K < 0 --- Pure two-dimensional encoding (Group 4)
+        K = 0 --- Pure one-dimensional encoding (Group 3, 1-D)
+        K > 0 --- Mixed one- and two-dimensional encoding (Group 3, 2-D)
+        """
+        if pdf_stream['/DecodeParms']['/K'] == -1:
+            CCITT_group = 4
+        else:
+            CCITT_group = 3
+        data = pdf_stream._data  # sorry, getData() does not work for CCITTFaxDecode
+        img_size = len(data)
+        tiff_header = tiff_header_for_CCITT(width, height, img_size, CCITT_group)
+        saved_image_file_path = image_dir + '/' + image_name + '.tiff'
+        with open(saved_image_file_path, 'wb') as img_file:
+            img_file.write(tiff_header + data)
+    else:
+        data = pdf_stream.getData()
+        print('data length : %d' % len(data))
+        num_pixels = width * height
+        print(width, height, num_pixels)
+        color_space, indirect_object = pdf_stream['/ColorSpace']
+        print("color_space :", color_space)
+        # print("indirect_object :", indirect_object)
+        # :param PyPDF2.generic.IndirectObject indirect_object:
+        
+        # print(type(indirect_object))
+        # print(dir(indirect_object))
+        
+        # ['/ICCBased', IndirectObject(13, 0)]
+        
+        # indObj, isIndirect := obj.(*PdfIndirectObject); isIndirect {
+        """
+        // TraceToDirectObject traces a PdfObject to a direct object.  For example direct objects contained
+        // in indirect objects (can be double referenced even).
+        //
+        // Note: This function does not trace/resolve references. That needs to be done beforehand.
+        func TraceToDirectObject(obj PdfObject) PdfObject {
+            iobj, isIndirectObj := obj.(*PdfIndirectObject)
+            depth := 0
+            for isIndirectObj == true {
+                obj = iobj.PdfObject
+                iobj, isIndirectObj = obj.(*PdfIndirectObject)
+                depth++
+                if depth > TraceMaxDepth {
+                    common.Log.Error("Trace depth level beyond 20 - error!")
+                    return nil
+                }
+            }
+            return obj
+        }
+        """
+        if color_space == '/DeviceRGB':
+            mode = "RGB"
+        elif color_space == '/ICCBased':
+            one_bit_per_pixel = False
+            # guess if the image is stored as one bit per pixel
+            # ICCBased decoding code written in go here : https://github.com/unidoc/unidoc/blob/master/pdf/model/colorspace.go
+            assert pdf_stream['/Filter'] == '/FlateDecode', "don't know how to guess if data is 1 bits per pixel when filter is %s" % pdf_stream['/Filter']
+            expected_packed_image_data_size = num_pixels / 8 + 1  # rough packed image size supposing image is stored as 1 bit per pixel
+            if len(data) > expected_packed_image_data_size:
+                # estimate the header data size, supposing image is stored as 1 bit per pixel in a flat way
+                header_data_size = len(data) - expected_packed_image_data_size
+                GUESSED_MAX_1_BIT_IMAGE_HEADER_SIZE = 1000  # a test shows that the measured extra data size was 620
+                if header_data_size < GUESSED_MAX_1_BIT_IMAGE_HEADER_SIZE:
+                    one_bit_per_pixel = True
+            
+            if one_bit_per_pixel:
+                mode = "1"  # (1-bit pixels, black and white, stored with one pixel per byte)
+            else:
+                mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
+        else:
+            mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
+        if pdf_stream['/Filter'] == '/FlateDecode':
+            saved_image_file_path = image_dir + '/' + image_name + ".png"
+            img = Image.frombytes(mode, (width, height), data)
+            img.save(saved_image_file_path)
+        elif pdf_stream['/Filter'] == '/DCTDecode':
+            saved_image_file_path = image_dir + '/' + image_name + ".jpg"
+            img = open(saved_image_file_path, "wb")
+            img.write(data)
+            img.close()
+        elif pdf_stream['/Filter'] == '/JPXDecode':
+            saved_image_file_path = image_dir + '/' + image_name + ".jp2"
+            img = open(saved_image_file_path, "wb")
+            img.write(data)
+            img.close()
+    assert saved_image_file_path is not None
+    return saved_image_file_path
+    
+
+def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
+    """
+    :param PyPDF2.pdf.PageObject pdf_page:
+    :param str image_dir: where to save the image of the given name_object
+    :param str image_name: the name of the saved file image, without file extension
+    :return str: the saved image file path with file extension
+    """
+    xObject = pdf_page['/Resources']['/XObject'].getObject()
+
+    for obj in xObject:
+        if xObject[obj]['/Subtype'] == '/Image':
+            return extract_pdf_stream_image(pdf_stream=xObject[obj], image_dir=image_dir, image_name=image_name)
+
+
 def extract_pdf_page_images(pdf_page, image_folder='/tmp'):
     """
     :param PyPDF2.pdf.PageObject pdf_page:
@@ -102,102 +227,13 @@ def extract_pdf_page_images(pdf_page, image_folder='/tmp'):
     xObject = pdf_page['/Resources']['/XObject'].getObject()
 
     for obj in xObject:
+        print(type(obj))
+        print(type(xObject[obj]))
+        
         if xObject[obj]['/Subtype'] == '/Image':
-            (width, height) = (xObject[obj]['/Width'], xObject[obj]['/Height'])
-            print('filter = %s' % xObject[obj]['/Filter'])
-            if xObject[obj]['/Filter'] == '/CCITTFaxDecode':
-                # File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/PyPDF2/filters.py", line 361, in decodeStreamData
-                # raise NotImplementedError("unsupported filter %s" % filterType)
-                # NotImplementedError: unsupported filter /CCITTFaxDecode
-                """
-                The  CCITTFaxDecode filter decodes image data that has been encoded using
-                either Group 3 or Group 4 CCITT facsimile (fax) encoding. CCITT encoding is
-                designed to achieve efficient compression of monochrome (1 bit per pixel) image
-                data at relatively low resolutions, and so is useful only for bitmap image data, not
-                for color images, grayscale images, or general data.
+            saved_image_file_path = extract_pdf_stream_image(pdf_stream=xObject[obj], image_dir=image_folder, image_name=obj[1:])
+            print('extracted image : %s' % saved_image_file_path)
 
-                K < 0 --- Pure two-dimensional encoding (Group 4)
-                K = 0 --- Pure one-dimensional encoding (Group 3, 1-D)
-                K > 0 --- Mixed one- and two-dimensional encoding (Group 3, 2-D)
-                """
-                if xObject[obj]['/DecodeParms']['/K'] == -1:
-                    CCITT_group = 4
-                else:
-                    CCITT_group = 3
-                data = xObject[obj]._data  # sorry, getData() does not work for CCITTFaxDecode
-                img_size = len(data)
-                tiff_header = tiff_header_for_CCITT(width, height, img_size, CCITT_group)
-                img_name = image_folder + '/' + obj[1:] + '.tiff'
-                with open(img_name, 'wb') as img_file:
-                    img_file.write(tiff_header + data)
-            else:
-                data = xObject[obj].getData()
-                print('data length : %d' % len(data))
-                num_pixels = width * height
-                print(width, height, num_pixels)
-                color_space, indirect_object = xObject[obj]['/ColorSpace']
-                print("color_space :", color_space)
-                # print("indirect_object :", indirect_object)
-                # :param PyPDF2.generic.IndirectObject indirect_object:
-                
-                # print(type(indirect_object))
-                # print(dir(indirect_object))
-                
-                # ['/ICCBased', IndirectObject(13, 0)]
-                
-                # indObj, isIndirect := obj.(*PdfIndirectObject); isIndirect {
-                """
-                // TraceToDirectObject traces a PdfObject to a direct object.  For example direct objects contained
-                // in indirect objects (can be double referenced even).
-                //
-                // Note: This function does not trace/resolve references. That needs to be done beforehand.
-                func TraceToDirectObject(obj PdfObject) PdfObject {
-                    iobj, isIndirectObj := obj.(*PdfIndirectObject)
-                    depth := 0
-                    for isIndirectObj == true {
-                        obj = iobj.PdfObject
-                        iobj, isIndirectObj = obj.(*PdfIndirectObject)
-                        depth++
-                        if depth > TraceMaxDepth {
-                            common.Log.Error("Trace depth level beyond 20 - error!")
-                            return nil
-                        }
-                    }
-                    return obj
-                }
-                """
-                if color_space == '/DeviceRGB':
-                    mode = "RGB"
-                elif color_space == '/ICCBased':
-                    one_bit_per_pixel = False
-                    # guess if the image is stored as one bit per pixel
-                    # ICCBased decoding code written in go here : https://github.com/unidoc/unidoc/blob/master/pdf/model/colorspace.go
-                    assert xObject[obj]['/Filter'] == '/FlateDecode', "don't know how to guess if data is 1 bits per pixel when filter is %s" % xObject[obj]['/Filter']
-                    expected_packed_image_data_size = num_pixels / 8 + 1  # rough packed image size supposing image is stored as 1 bit per pixel
-                    if len(data) > expected_packed_image_data_size:
-                        # estimate the header data size, supposing image is stored as 1 bit per pixel in a flat way
-                        header_data_size = len(data) - expected_packed_image_data_size
-                        GUESSED_MAX_1_BIT_IMAGE_HEADER_SIZE = 1000  # a test shows that the measured extra data size was 620
-                        if header_data_size < GUESSED_MAX_1_BIT_IMAGE_HEADER_SIZE:
-                            one_bit_per_pixel = True
-                    
-                    if one_bit_per_pixel:
-                        mode = "1"  # (1-bit pixels, black and white, stored with one pixel per byte)
-                    else:
-                        mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
-                else:
-                    mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
-                if xObject[obj]['/Filter'] == '/FlateDecode':
-                    img = Image.frombytes(mode, (width, height), data)
-                    img.save(image_folder + '/' + obj[1:] + ".png")
-                elif xObject[obj]['/Filter'] == '/DCTDecode':
-                    img = open(image_folder + '/' + obj[1:] + ".jpg", "wb")
-                    img.write(data)
-                    img.close()
-                elif xObject[obj]['/Filter'] == '/JPXDecode':
-                    img = open(image_folder + '/' + obj[1:] + ".jp2", "wb")
-                    img.write(data)
-                    img.close()
 
 # def pdf_page_to_png(pdf_page, resolution = 72,):
 #     """

@@ -113,12 +113,11 @@ def process_japanese_tango(src_pdf_file_path, dst_pdf_file_path):
         pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
         # pdfReader.numPages
         # 19
-        #for page_index in range(3):
         for page_index in range(pdf_reader.numPages):
             print('page_index = %d' % page_index)
             page = pdf_reader.getPage(page_index)
-            pymusco.extract_pdf_page_images(page, image_folder='./tmp')
-
+            image_file_path = pymusco.extract_pdf_page_main_image(page, image_dir='./tmp', image_name=('page%03d' % page_index))
+            # break
 
 def test(src_pdf_file_path, dst_pdf_file_path):
     output = PyPDF2.PdfFileWriter() # open output
