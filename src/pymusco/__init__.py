@@ -95,6 +95,10 @@ def tiff_header_for_CCITT(width, height, img_size, CCITT_group=4):
 
 
 def extract_pdf_page_images(pdf_page, image_folder='/tmp'):
+    """
+    :param PyPDF2.pdf.PageObject pdf_page:
+    :param str image_folder:
+    """
     xObject = pdf_page['/Resources']['/XObject'].getObject()
 
     for obj in xObject:
@@ -129,13 +133,60 @@ def extract_pdf_page_images(pdf_page, image_folder='/tmp'):
             else:
                 data = xObject[obj].getData()
                 print('data length : %d' % len(data))
-                print(width, height)
-                print(xObject[obj]['/ColorSpace'])
+                num_pixels = width * height
+                print(width, height, num_pixels)
+                color_space, indirect_object = xObject[obj]['/ColorSpace']
+                print("color_space :", color_space)
+                # print("indirect_object :", indirect_object)
+                # :param PyPDF2.generic.IndirectObject indirect_object:
+                
+                # print(type(indirect_object))
+                # print(dir(indirect_object))
+                
+                # ['/ICCBased', IndirectObject(13, 0)]
+                
                 # indObj, isIndirect := obj.(*PdfIndirectObject); isIndirect {
-                if xObject[obj]['/ColorSpace'] == '/DeviceRGB':
+                """
+                // TraceToDirectObject traces a PdfObject to a direct object.  For example direct objects contained
+                // in indirect objects (can be double referenced even).
+                //
+                // Note: This function does not trace/resolve references. That needs to be done beforehand.
+                func TraceToDirectObject(obj PdfObject) PdfObject {
+                    iobj, isIndirectObj := obj.(*PdfIndirectObject)
+                    depth := 0
+                    for isIndirectObj == true {
+                        obj = iobj.PdfObject
+                        iobj, isIndirectObj = obj.(*PdfIndirectObject)
+                        depth++
+                        if depth > TraceMaxDepth {
+                            common.Log.Error("Trace depth level beyond 20 - error!")
+                            return nil
+                        }
+                    }
+                    return obj
+                }
+                """
+                if color_space == '/DeviceRGB':
                     mode = "RGB"
+                elif color_space == '/ICCBased':
+                    one_bit_per_pixel = False
+                    # guess if the image is stored as one bit per pixel
+                    # ICCBased decoding code written in go here : https://github.com/unidoc/unidoc/blob/master/pdf/model/colorspace.go
+                    assert xObject[obj]['/Filter'] == '/FlateDecode', "don't know how to guess if data is 1 bits per pixel when filter is %s" % xObject[obj]['/Filter']
+                    expected_packed_image_data_size = num_pixels / 8 + 1  # rough packed image size supposing image is stored as 1 bit per pixel
+                    if len(data) > expected_packed_image_data_size:
+                        # estimate the header data size, supposing image is stored as 1 bit per pixel in a flat way
+                        header_data_size = len(data) - expected_packed_image_data_size
+                        GUESSED_MAX_1_BIT_IMAGE_HEADER_SIZE = 1000  # a test shows that the measured extra data size was 620
+                        if header_data_size < GUESSED_MAX_1_BIT_IMAGE_HEADER_SIZE:
+                            one_bit_per_pixel = True
+                    
+                    if one_bit_per_pixel:
+                        mode = "1"  # (1-bit pixels, black and white, stored with one pixel per byte)
+                    else:
+                        mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
                 else:
-                    mode = "P"
+                    mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
                 if xObject[obj]['/Filter'] == '/FlateDecode':
                     img = Image.frombytes(mode, (width, height), data)
                     img.save(image_folder + '/' + obj[1:] + ".png")

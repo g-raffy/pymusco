@@ -113,6 +113,7 @@ def process_japanese_tango(src_pdf_file_path, dst_pdf_file_path):
         pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
         # pdfReader.numPages
         # 19
+        #for page_index in range(3):
         for page_index in range(pdf_reader.numPages):
             print('page_index = %d' % page_index)
             page = pdf_reader.getPage(page_index)
