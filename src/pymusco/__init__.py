@@ -174,13 +174,12 @@ def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
             # guess if the image is stored as one bit per pixel
             # ICCBased decoding code written in go here : https://github.com/unidoc/unidoc/blob/master/pdf/model/colorspace.go
             assert pdf_stream['/Filter'] == '/FlateDecode', "don't know how to guess if data is 1 bits per pixel when filter is %s" % pdf_stream['/Filter']
-            expected_packed_image_data_size = num_pixels / 8 + 1  # rough packed image size supposing image is stored as 1 bit per pixel
-            if len(data) > expected_packed_image_data_size:
-                # estimate the header data size, supposing image is stored as 1 bit per pixel in a flat way
-                header_data_size = len(data) - expected_packed_image_data_size
-                GUESSED_MAX_1_BIT_IMAGE_HEADER_SIZE = 1000  # a test shows that the measured extra data size was 620
-                if header_data_size < GUESSED_MAX_1_BIT_IMAGE_HEADER_SIZE:
-                    one_bit_per_pixel = True
+            bytes_per_line = width / 8
+            if (width % 8) > 0:
+                bytes_per_line += 1
+            expected_packed_image_data_size = bytes_per_line * height  # packed image size supposing image is stored as 1 bit per pixel
+            if len(data) == expected_packed_image_data_size:
+                one_bit_per_pixel = True
             
             if one_bit_per_pixel:
                 mode = "1"  # (1-bit pixels, black and white, stored with one pixel per byte)
