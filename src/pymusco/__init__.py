@@ -426,6 +426,22 @@ class TableOfContents(object):
         return None
 
 
+def rotate_image(image_path, degrees_to_rotate, saved_location):
+    """
+
+    Rotate the given photo the amount of given degreesk, show it and save it
+
+    @param image_path: The path to the image to edit
+    @param degrees_to_rotate: The number of degrees to rotate the image
+    @param saved_location: Path to save the cropped image
+
+    """
+    image_obj = Image.open(image_path)
+    rotated_image = image_obj.rotate(degrees_to_rotate, expand=True)
+    rotated_image.save(saved_location)
+    rotated_image.show()
+
+
 def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc):
     """
     creates musical score stub from a musical score raw scan :
@@ -450,6 +466,11 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc):
             print('page_index = %d' % page_index)
             page = pdf_reader.getPage(page_index)
             image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
+            
+            # some extracted images are not in portrait mode as we would expect, so rotate them
+            # TODO: automatically detect when rotation is needed
+            rotate_image(image_file_path, 90.0, image_file_path)
+            
             scanned_image_file_paths.append(image_file_path)
             # break
     
