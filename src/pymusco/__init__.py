@@ -3,6 +3,7 @@
 https://automatetheboringstuff.com/chapter13/
 https://github.com/RussellLuo/pdfbookmarker/blob/master/add_bookmarks.py
 """
+import tempfile
 # sudo port install py27-pypdf2
 import PyPDF2
 from PyPDF2 import PdfFileMerger, PdfFileReader
@@ -409,3 +410,93 @@ def add_watermark(src_pdf_file_path, dst_pdf_file_path, watermark_file_path):
         with open(dst_pdf_file_path, 'wb') as dst_pdf_file:
             pdf_writer.write(dst_pdf_file)
             dst_pdf_file.close()
+
+
+class TableOfContents(object):
+    
+    def __init__(self, label_to_page):
+        """
+        :param dict(str, int) label_to_page:
+        """
+        self.label_to_page = label_to_page
+    
+    def get_label(self, page_index):
+        for label, page in self.label_to_page.iteritems():
+            if page == page_index:
+                return label
+        return None
+
+
+def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc):
+    """
+    creates musical score stub from a musical score raw scan :
+    - adds a table of contents
+    - adds a stamp
+    - numbers the pages
+    
+    :param str src_scanned_pdf_file_path: the source file that is expected to contain the scanned musical scores
+    :param str dst_stub_pdf_file_path: the destination file that is expected to contain the stub of musical scores
+    :param TableOfContents toc:
+    """
+
+    # tmp_dir = tempfile.mkdtemp()
+    tmp_dir = os.getcwd() + '/tmp'
+
+    scanned_image_file_paths = []
+    with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
+        pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
+        # pdfReader.numPages
+        # 19
+        for page_index in range(3):  # range(pdf_reader.numPages):
+            print('page_index = %d' % page_index)
+            page = pdf_reader.getPage(page_index)
+            image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
+            scanned_image_file_paths.append(image_file_path)
+            # break
+    
+    latex_file_path = tmp_dir + '/stub.tex'
+    with open(latex_file_path, 'w') as latex_file:
+        latex_file.write(r'\documentclass{article}' + '\n')
+        
+        latex_file.write(r'% tikz package is used to use scanned images as background' + '\n')
+        latex_file.write(r'\usepackage{tikz}' + '\n')
+        
+        latex_file.write(r'% hyperref package is used to create a clickable table of contents' + '\n')
+        latex_file.write(r'\usepackage{hyperref}' + '\n')
+        latex_file.write(r'\hypersetup{' + '\n')
+        latex_file.write(r'   colorlinks,' + '\n')
+        latex_file.write(r'   citecolor=black,' + '\n')
+        latex_file.write(r'   filecolor=black,' + '\n')
+        latex_file.write(r'   urlcolor=black' + '\n')
+        latex_file.write(r'}')
+        
+        latex_file.write(r'% command to declare invisible sections (sections that appear in the table of contents but not in the text itself)' + '\n')
+        latex_file.write(r'\newcommand\invisiblesection[1]{%' + '\n')
+        latex_file.write(r'  \refstepcounter{section}%' + '\n')
+        latex_file.write(r'  \addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}%' + '\n')
+        latex_file.write(r'  \sectionmark{#1}}' + '\n')
+        
+        latex_file.write(r'\newcommand*{\PageBackground}[1]{' + '\n')
+        latex_file.write(r'    \tikz[remember picture,overlay] \node[opacity=0.3,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{#1}};')
+        latex_file.write(r'}')
+        latex_file.write(r'\begin{document}' + '\n')
+        
+        latex_file.write(r'  \tableofcontents' + '\n')
+        
+        page_index = 1
+        for scanned_image_file_path in scanned_image_file_paths:
+            latex_file.write(r'\newpage' + '\n')
+            latex_file.write(r'\PageBackground{%s}' % scanned_image_file_path + '\n')
+            page_label = toc.get_label(page_index)
+            if page_label is not None:
+                latex_file.write(r'\invisiblesection{%s}' % page_label + '\n')
+            else:
+                latex_file.write(r'\null' + '\n')
+            page_index += 1
+        latex_file.write(r'\end{document}' + '\n')
+
+    # compile stub.tex document into stub.pdf
+    subprocess.check_call(["pdflatex", "-halt-on-error", "./stub.tex"], cwd=tmp_dir)
+    subprocess.check_call(["pdflatex", "-halt-on-error", "./stub.tex"], cwd=tmp_dir)  # compilation of latex document takes 2 passes
+    
+    os.rename(tmp_dir + '/stub.pdf', dst_stub_pdf_file_path)

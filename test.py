@@ -107,17 +107,6 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
     pymusco.addBookmarks(tmp_pdf_file_path, bookmarks_tree, dst_pdf_file_path)
 
 
-def process_japanese_tango(src_pdf_file_path, dst_pdf_file_path):
-
-    with open(src_pdf_file_path, 'rb') as src_pdf_file:
-        pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
-        # pdfReader.numPages
-        # 19
-        for page_index in range(pdf_reader.numPages):
-            print('page_index = %d' % page_index)
-            page = pdf_reader.getPage(page_index)
-            image_file_path = pymusco.extract_pdf_page_main_image(page, image_dir='./tmp', image_name=('page%03d' % page_index))
-            # break
 
 def test(src_pdf_file_path, dst_pdf_file_path):
     output = PyPDF2.PdfFileWriter() # open output
@@ -131,5 +120,5 @@ def test(src_pdf_file_path, dst_pdf_file_path):
 
 # test(os.getenv('HOME')+'/Google Drive/partitions/talons/neonlight serenade.pdf', os.getenv('HOME')+'/toto/serenade.pdf')
 # process_neonlight_serenade(os.getenv('HOME')+'/Google Drive/partitions/talons/neonlight serenade.pdf', os.getenv('HOME')+'/toto/serenade.pdf')
-process_japanese_tango('./samples/666-japanese-tango.pdf', './tmp/result.pdf')
+pymusco.scan_to_stub('./samples/666-japanese-tango.pdf', './tmp/result.pdf', pymusco.TableOfContents({'piccolo': 1, 'flute': 3}))
 
