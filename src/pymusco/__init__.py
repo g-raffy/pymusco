@@ -4,6 +4,7 @@ https://automatetheboringstuff.com/chapter13/
 https://github.com/RussellLuo/pdfbookmarker/blob/master/add_bookmarks.py
 """
 import tempfile
+import shutil
 # sudo port install py27-pypdf2
 import PyPDF2
 from PyPDF2 import PdfFileMerger, PdfFileReader
@@ -383,12 +384,23 @@ def get_bookmarks_tree(bookmarks_filename):
     return tree
 
 
-def add_watermark(src_pdf_file_path, dst_pdf_file_path, watermark_file_path):
+def add_stamp(src_pdf_file_path, dst_pdf_file_path, stamp_file_path, scale=1.0, tx=500.0, ty=770.0):
     """
-    :param str watermark_file_path: location of the pdf file containing the stamp used for watermarking
+    
+    warning! this function has a side effect : it removes the bookmark!
+    
+    :param str stamp_file_path: location of the pdf file containing the stamp used
     """
-    pdf_watermark_reader = PyPDF2.PdfFileReader(open(watermark_file_path, 'rb'))
+    pdf_watermark_reader = PyPDF2.PdfFileReader(open(stamp_file_path, 'rb'))
     watermark = pdf_watermark_reader.getPage(0)
+
+    use_tmp_output_file = False
+    if dst_pdf_file_path == src_pdf_file_path:
+        use_tmp_output_file = True
+    if use_tmp_output_file:
+        tmp_dst_pdf_file_path = dst_pdf_file_path + ".tmp"
+    else:
+        tmp_dst_pdf_file_path = dst_pdf_file_path
 
     pdf_writer = PyPDF2.PdfFileWriter()
     with open(src_pdf_file_path, 'rb') as src_pdf_file:
@@ -398,7 +410,7 @@ def add_watermark(src_pdf_file_path, dst_pdf_file_path, watermark_file_path):
         for page_index in range(pdf_reader.numPages):
             page = pdf_reader.getPage(page_index)
             # page.mergePage(watermark)
-            page.mergeScaledTranslatedPage(watermark, scale=1.0, tx=500.0, ty=770.0)
+            page.mergeScaledTranslatedPage(watermark, scale=scale, tx=tx, ty=ty)
             # pdf_writer.addBookmark(title='toto %s' % page_index, pagenum=page_index, parent=None, color=None, bold=False, italic=False, fit='/Fit')
             
             pdf_writer.addPage(page)
@@ -406,9 +418,12 @@ def add_watermark(src_pdf_file_path, dst_pdf_file_path, watermark_file_path):
         # pdf_writer.addBookmark(title='toto', pagenum=2, parent=None, color=None, bold=False, italic=False, fit='/Fit')
         # pdf_writer.setPageMode("/UseOutlines")
         
-        with open(dst_pdf_file_path, 'wb') as dst_pdf_file:
+        with open(tmp_dst_pdf_file_path, 'wb') as dst_pdf_file:
             pdf_writer.write(dst_pdf_file)
             dst_pdf_file.close()
+
+        if use_tmp_output_file:
+            shutil.copyfile(tmp_dst_pdf_file_path, dst_pdf_file_path)
 
 
 class TableOfContents(object):
@@ -442,7 +457,7 @@ def rotate_image(image_path, degrees_to_rotate, saved_location):
     rotated_image.show()
 
 
-def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc):
+def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0):
     """
     creates musical score stub from a musical score raw scan :
     - adds a table of contents
@@ -452,6 +467,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc):
     :param str src_scanned_pdf_file_path: the source file that is expected to contain the scanned musical scores
     :param str dst_stub_pdf_file_path: the destination file that is expected to contain the stub of musical scores
     :param TableOfContents toc:
+    :param str or None stamp_file_path:
     """
 
     # tmp_dir = tempfile.mkdtemp()
@@ -507,11 +523,18 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc):
         for scanned_image_file_path in scanned_image_file_paths:
             latex_file.write(r'\newpage' + '\n')
             latex_file.write(r'\PageBackground{%s}' % scanned_image_file_path + '\n')
+            
+            if stamp_file_path is not None:
+                latex_file.write(r'\begin{tikzpicture}[overlay]')
+                latex_file.write(r'\node at (%f,%f) {\includegraphics[scale=%f]{%s}};' % (tx, ty, scale, stamp_file_path))
+                latex_file.write(r'\end{tikzpicture}')
+
             page_label = toc.get_label(page_index)
             if page_label is not None:
                 latex_file.write(r'\invisiblesection{%s}' % page_label + '\n')
             else:
                 latex_file.write(r'\null' + '\n')
+
             page_index += 1
         latex_file.write(r'\end{document}' + '\n')
 

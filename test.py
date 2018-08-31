@@ -37,7 +37,7 @@ os.environ["TESSDATA_PREFIX"] = '/opt/local/share'  # this is required otherwise
 def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
 
     tmp_pdf_file_path='/tmp/tmp1.pdf'
-    pymusco.add_watermark(src_pdf_file_path, tmp_pdf_file_path, os.getenv('HOME')+'/data/Perso/MeltingNotes_work.git/partitions/mno-stamp.pdf')
+    pymusco.add_stamp(src_pdf_file_path, tmp_pdf_file_path, os.getenv('HOME')+'/data/Perso/MeltingNotes_work.git/partitions/mno-stamp.pdf')
     #https://github.com/RussellLuo/pdfbookmarker/blob/master/add_bookmarks.py
 
     # print(reader.outlines)
@@ -120,5 +120,11 @@ def test(src_pdf_file_path, dst_pdf_file_path):
 
 # test(os.getenv('HOME')+'/Google Drive/partitions/talons/neonlight serenade.pdf', os.getenv('HOME')+'/toto/serenade.pdf')
 # process_neonlight_serenade(os.getenv('HOME')+'/Google Drive/partitions/talons/neonlight serenade.pdf', os.getenv('HOME')+'/toto/serenade.pdf')
-pymusco.scan_to_stub('./samples/666-japanese-tango.pdf', './tmp/result.pdf', pymusco.TableOfContents({'piccolo': 1, 'flute': 3}))
+
+pymusco.scan_to_stub('./samples/666-japanese-tango.pdf', './tmp/result.pdf',
+                     pymusco.TableOfContents({'piccolo': 1, 'flute': 3}),
+                     stamp_file_path=os.getenv('HOME')+'/data/Perso/MeltingNotes_work.git/partitions/mno-stamp.pdf',
+                     scale=0.5,
+                     tx=14.0,
+                     ty=4.0)
 
