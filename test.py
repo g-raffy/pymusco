@@ -70,14 +70,15 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
         'flute',
         'oboe',
         'bassoon',
-        'eb clarinet',
+        'eb alto clarinet',
         'bb clarinet 1',
         'bb clarinet 2',
         'bb clarinet 3',
         'bb bass clarinet',
-        'eb alto saxophon',
-        'bb tenor saxophon',
-        'eb baryton saxophon',
+        'eb alto saxophone 1',
+        'eb alto saxophone 2',
+        'bb tenor saxophone',
+        'eb baritone saxophone',
         'bb trumpet 1',
         'bb trumpet 2',
         'bb trumpet 3',
@@ -88,6 +89,28 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
         'eb horn 2',
         'eb horn 3',
         'c trombone 1'
+        'c trombone 2'
+        'bb trombone 1 tc'
+        'bb trombone 1 bc'
+        'bb trombone 2 tc'
+        'bb trombone 2 bc'
+        'c baritone horn bc'
+        'c baritone horn tc'
+        'bb baritone horn bc'
+        'tuba'
+        'bb bass tc'
+        'bb bass bc'
+        'eb bass tc'
+        'eb bass bc'
+        'drum set'
+        'crash cymbals'
+        'concert bass drum'
+        'sustained cymbal'
+        'bongos'
+        'shaker'
+        'mallet percussion'
+        'timpani'  # timbales
+        
     ]
     bookmarks_tree = []
     page_index = 0
@@ -123,6 +146,7 @@ def test(src_pdf_file_path, dst_pdf_file_path):
 
 pymusco.scan_to_stub('./samples/666-japanese-tango.pdf', './tmp/result.pdf',
                      pymusco.TableOfContents({'piccolo': 1, 'flute': 3}),
+                     title='Japanese Tango',
                      stamp_file_path=os.getenv('HOME')+'/data/Perso/MeltingNotes_work.git/partitions/mno-stamp.pdf',
                      scale=0.5,
                      tx=14.0,

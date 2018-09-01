@@ -457,7 +457,7 @@ def rotate_image(image_path, degrees_to_rotate, saved_location):
     rotated_image.show()
 
 
-def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0):
+def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0):
     """
     creates musical score stub from a musical score raw scan :
     - adds a table of contents
@@ -506,6 +506,9 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, stamp_f
         latex_file.write(r'   urlcolor=black' + '\n')
         latex_file.write(r'}')
         
+        latex_file.write(r'% textpos package is used to position text at a specific position in the page (eg page number)' + '\n')
+        latex_file.write(r'\usepackage[absolute,overlay]{textpos}')
+        
         latex_file.write(r'% command to declare invisible sections (sections that appear in the table of contents but not in the text itself)' + '\n')
         latex_file.write(r'\newcommand\invisiblesection[1]{%' + '\n')
         latex_file.write(r'  \refstepcounter{section}%' + '\n')
@@ -525,15 +528,19 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, stamp_f
             latex_file.write(r'\PageBackground{%s}' % scanned_image_file_path + '\n')
             
             if stamp_file_path is not None:
-                latex_file.write(r'\begin{tikzpicture}[overlay]')
-                latex_file.write(r'\node at (%f,%f) {\includegraphics[scale=%f]{%s}};' % (tx, ty, scale, stamp_file_path))
-                latex_file.write(r'\end{tikzpicture}')
+                latex_file.write(r'\begin{tikzpicture}[overlay]' + '\n')
+                latex_file.write(r'\node at (%f,%f) {\includegraphics[scale=%f]{%s}};' % (tx, ty, scale, stamp_file_path) + '\n')
+                latex_file.write(r'\end{tikzpicture}' + '\n')
 
             page_label = toc.get_label(page_index)
             if page_label is not None:
                 latex_file.write(r'\invisiblesection{%s}' % page_label + '\n')
             else:
                 latex_file.write(r'\null' + '\n')
+
+            latex_file.write(r'\begin{textblock*}{5cm}(0.2cm,27cm) % {block width} (coords)' + '\n')
+            latex_file.write(r'%s - page %d/%d' % (title, page_index, len(scanned_image_file_paths)) + '\n' )
+            latex_file.write(r'\end{textblock*}' + '\n')
 
             page_index += 1
         latex_file.write(r'\end{document}' + '\n')
