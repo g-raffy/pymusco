@@ -74,12 +74,14 @@ import subprocess
 
 class Instrument(object):
 
-    def __init__(self, uid, player, is_rare=False):
+    def __init__(self, uid, player, order, is_rare=False):
         """
         :param str uid: unique identififer of a musical instrument, eg 'eb alto clarinet'
+        :para float order: value that is used to order instruments
         """
         self.uid = uid
         self.player = player
+        self.order = order
         self.is_rare = is_rare
         self.tone = None
 
@@ -121,38 +123,38 @@ class Harmony(Orchestra):
 
     def __init__(self):
         instruments = [
-            Instrument('piccolo', player='flutist'),
-            Instrument('flute', player='flutist'),
-            Instrument('oboe', player='oboeist'),
-            Instrument('english horn', player='oboeist'),
-            Instrument('bassoon', player='bassoonist'),
-            Instrument('eb clarinet', player='clarinetist'),  # aka Eb sopranino clarinet
-            Instrument('eb alto clarinet', player='clarinetist', is_rare=True),
-            Instrument('bb clarinet', player='clarinetist'),  # aka Bb soprano clarinet, most common clarinet
-            Instrument('bb bass clarinet', player='clarinetist'),
-            Instrument('eb alto saxophone', player='bassoonist'),
-            Instrument('bb tenor saxophone', player='bassoonist'),
-            Instrument('eb baritone saxophone', player='bassoonist'),
-            Instrument('bb trumpet', player='trumpetist'),
-            Instrument('f horn', player='hornist'),
-            Instrument('eb horn', player='hornist', is_rare=True),
-            Instrument('c trombone', player='trombonist'),
-            Instrument('bb trombone', player='trombonist', is_rare=True),
-            Instrument('c baritone horn', player='euphonist'),  # aka 'baritone'
-            Instrument('bb baritone horn', player='euphonist'),
-            Instrument('tuba', player='tubist'),
-            Instrument('bb bass', player='tubist'),
-            Instrument('eb bass', player='tubist', is_rare=True),
-            Instrument('drum set', player='percussionist'),
-            Instrument('crash cymbals', player='percussionist'),
-            Instrument('concert bass drum', player='percussionist'),
-            Instrument('sustained cymbal', player='percussionist'),
-            Instrument('bongos', player='percussionist'),
-            Instrument('shaker', player='percussionist'),
-            Instrument('mallet percussion', player='percussionist'),
-            Instrument('bells', player='percussionist'),
-            Instrument('xylophone', player='percussionist'),
-            Instrument('timpani', player='percussionist')]  # timbales
+            Instrument('piccolo', player='flutist', order=1.000),
+            Instrument('flute', player='flutist', order=1.001),
+            Instrument('oboe', player='oboeist', order=2.000),
+            Instrument('english horn', player='oboeist', order=2.001),
+            Instrument('bassoon', player='bassoonist', order=3.000),
+            Instrument('eb clarinet', player='clarinetist', order=4.000),  # aka Eb sopranino clarinet
+            Instrument('eb alto clarinet', player='clarinetist', order=4.001, is_rare=True),
+            Instrument('bb clarinet', player='clarinetist', order=4.002),  # aka Bb soprano clarinet, most common clarinet
+            Instrument('bb bass clarinet', player='clarinetist', order=4.003),
+            Instrument('eb alto saxophone', player='saxophonist', order=5.000),
+            Instrument('bb tenor saxophone', player='saxophonist', order=5.001),
+            Instrument('eb baritone saxophone', player='saxophonist', order=5.002),
+            Instrument('bb trumpet', player='trumpetist', order=6.000),
+            Instrument('f horn', player='hornist', order=7.000),
+            Instrument('eb horn', player='hornist', order=7.001, is_rare=True),
+            Instrument('c trombone', player='trombonist', order=8.000),
+            Instrument('bb trombone', player='trombonist', order=8.001, is_rare=True),
+            Instrument('c baritone horn', player='euphonist', order=9.000),  # aka 'baritone'
+            Instrument('bb baritone horn', player='euphonist', order=9.001),
+            Instrument('tuba', player='tubist', order=10.000),
+            Instrument('bb bass', player='tubist', order=10.001),
+            Instrument('eb bass', player='tubist', order=10.002, is_rare=True),
+            Instrument('drum set', player='percussionist', order=11.001),
+            Instrument('crash cymbals', player='percussionist', order=11.002),
+            Instrument('concert bass drum', player='percussionist', order=11.003),
+            Instrument('sustained cymbal', player='percussionist', order=11.004),
+            Instrument('bongos', player='percussionist', order=11.005),
+            Instrument('shaker', player='percussionist', order=11.006),
+            Instrument('mallet percussion', player='percussionist', order=11.007),
+            Instrument('bells', player='percussionist', order=11.008),
+            Instrument('xylophone', player='percussionist', order=11.009),
+            Instrument('timpani', player='percussionist', order=11.010)]  # timbales
         Orchestra.__init__(self, instruments)
 
 
@@ -208,24 +210,34 @@ class Track(object):
             uid = '%s %s' % (uid, self.clef)
         return uid
 
+    def __lt__(self, other):
+        if self.instrument.order == other.instrument.order:
+            if self.voice == other.voice:
+                if self.clef == other.clef:
+                    return False  # self and other are equal
+                else:
+                    if self.clef is None:
+                        return True
+                    elif other.clef is None:
+                        return False
+                    else:
+                        return self.clef < other.clef
+            else:
+                if self.voice is None:
+                    return True
+                elif other.voice is None:
+                    return False
+                else:
+                    return self.voice < other.voice
+        else:
+            return self.instrument.order < other.instrument.order
+
     @property
     def is_rare(self):
         if self.instrument.is_rare:
             return True
         else:
             return False
-
-
-def get_voiceless_track_id(track_id):
-    return track_id.substitute(' [1-9]', '')
-
-
-def track_is_exotic(track_id):
-    voiceless_track_id = get_voiceless_track_id(track_id)
-    if voiceless_track_id in ['eb horn', '']:
-        return True
-    else:
-        return False
 
 
 track_ids = [
@@ -837,12 +849,12 @@ def compute_track_count(stub_tracks, musician_count):
         for track_id in stub_tracks:
             track = Track(track_id, orchestra)
             # print('track.instrument.get_player() = %s' % track.instrument.get_player())
-            if musician_type_id == 'percussionist':
-                # special case : each percussionist wants all tracks
-                track_to_print_count[track.get_id()] = num_musicians + 1
-            elif track.instrument.get_player() == musician_type_id:
+            if track.instrument.get_player() == musician_type_id:
                 if not track.is_rare:
-                    if track.instrument.is_single():
+                    if musician_type_id == 'percussionist':
+                        # special case : each percussionist wants all tracks
+                        track_to_print_count[track.get_id()] = num_musicians + 1
+                    elif track.instrument.is_single():
                         # only print twice for tracks such as 'bass clarinet' or 'piccolo', as they're not supposed to be more than one in an orchestra (one fore the player + 1 extra)
                         track_to_print_count[track.get_id()] = 2
                     else:
@@ -857,7 +869,7 @@ def compute_track_count(stub_tracks, musician_count):
     for track_id in stub_tracks:
         if track_id not in track_to_print_count.keys():
             track = Track(track_id, orchestra)
-            if track.is_rare():
+            if track.is_rare:
                 count = 0
             elif track.instrument.is_single():
                 # eg piano, string bass
@@ -877,7 +889,10 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
         stub_toc = get_stub_tracks(src_stub_file_path)
     print(stub_toc)
 
+    orchestra = Harmony()
+
     track_to_print_count = compute_track_count(stub_toc.get_labels(), musician_count)
+    print(track_to_print_count)
     
     with open(dst_print_file_path, 'wb') as print_file:
         print_pdf = PyPDF2.PdfFileWriter()
@@ -885,7 +900,14 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
         with open(src_stub_file_path, 'rb') as stub_file:
             stub_pdf = PyPDF2.PdfFileReader(stub_file)
             
-            for track_id, num_copies in track_to_print_count.iteritems():
+            sorted_tracks = [Track(track_id, orchestra) for track_id in track_to_print_count.iterkeys()]
+            print(sorted_tracks)
+            sorted_tracks.sort()
+            print(sorted_tracks)
+            for track in sorted_tracks:
+                # for track_id, num_copies in track_to_print_count.iteritems().sorted():
+                track_id = track.get_id()
+                num_copies = track_to_print_count[track_id]
                 if num_copies > 0:
                     first_page_index = stub_toc.get_label_first_page_index(track_id)
                     last_page_index = stub_toc.get_label_last_page_index(track_id, stub_pdf.getNumPages())
