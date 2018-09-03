@@ -90,7 +90,7 @@ class Instrument(object):
         """
         :return str: the type of musician that can play this instrument
         """
-        return self.get_player
+        return self.player
 
     def is_single(self):
         single_instruments = ['piccolo',
@@ -831,14 +831,16 @@ def compute_track_count(stub_tracks, musician_count):
     orchestra = Harmony()
     track_to_print_count = {}
     for musician_type_id, num_musicians in musician_count.iteritems():
+        print('musician_type_id = %s' % musician_type_id)
         # collect the tracks than can be played by these musicians
         playable_tracks = []
         for track_id in stub_tracks:
             track = Track(track_id, orchestra)
+            # print('track.instrument.get_player() = %s' % track.instrument.get_player())
             if musician_type_id == 'percussionist':
                 # special case : each percussionist wants all tracks
                 track_to_print_count[track.get_id()] = num_musicians + 1
-            if track.instrument.get_player() == musician_type_id:
+            elif track.instrument.get_player() == musician_type_id:
                 if not track.is_rare:
                     if track.instrument.is_single():
                         # only print twice for tracks such as 'bass clarinet' or 'piccolo', as they're not supposed to be more than one in an orchestra (one fore the player + 1 extra)
