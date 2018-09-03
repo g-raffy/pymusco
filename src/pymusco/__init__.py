@@ -904,6 +904,8 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
             print(sorted_tracks)
             sorted_tracks.sort()
             print(sorted_tracks)
+            ranges = []
+            range_to_num_copies = {}
             for track in sorted_tracks:
                 # for track_id, num_copies in track_to_print_count.iteritems().sorted():
                 track_id = track.get_id()
@@ -914,10 +916,23 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
                     print('adding %d copies of %s (pages %d-%d)' % (num_copies, track_id, first_page_index, last_page_index))
                     assert first_page_index <= last_page_index
                     assert last_page_index < stub_pdf.getNumPages()
-                    for copy_index in range(num_copies):  # @UnusedVariable
-                        for page_index in range(first_page_index, last_page_index + 1):
-                            track_page = stub_pdf.getPage(page_index - 1)  # -1 to convert 1-based index into 0-based index
-                            print('adding page %d' % page_index)
-                            print_pdf.addPage(track_page)
-                        
+                    page_range = (first_page_index, last_page_index)
+                    if page_range in ranges:
+                        # this page range has already been encountered. This can happen when multiple tracks share the same pages (eg crash cymbals are on the same pages as suspended cybal)
+                        # we don't want to duplicate these shared pages for each track so
+                        # we make as many copies as the track that asks for the most
+                        range_to_num_copies[page_range] = max(range_to_num_copies[page_range], num_copies)
+                    else:
+                        ranges.append(page_range)
+                        range_to_num_copies[page_range] = num_copies
+            for page_range in ranges:
+                (first_page_index, last_page_index) = page_range
+                num_copies = range_to_num_copies[page_range]
+                print(page_range, num_copies)
+                for copy_index in range(num_copies):  # @UnusedVariable
+                    for page_index in range(first_page_index, last_page_index + 1):
+                        track_page = stub_pdf.getPage(page_index - 1)  # -1 to convert 1-based index into 0-based index
+                        print('adding page %d' % page_index)
+                        print_pdf.addPage(track_page)
+                
             print_pdf.write(print_file)
