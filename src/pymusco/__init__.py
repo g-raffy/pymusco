@@ -134,29 +134,57 @@ class Harmony(Orchestra):
             Instrument('eb alto clarinet', player='clarinetist', order=4.001, is_rare=True),
             Instrument('bb clarinet', player='clarinetist', order=4.002),  # aka Bb soprano clarinet, most common clarinet
             Instrument('bb bass clarinet', player='clarinetist', order=4.003),
+            Instrument('bb contrabass clarinet', player='clarinetist', order=4.004, is_rare=True),
+
             Instrument('eb alto saxophone', player='saxophonist', order=5.000),
             Instrument('bb tenor saxophone', player='saxophonist', order=5.001),
             Instrument('eb baritone saxophone', player='saxophonist', order=5.002),
+
             Instrument('bb trumpet', player='trumpetist', order=6.000),
+            Instrument('bb cornet', player='trumpetist', order=6.001),
+
             Instrument('f horn', player='hornist', order=7.000),
             Instrument('eb horn', player='hornist', order=7.001, is_rare=True),
             Instrument('c trombone', player='trombonist', order=8.000),
             Instrument('bb trombone', player='trombonist', order=8.001, is_rare=True),
+
             Instrument('c baritone horn', player='euphonist', order=9.000),  # aka 'baritone'
             Instrument('bb baritone horn', player='euphonist', order=9.001),
+
             Instrument('tuba', player='tubist', order=10.000),
-            Instrument('bb bass', player='tubist', order=10.001),
-            Instrument('eb bass', player='tubist', order=10.002, is_rare=True),
+            Instrument('c bass', player='tubist', order=10.001),
+            Instrument('bb bass', player='tubist', order=10.002),
+            Instrument('eb bass', player='tubist', order=10.003, is_rare=True),
+
             Instrument('drum set', player='percussionist', order=11.001),
             Instrument('crash cymbals', player='percussionist', order=11.002),
             Instrument('concert bass drum', player='percussionist', order=11.003),
             Instrument('sustained cymbal', player='percussionist', order=11.004),
             Instrument('bongos', player='percussionist', order=11.005),
             Instrument('shaker', player='percussionist', order=11.006),
-            Instrument('mallet percussion', player='percussionist', order=11.007),
-            Instrument('bells', player='percussionist', order=11.008),
-            Instrument('xylophone', player='percussionist', order=11.009),
-            Instrument('timpani', player='percussionist', order=11.010)]  # timbales
+            Instrument('snare drum', player='percussionist', order=11.007),
+            Instrument('tambourine', player='percussionist', order=11.008),
+            Instrument('small crash cymbals', player='percussionist', order=11.009),
+            Instrument('ratchet', player='percussionist', order=11.010),
+            Instrument('flexatone', player='percussionist', order=11.011),
+            Instrument('temple blocks', player='percussionist', order=11.012),
+            
+            Instrument('bells', player='percussionist', order=11.100),
+            Instrument('bell tree', player='percussionist', order=11.101),
+            Instrument('chimes', player='percussionist', order=11.102),
+            Instrument('wind chimes', player='percussionist', order=11.103),
+            Instrument('triangle', player='percussionist', order=11.104),
+            Instrument('sleigh bells', player='percussionist', order=11.105),
+            Instrument('mallet percussion', player='percussionist', order=11.200),
+            Instrument('xylophone', player='percussionist', order=11.201),
+            Instrument('marimba', player='percussionist', order=11.202),
+            Instrument('vibraphone', player='percussionist', order=11.203),
+            Instrument('timpani', player='percussionist', order=11.300),  # timbales
+
+            Instrument('string bass', player='bassist', order=12.000),
+        
+            Instrument('piano', player='pianist', order=13.000)]
+        
         Orchestra.__init__(self, instruments)
 
 
@@ -941,7 +969,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
                     last_page_index = stub_toc.get_label_last_page_index(track_id, stub_pdf.getNumPages())
                     print('adding %d copies of %s (pages %d-%d)' % (num_copies, track_id, first_page_index, last_page_index))
                     assert first_page_index <= last_page_index
-                    assert last_page_index < stub_pdf.getNumPages()
+                    assert last_page_index <= stub_pdf.getNumPages()
                     page_range = (first_page_index, last_page_index)
                     if page_range in ranges:
                         # this page range has already been encountered. This can happen when multiple tracks share the same pages (eg crash cymbals are on the same pages as suspended cybal)
