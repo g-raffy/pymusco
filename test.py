@@ -206,7 +206,6 @@ scan_toc = pymusco.TableOfContents({
     'eb bass bc' : 72,
     })
 
-"""
 pymusco.scan_to_stub(os.getcwd() + '/samples/666-japanese-tango.pdf', './results/stubs/666-japanese-tango.pdf',
                      scan_toc,
                      title='Japanese Tango',
@@ -214,7 +213,7 @@ pymusco.scan_to_stub(os.getcwd() + '/samples/666-japanese-tango.pdf', './results
                      scale=0.5,
                      tx=14.0,
                      ty=4.0)
-"""
+
 
 stub_toc = copy.deepcopy(scan_toc)
 num_toc_pages = 2

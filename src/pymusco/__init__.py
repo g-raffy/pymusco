@@ -772,6 +772,10 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         
         latex_file.write(r'\newcommand*{\PageBackground}[1]{' + '\n')
         latex_file.write(r'    \tikz[remember picture,overlay] \node[opacity=0.3,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{#1}};')
+        
+        latex_file.write(r'% remove page numbers as default' + '\n')
+        latex_file.write(r'\thispagestyle{empty}' + '\n')
+                
         latex_file.write(r'}')
         latex_file.write(r'\begin{document}' + '\n')
         
