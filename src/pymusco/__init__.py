@@ -764,6 +764,9 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         latex_file.write(r'% textpos package is used to position text at a specific position in the page (eg page number)' + '\n')
         latex_file.write(r'\usepackage[absolute,overlay]{textpos}')
         
+        latex_file.write(r'% setspace package is used to to reduce the spacing between table of contents imes' + '\n')
+        latex_file.write(r'\usepackage{setspace}')
+        
         latex_file.write(r'% command to declare invisible sections (sections that appear in the table of contents but not in the text itself)' + '\n')
         latex_file.write(r'\newcommand\invisiblesection[1]{%' + '\n')
         latex_file.write(r'  \refstepcounter{section}%' + '\n')
@@ -779,7 +782,9 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         latex_file.write(r'}')
         latex_file.write(r'\begin{document}' + '\n')
         
+        latex_file.write(r'  \begin{spacing}{0.1}' + '\n')
         latex_file.write(r'  \tableofcontents' + '\n')
+        latex_file.write(r'  \end{spacing}' + '\n')
         
         page_index = 1
         for scanned_image_file_path in scanned_image_file_paths:
