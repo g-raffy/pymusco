@@ -98,13 +98,12 @@ class Instrument(object):
 
     def is_single(self):
         single_instruments = ['piccolo',
-                              'english horn'
+                              'english horn',
                               'bb bass clarinet',
                               'eb clarinet',
                               'eb baritone saxophone',
                               'piano',
                               'string bass']
-        
         return self.uid in single_instruments
 
 
@@ -905,12 +904,14 @@ def compute_track_count(stub_tracks, musician_count):
             # print('track.instrument.get_player() = %s' % track.instrument.get_player())
             if track.instrument.get_player() == musician_type_id:
                 # print('this is a track for %s' % musician_type_id)
+                # print('track.instrument', track.instrument.get_id())
                 if not track.is_rare:
                     if musician_type_id == 'percussionist':
                         # special case : each percussionist wants all tracks
                         track_to_print_count[track.get_id()] = num_musicians + 1
                     elif track.instrument.is_single():
                         # only print twice for tracks such as 'bass clarinet' or 'piccolo', as they're not supposed to be more than one in an orchestra (one fore the player + 1 extra)
+                        print("info: 2 copies for single instrument %s" % track.get_id())
                         track_to_print_count[track.get_id()] = 2
                     else:
                         playable_tracks.append(track)
@@ -950,9 +951,9 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
     track_to_print_count = compute_track_count(stub_toc.get_labels(), musician_count)
     print(track_to_print_count)
     
-    with open(dst_print_file_path, 'wb') as print_file:
+    with open(dst_print_file_path, 'wb') as print_file, open(dst_print_file_path.replace('.pdf', '.log'), 'wb') as log_file:
         print_pdf = PyPDF2.PdfFileWriter()
-    
+        log_file.write("contents of print file %s :\n\n" % dst_print_file_path)
         with open(src_stub_file_path, 'rb') as stub_file:
             stub_pdf = PyPDF2.PdfFileReader(stub_file)
             
@@ -960,6 +961,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
             sorted_tracks.sort()
             ranges = []
             range_to_num_copies = {}
+            range_to_tracks = {}
             for track in sorted_tracks:
                 # for track_id, num_copies in track_to_print_count.iteritems().sorted():
                 track_id = track.get_id()
@@ -976,17 +978,34 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
                         # we don't want to duplicate these shared pages for each track so
                         # we make as many copies as the track that asks for the most
                         range_to_num_copies[page_range] = max(range_to_num_copies[page_range], num_copies)
+                        range_to_tracks[page_range].append(track_id)
                     else:
                         ranges.append(page_range)
                         range_to_num_copies[page_range] = num_copies
+                        range_to_tracks[page_range] = [track_id]
             for page_range in ranges:
                 (first_page_index, last_page_index) = page_range
                 num_copies = range_to_num_copies[page_range]
+                log_file.write("%d copies of %s\n" % (num_copies, '/'.join(range_to_tracks[page_range])))
                 # print(page_range, num_copies)
                 for copy_index in range(num_copies):  # @UnusedVariable
                     for page_index in range(first_page_index, last_page_index + 1):
                         track_page = stub_pdf.getPage(page_index - 1)  # -1 to convert 1-based index into 0-based index
                         # print('adding page %d' % page_index)
                         print_pdf.addPage(track_page)
-                
+
+            log_file.write("\nunprinted tracks :\n\n")
+            for label in stub_toc.get_labels():
+                label_is_printed = False
+                for tracks in range_to_tracks.itervalues():
+                    for track in tracks:
+                        # print(track, label)
+                        if track == label:
+                            label_is_printed = True
+                            break
+                    if label_is_printed:
+                        break
+                if not label_is_printed:
+                    log_file.write("no copies of %s\n" % label)
             print_pdf.write(print_file)
+
