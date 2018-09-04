@@ -5,6 +5,7 @@ https://github.com/RussellLuo/pdfbookmarker/blob/master/add_bookmarks.py
 """
 import tempfile
 import shutil
+import datetime
 # sudo port install py27-pypdf2
 import PyPDF2
 from PyPDF2 import PdfFileMerger, PdfFileReader
@@ -57,6 +58,7 @@ how to install tesseract on osx:
     - sudo port install tesseract-deu
     - export TESSDATA_PREFIX=/opt/local/share
 """
+
 import tesseract
 
 # from wand.image import Image
@@ -676,7 +678,7 @@ class TableOfContents(object):
     def get_label_last_page_index(self, label, num_pages):
         first_page_index = self.get_label_first_page_index(label)
         
-        next_section_first_page_index = num_pages
+        next_section_first_page_index = num_pages + 1
         for page_index in self.label_to_page.itervalues():
             if page_index > first_page_index:
                 next_section_first_page_index = min(next_section_first_page_index, page_index)
@@ -709,7 +711,7 @@ def rotate_image(image_path, degrees_to_rotate, saved_location):
     image_obj = Image.open(image_path)
     rotated_image = image_obj.rotate(degrees_to_rotate, expand=True)
     rotated_image.save(saved_location)
-    rotated_image.show()
+    # rotated_image.show()
 
 
 def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0):
@@ -766,6 +768,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         
         latex_file.write(r'% setspace package is used to to reduce the spacing between table of contents imes' + '\n')
         latex_file.write(r'\usepackage{setspace}')
+        latex_file.write(r'\renewcommand{\contentsname}{}' + '\n')  # remove the title of the table of contents ("contents")
         
         latex_file.write(r'% command to declare invisible sections (sections that appear in the table of contents but not in the text itself)' + '\n')
         latex_file.write(r'\newcommand\invisiblesection[1]{%' + '\n')
@@ -774,18 +777,28 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         latex_file.write(r'  \sectionmark{#1}}' + '\n')
         
         latex_file.write(r'\newcommand*{\PageBackground}[1]{' + '\n')
-        latex_file.write(r'    \tikz[remember picture,overlay] \node[opacity=0.3,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{#1}};')
+        latex_file.write(r'    \tikz[remember picture,overlay] \node[opacity=1.0,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{#1}};')
         
         latex_file.write(r'% remove page numbers as default' + '\n')
         latex_file.write(r'\thispagestyle{empty}' + '\n')
-                
+
         latex_file.write(r'}')
         latex_file.write(r'\begin{document}' + '\n')
+
+        latex_file.write(r'  \title{%s}' % title + '\n')
+        latex_file.write(r'  \date{}' + '\n')  # remove the date from the title
+        
+        latex_file.write(r'  \maketitle' + '\n')
         
         latex_file.write(r'  \begin{spacing}{0.1}' + '\n')
+            
         latex_file.write(r'  \tableofcontents' + '\n')
         latex_file.write(r'  \end{spacing}' + '\n')
         
+        current_track = None
+        current_track_page_number = 0
+        current_track_num_pages = 0
+        date_as_string = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         page_index = 1
         for scanned_image_file_path in scanned_image_file_paths:
             latex_file.write(r'\newpage' + '\n')
@@ -796,17 +809,20 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
                 latex_file.write(r'\node at (%f,%f) {\includegraphics[scale=%f]{%s}};' % (tx, ty, scale, stamp_file_path) + '\n')
                 latex_file.write(r'\end{tikzpicture}' + '\n')
 
-            page_label = toc.get_label(page_index)
-            if page_label is not None:
-                latex_file.write(r'\invisiblesection{%s}' % page_label + '\n')
+            if toc.get_label(page_index) is not None:
+                current_track = toc.get_label(page_index)
+                current_track_page_number = 1
+                current_track_num_pages = toc.get_label_last_page_index(current_track, len(scanned_image_file_paths)) - toc.get_label_first_page_index(current_track) + 1
+                latex_file.write(r'\invisiblesection{%s}' % current_track + '\n')
             else:
                 latex_file.write(r'\null' + '\n')
 
-            latex_file.write(r'\begin{textblock*}{5cm}(0.2cm,27cm) % {block width} (coords)' + '\n')
-            latex_file.write(r'%s - page %d/%d' % (title, page_index, len(scanned_image_file_paths)) + '\n')
+            latex_file.write(r'\begin{textblock*}{20cm}(0.2cm,27cm) % {block width} (coords)' + '\n')
+            latex_file.write(r'%s on %s - page %d/%d : %s - page %d/%d' % (title, date_as_string, page_index, len(scanned_image_file_paths), current_track, current_track_page_number, current_track_num_pages) + '\n')
             latex_file.write(r'\end{textblock*}' + '\n')
 
             page_index += 1
+            current_track_page_number += 1
         latex_file.write(r'\end{document}' + '\n')
 
     # compile stub.tex document into stub.pdf
@@ -857,8 +873,10 @@ def compute_track_count(stub_tracks, musician_count):
         playable_tracks = []
         for track_id in stub_tracks:
             track = Track(track_id, orchestra)
+            # print('processing track %s' % track.get_id())
             # print('track.instrument.get_player() = %s' % track.instrument.get_player())
             if track.instrument.get_player() == musician_type_id:
+                # print('this is a track for %s' % musician_type_id)
                 if not track.is_rare:
                     if musician_type_id == 'percussionist':
                         # special case : each percussionist wants all tracks
@@ -878,6 +896,7 @@ def compute_track_count(stub_tracks, musician_count):
     for track_id in stub_tracks:
         if track_id not in track_to_print_count.keys():
             track = Track(track_id, orchestra)
+            count = 0
             if track.is_rare:
                 count = 0
             elif track.instrument.is_single():
@@ -910,9 +929,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
             stub_pdf = PyPDF2.PdfFileReader(stub_file)
             
             sorted_tracks = [Track(track_id, orchestra) for track_id in track_to_print_count.iterkeys()]
-            print(sorted_tracks)
             sorted_tracks.sort()
-            print(sorted_tracks)
             ranges = []
             range_to_num_copies = {}
             for track in sorted_tracks:
@@ -937,11 +954,11 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
             for page_range in ranges:
                 (first_page_index, last_page_index) = page_range
                 num_copies = range_to_num_copies[page_range]
-                print(page_range, num_copies)
+                # print(page_range, num_copies)
                 for copy_index in range(num_copies):  # @UnusedVariable
                     for page_index in range(first_page_index, last_page_index + 1):
                         track_page = stub_pdf.getPage(page_index - 1)  # -1 to convert 1-based index into 0-based index
-                        print('adding page %d' % page_index)
+                        # print('adding page %d' % page_index)
                         print_pdf.addPage(track_page)
                 
             print_pdf.write(print_file)
