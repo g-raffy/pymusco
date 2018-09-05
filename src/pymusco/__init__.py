@@ -102,6 +102,7 @@ class Instrument(object):
                               'bb bass clarinet',
                               'eb clarinet',
                               'eb baritone saxophone',
+                              'c bass trombone',
                               'piano',
                               'string bass']
         return self.uid in single_instruments
@@ -144,11 +145,13 @@ class Harmony(Orchestra):
 
             Instrument('f horn', player='hornist', order=7.000),
             Instrument('eb horn', player='hornist', order=7.001, is_rare=True),
+            
             Instrument('c trombone', player='trombonist', order=8.000),
             Instrument('bb trombone', player='trombonist', order=8.001, is_rare=True),
+            Instrument('c bass trombone', player='trombonist', order=8.002),
 
-            Instrument('c baritone horn', player='euphonist', order=9.000),  # aka 'baritone'
-            Instrument('bb baritone horn', player='euphonist', order=9.001),
+            Instrument('c baritone horn', player='euphonist', order=9.000),  # aka 'baritone' 'euphonium'
+            Instrument('bb baritone horn', player='euphonist', order=9.001),  # aka 'baritone' 'euphonium'
 
             Instrument('tuba', player='tubist', order=10.000),
             Instrument('c bass', player='tubist', order=10.001),
@@ -167,6 +170,8 @@ class Harmony(Orchestra):
             Instrument('ratchet', player='percussionist', order=11.010),
             Instrument('flexatone', player='percussionist', order=11.011),
             Instrument('temple blocks', player='percussionist', order=11.012),
+            Instrument('wood block', player='percussionist', order=11.013),
+            Instrument('cymbals', player='percussionist', order=11.014),  # TODO: check if they're not the same as crash cymbals
             
             Instrument('bells', player='percussionist', order=11.100),
             Instrument('bell tree', player='percussionist', order=11.101),
@@ -178,6 +183,7 @@ class Harmony(Orchestra):
             Instrument('xylophone', player='percussionist', order=11.201),
             Instrument('marimba', player='percussionist', order=11.202),
             Instrument('vibraphone', player='percussionist', order=11.203),
+            Instrument('glockenspiel', player='percussionist', order=11.204),
             Instrument('timpani', player='percussionist', order=11.300),  # timbales
 
             Instrument('string bass', player='bassist', order=12.000),
@@ -463,10 +469,18 @@ def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
     :return str: the saved image file path with file extension
     """
     xObject = pdf_page['/Resources']['/XObject'].getObject()
-
+    saved_image_file_path = None
     for obj in xObject:
         if xObject[obj]['/Subtype'] == '/Image':
-            return extract_pdf_stream_image(pdf_stream=xObject[obj], image_dir=image_dir, image_name=image_name)
+            try:
+                saved_image_file_path = extract_pdf_stream_image(pdf_stream=xObject[obj], image_dir=image_dir, image_name=image_name)
+            except NotImplementedError as e:
+                print("warning : NotImplementedError(%s). Maybe pypdf2 is unable to decode this stream. Falling back to a resampling method." % e.message)
+                image = pdf_page_to_png(pdf_page, resolution=300)
+                saved_image_file_path = "%s/%s.png" % (image_dir, image_name)
+                cv2.imwrite(saved_image_file_path, image)
+                print("resampled image saved to %s" % saved_image_file_path)
+    return saved_image_file_path
 
 
 def extract_pdf_page_images(pdf_page, image_folder='/tmp'):
@@ -485,34 +499,6 @@ def extract_pdf_page_images(pdf_page, image_folder='/tmp'):
             print('extracted image : %s' % saved_image_file_path)
 
 
-# def pdf_page_to_png(pdf_page, resolution = 72,):
-#     """
-#     Returns specified PDF page as wand.image.Image png.
-#     :param PyPDF2.PdfPage pdf_page: PDF from which to take pages.
-#     :param int resolution: Resolution for resulting png in DPI.
-#     """
-#     dst_pdf = PyPDF2.PdfFileWriter()
-#     dst_pdf.addPage(pdf_page)
-#
-#     pdf_bytes = io.BytesIO()
-#     tmp_pdf_file_path = '/tmp/toto.pdf'
-#     with open(tmp_pdf_file_path, "wb") as tmp_pdf:
-#         dst_pdf.write(pdf_bytes)
-#     pdf_bytes.seek(0)
-#
-#     #image = cv2.imread(tmp_pdf_file_path)
-#     #print(type(image))
-#     #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-#
-#     img = Image(file = pdf_bytes, resolution = resolution)
-#     img.convert("png")
-#     img.write('/tmp/toto.png')
-#     image = cv2.imread('/tmp/toto.png')
-#     print(type(image))
-#
-#     return image
-
-
 def pdf_page_to_png(pdf_page, resolution=72):
     """
     :param  pdf_page:
@@ -525,8 +511,7 @@ def pdf_page_to_png(pdf_page, resolution=72):
         dst_pdf.write(tmp_pdf)
 
     tmp_png_file_path = '/tmp/toto.png'
-    cmd = '/opt/local/bin/convert -density 300 ' + tmp_pdf_file_path + ' ' + tmp_png_file_path  # uses imagemagick' convert
-    subprocess.Popen(cmd.split(), stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+    subprocess.check_call(['/opt/local/bin/convert', '-density', '%d' % resolution, tmp_pdf_file_path, tmp_png_file_path])
     image = cv2.imread(tmp_png_file_path)
     print(type(image))
      
@@ -741,7 +726,7 @@ def rotate_image(image_path, degrees_to_rotate, saved_location):
     # rotated_image.show()
 
 
-def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0):
+def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0, rotate_images=False):
     """
     creates musical score stub from a musical score raw scan :
     - adds a table of contents
@@ -767,9 +752,10 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
             page = pdf_reader.getPage(page_index)
             image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
             
-            # some extracted images are not in portrait mode as we would expect, so rotate them
-            # TODO: automatically detect when rotation is needed
-            rotate_image(image_file_path, 90.0, image_file_path)
+            if rotate_images:
+                # some extracted images are not in portrait mode as we would expect, so rotate them
+                # TODO: automatically detect when rotation is needed
+                rotate_image(image_file_path, 90.0, image_file_path)
             
             scanned_image_file_paths.append(image_file_path)
             # break
@@ -975,10 +961,17 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
                     page_range = (first_page_index, last_page_index)
                     if page_range in ranges:
                         # this page range has already been encountered. This can happen when multiple tracks share the same pages (eg crash cymbals are on the same pages as suspended cybal)
-                        # we don't want to duplicate these shared pages for each track so
-                        # we make as many copies as the track that asks for the most
-                        range_to_num_copies[page_range] = max(range_to_num_copies[page_range], num_copies)
-                        range_to_tracks[page_range].append(track_id)
+                        if track.instrument.get_player() == 'percussionist':
+                            # we don't want to duplicate these shared pages for each track so
+                            # we make as many copies as the track that asks for the most
+                            range_to_num_copies[page_range] = max(range_to_num_copies[page_range], num_copies)
+                            range_to_tracks[page_range].append(track_id)
+                        else:
+                            # here we're in the case of a page that contains 2 non percussion tracks (eg bassoon 1,2)
+                            # these must be not be merged, but be treated as 2 separate copies :
+                            # if we request 2 copies of bassoon 1 and 2 copies of bassoon 2, we want 4 copies of bassoon 1,2, not 2
+                            range_to_num_copies[page_range] += num_copies
+                            range_to_tracks[page_range].append(track_id)
                     else:
                         ranges.append(page_range)
                         range_to_num_copies[page_range] = num_copies
@@ -1008,4 +1001,3 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
                 if not label_is_printed:
                     log_file.write("no copies of %s\n" % label)
             print_pdf.write(print_file)
-

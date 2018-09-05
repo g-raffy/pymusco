@@ -212,7 +212,8 @@ pymusco.scan_to_stub(os.getcwd() + '/samples/666-japanese-tango.pdf', './results
                      stamp_file_path= os.getcwd() + '/samples/stamp.pdf',
                      scale=0.5,
                      tx=14.0,
-                     ty=4.0)
+                     ty=4.0,
+                     rotate_images=True)
 
 
 stub_toc = copy.deepcopy(scan_toc)
