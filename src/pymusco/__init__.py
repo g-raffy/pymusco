@@ -739,6 +739,14 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     :param str or None stamp_file_path:
     """
 
+    # check that the track_ids in the toc are known
+    orchestra = Harmony()
+    for track_id in toc.get_labels():
+        try:
+            track = Track(track_id, orchestra)  # @UnusedVariable
+        except KeyError as e:
+            raise Exception("Failed to identify track id '%s'. Either its syntax is incorrect or the related instrument (%s) in not yet registered in the orchestra." % (track_id, e.message))
+
     # tmp_dir = tempfile.mkdtemp()
     tmp_dir = os.getcwd() + '/tmp'
 
