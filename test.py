@@ -29,8 +29,6 @@ TIFF format and tags: http://www.awaresystems.be/imaging/tiff/faq.html
 """
 
 
-os.environ["TESSDATA_PREFIX"] = '/opt/local/share'  # this is required otherwise tesseract complains about file permissions
-
 #sys.path.append('/opt/local/bin')  # make sure /opt/local/bin/tesseract is found
 #actually, this has no effect on subprocess.Popen(['/opt/local/bin/tesseract']) https://stackoverflow.com/questions/5658622/python-subprocess-popen-environment-path
 #
@@ -50,25 +48,9 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
     #  {'/Title': '2.2.3 Dropout', '/Left': 99.213, '/Type': '/XYZ', '/Top': 742.911, '/Zoom': ..., '/Page': IndirectObject(689, 0)},
     #  {'/Title': '2.2.4 Normalization Layers', '/Left': 99.213, '/Type': '/XYZ', '/Top': 193.779, '/Zoom': <PyPDF2.generic.NullObject object at 0x7fbe49d14350>, '/Page': IndirectObject(689, 0)}]
 
-    with open(src_pdf_file_path, 'rb') as src_pdf_file:
-        pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
-        # pdfReader.numPages
-        # 19
-        for page_index in range(pdf_reader.numPages):
-            page = pdf_reader.getPage(page_index)
-
-            image = pymusco.pdf_page_to_png(page, resolution=72)
-            #extract_pdf_page_images(page)
-            
-            tmp_img_path = '/tmp/titi.png'
-            cv2.imwrite(tmp_img_path, image)
-            text = pymusco.tesseract.image_to_string(Image.open(tmp_img_path)) #, lang='deu')
-            print(text)
-            
-
     pages_labels = [
-        'piccolo',
-        'flute',
+        'c piccolo',
+        'c flute',
         'oboe',
         'bassoon',
         'eb alto clarinet',
@@ -98,7 +80,7 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
         'c baritone horn bc' # aka 'baritone'
         'c baritone horn tc'
         'bb baritone horn bc'
-        'tuba'
+        'c tuba'
         'bb bass tc'
         'bb bass bc'
         'eb bass tc'
@@ -106,7 +88,7 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
         'drum set'
         'crash cymbals'
         'concert bass drum'
-        'sustained cymbal'
+        'suspended cymbal'
         'bongos'
         'shaker'
         'mallet percussion'
@@ -161,8 +143,8 @@ musician_count = {
 
 
 scan_toc = pymusco.TableOfContents({
-    'piccolo': 1,
-    'flute': 3,
+    'c piccolo': 1,
+    'c flute': 3,
     'oboe': 5,
     'bassoon' : 7,
     'bb clarinet 1' : 9,
@@ -184,11 +166,11 @@ scan_toc = pymusco.TableOfContents({
     'c baritone horn bc' : 41,
     'c baritone horn tc' : 43,
     'bb baritone horn bc' : 45,
-    'tuba' : 47,
+    'c tuba' : 47,
     'drum set' : 49,
     'crash cymbals' : 51,
     'concert bass drum' : 51,
-    'sustained cymbal' : 51,
+    'suspended cymbal' : 51,
     'bongos' : 51,
     'shaker' : 51,
     'bells' : 52,
