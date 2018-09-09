@@ -141,6 +141,7 @@ musician_count = {
     'percussionist': 3
     }
 
+track_selector = pymusco.AutoTrackSelector(musician_count)
 
 scan_toc = pymusco.TableOfContents({
     'c piccolo': 1,
@@ -202,5 +203,5 @@ stub_toc = copy.deepcopy(scan_toc)
 num_toc_pages = 2
 stub_toc.shift_page_indices(num_toc_pages) 
 
-pymusco.stub_to_print(os.getcwd() + '/results/stubs/666-japanese-tango.pdf', os.getcwd() + '/results/prints/666-japanese-tango.pdf', musician_count, stub_toc=stub_toc)
+pymusco.stub_to_print(os.getcwd() + '/results/stubs/666-japanese-tango.pdf', os.getcwd() + '/results/prints/666-japanese-tango.pdf', track_selector, stub_toc=stub_toc)
 

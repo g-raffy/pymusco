@@ -12,7 +12,6 @@ from .core import Track
 from .pdf import extract_pdf_page_main_image
 from .core import rotate_image
 from .core import get_stub_tracks
-from .core import compute_track_count
 
 
 def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0, rotate_images=False):
@@ -142,10 +141,11 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     os.rename(tmp_dir + '/stub.pdf', dst_stub_pdf_file_path)
 
 
-def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_toc=None):
+def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, stub_toc=None):
     """
     :param str src_stub_file_path:
     :param str dst_print_file_path:
+    :param ITrackSelector track_selector: the mechanism that computes the number of copies to do for each track
     :param dict(str, int) musician_count: gets the number of musicians for each musical intrument family
     :param TableOfContents or None stub_toc: if defined, gets the start page number for each track in the stub
     """
@@ -155,7 +155,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, musician_count, stub_
 
     orchestra = Harmony()
 
-    track_to_print_count = compute_track_count(stub_toc.get_labels(), musician_count)
+    track_to_print_count = track_selector.get_track_to_copy(stub_toc.get_labels())
     print(track_to_print_count)
     
     with open(dst_print_file_path, 'wb') as print_file, open(dst_print_file_path.replace('.pdf', '.log'), 'wb') as log_file:
