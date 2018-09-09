@@ -5,7 +5,6 @@ Created on Sep 9, 2018
 '''
 
 from .core import ITrackSelector
-from .core import Harmony
 from .core import Track
 
 
@@ -14,11 +13,13 @@ class AutoTrackSelector(ITrackSelector):
     a track selector that automatically works out the number of prints to generate for each track, by looking at the number of musicians by instrument type in the orchestra.
     """
 
-    def __init__(self, musician_count):
+    def __init__(self, musician_count, orchestra):
         """
         :param dict(str, int) musician_count:
+        :param Orchestra: the inventory of musical instruments
         """
         self.musician_count = musician_count
+        self.orchestra = orchestra
 
     def get_track_to_copy(self, stub_tracks):
         """
@@ -27,14 +28,13 @@ class AutoTrackSelector(ITrackSelector):
         :param list(str) stub_tracks:
         :return dict(str, int): the number of prints to do for each stub_track
         """
-        orchestra = Harmony()
         track_to_print_count = {}
         for musician_type_id, num_musicians in self.musician_count.iteritems():
             print('musician_type_id = %s' % musician_type_id)
             # collect the tracks than can be played by these musicians
             playable_tracks = []
             for track_id in stub_tracks:
-                track = Track(track_id, orchestra)
+                track = Track(track_id, self.orchestra)
                 # print('processing track %s' % track.get_id())
                 # print('track.instrument.get_player() = %s' % track.instrument.get_player())
                 if track.instrument.get_player() == musician_type_id:
@@ -59,7 +59,7 @@ class AutoTrackSelector(ITrackSelector):
                     track_to_print_count[track.get_id()] = num_musicians_per_track
         for track_id in stub_tracks:
             if track_id not in track_to_print_count.keys():
-                track = Track(track_id, orchestra)
+                track = Track(track_id, self.orchestra)
                 count = 0
                 if track.is_rare:
                     count = 0

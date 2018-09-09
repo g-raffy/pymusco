@@ -7,14 +7,13 @@ import os
 import datetime
 import subprocess
 import PyPDF2
-from .core import Harmony
 from .core import Track
 from .pdf import extract_pdf_page_main_image
 from .core import rotate_image
 from .core import get_stub_tracks
 
 
-def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0, rotate_images=False):
+def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0, rotate_images=False):
     """
     creates musical score stub from a musical score raw scan :
     - adds a table of contents
@@ -24,11 +23,12 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     :param str src_scanned_pdf_file_path: the source file that is expected to contain the scanned musical scores
     :param str dst_stub_pdf_file_path: the destination file that is expected to contain the stub of musical scores
     :param TableOfContents toc:
+    :param str title: musical piece title
+    :param Orchestra orchestra: the inventory of musical instruments
     :param str or None stamp_file_path:
     """
 
     # check that the track_ids in the toc are known
-    orchestra = Harmony()
     for track_id in toc.get_labels():
         try:
             track = Track(track_id, orchestra)  # @UnusedVariable
@@ -141,19 +141,18 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     os.rename(tmp_dir + '/stub.pdf', dst_stub_pdf_file_path)
 
 
-def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, stub_toc=None):
+def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orchestra, stub_toc=None):
     """
     :param str src_stub_file_path:
     :param str dst_print_file_path:
     :param ITrackSelector track_selector: the mechanism that computes the number of copies to do for each track
+    :param Orchestra orchestra:
     :param dict(str, int) musician_count: gets the number of musicians for each musical intrument family
     :param TableOfContents or None stub_toc: if defined, gets the start page number for each track in the stub
     """
     if stub_toc is None:
         stub_toc = get_stub_tracks(src_stub_file_path)
     print(stub_toc)
-
-    orchestra = Harmony()
 
     track_to_print_count = track_selector.get_track_to_copy(stub_toc.get_labels())
     print(track_to_print_count)
