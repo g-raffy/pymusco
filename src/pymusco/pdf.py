@@ -5,6 +5,9 @@ import PyPDF2
 import subprocess
 import os
 import shutil
+import sys
+import traceback
+
 
 """
 Extract images from pdf: http://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python
@@ -281,3 +284,95 @@ def add_stamp(src_pdf_file_path, dst_pdf_file_path, stamp_file_path, scale=1.0, 
 
         if use_tmp_output_file:
             shutil.copyfile(tmp_dst_pdf_file_path, dst_pdf_file_path)
+
+
+def check_pdf(src_pdf_file_path):
+    """
+    the purpose of this function is to detect inconsistencies in the given pdf file
+    
+    an exception is raised if the pdf is malformed
+    please note that all maformations are not detected yet
+    """
+    with open(src_pdf_file_path, 'rb') as src_pdf_file:
+        pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
+        for page_index in range(pdf_reader.numPages):
+            print('page_index = %d' % page_index)
+            pdf_page = pdf_reader.getPage(page_index)
+            if '/XObject' in pdf_page['/Resources']:
+                xObject = pdf_page['/Resources']['/XObject'].getObject()
+                for obj in xObject:
+                    if xObject[obj]['/Subtype'] == '/Image':
+                        pdf_stream = xObject[obj]
+                        assert pdf_stream['/Subtype'] == '/Image', "this function expects the subtype of this encoded_stream_object to be an image"
+                        (width, height) = (pdf_stream['/Width'], pdf_stream['/Height'])
+                        print('filter = %s' % pdf_stream['/Filter'])
+                        if pdf_stream['/Filter'] == '/CCITTFaxDecode':
+                            # File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/PyPDF2/filters.py", line 361, in decodeStreamData
+                            # raise NotImplementedError("unsupported filter %s" % filterType)
+                            # NotImplementedError: unsupported filter /CCITTFaxDecode
+                            """
+                            The  CCITTFaxDecode filter decodes image data that has been encoded using
+                            either Group 3 or Group 4 CCITT facsimile (fax) encoding. CCITT encoding is
+                            designed to achieve efficient compression of monochrome (1 bit per pixel) image
+                            data at relatively low resolutions, and so is useful only for bitmap image data, not
+                            for color images, grayscale images, or general data.
+                    
+                            K < 0 --- Pure two-dimensional encoding (Group 4)
+                            K = 0 --- Pure one-dimensional encoding (Group 3, 1-D)
+                            K > 0 --- Mixed one- and two-dimensional encoding (Group 3, 2-D)
+                            """
+                            if pdf_stream['/DecodeParms']['/K'] == -1:
+                                CCITT_group = 4
+                            else:
+                                CCITT_group = 3
+                            data = pdf_stream._data  # sorry, getData() does not work for CCITTFaxDecode
+                            img_size = len(data)
+                            tiff_header = tiff_header_for_CCITT(width, height, img_size, CCITT_group)  # @UnusedVariable
+                        else:
+                            try:
+                                data = pdf_stream.getData()
+                                # on corrupt file, gives : raise utils.PdfReadError("Unable to find 'endstream' marker after stream at byte %s." % utils.hexStr(stream.tell()))
+                            except NotImplementedError as e:
+                                continue
+                            except AssertionError as e:
+                                _, _, tb = sys.exc_info()
+                                # traceback.print_tb(tb) # Fixed format
+                                tb_info = traceback.extract_tb(tb)
+                                filename, line, func, text = tb_info[-1]  # @UnusedVariable
+                                # print('assert error on file {} line {} in statement {}'.format(filename, line, text))
+                                if text == 'assert len(data) % rowlength == 0':
+                                    # this seems to be a zealous assert that fails even on legitimate pdf output of pdflatex, so ignore it
+                                    continue
+                                else:
+                                    raise e
+                            print('data length : %d' % len(data))
+                            num_pixels = width * height
+                            print(width, height, num_pixels)
+                            color_space, indirect_object = pdf_stream['/ColorSpace']  # @UnusedVariable
+                            print("color_space :", color_space)
+                            if color_space == '/DeviceRGB':
+                                mode = "RGB"
+                            elif color_space == '/ICCBased':
+                                one_bit_per_pixel = False
+                                # guess if the image is stored as one bit per pixel
+                                # ICCBased decoding code written in go here : https://github.com/unidoc/unidoc/blob/master/pdf/model/colorspace.go
+                                assert pdf_stream['/Filter'] == '/FlateDecode', "don't know how to guess if data is 1 bits per pixel when filter is %s" % pdf_stream['/Filter']
+                                bytes_per_line = width / 8
+                                if (width % 8) > 0:
+                                    bytes_per_line += 1
+                                expected_packed_image_data_size = bytes_per_line * height  # packed image size supposing image is stored as 1 bit per pixel
+                                if len(data) == expected_packed_image_data_size:
+                                    one_bit_per_pixel = True
+                                
+                                if one_bit_per_pixel:
+                                    mode = "1"  # (1-bit pixels, black and white, stored with one pixel per byte)
+                                else:
+                                    mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
+                            else:
+                                mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
+                            if pdf_stream['/Filter'] == '/FlateDecode':
+                                img = Image.frombytes(mode, (width, height), data)  # @UnusedVariable
+                            elif pdf_stream['/Filter'] == '/DCTDecode':
+                                pass
+                            elif pdf_stream['/Filter'] == '/JPXDecode':
+                                pass

@@ -11,6 +11,7 @@ from .core import Track
 from .pdf import extract_pdf_page_main_image
 from .core import rotate_image
 from .core import get_stub_tracks
+from .pdf import check_pdf
 
 
 def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0, rotate_images=False):
@@ -135,10 +136,18 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         latex_file.write(r'\end{document}' + '\n')
 
     # compile stub.tex document into stub.pdf
-    subprocess.check_call(["pdflatex", "-halt-on-error", "./stub.tex"], cwd=tmp_dir)
-    subprocess.check_call(["pdflatex", "-halt-on-error", "./stub.tex"], cwd=tmp_dir)  # compilation of latex document takes 2 passes
+    for pass_index in range(2):  # the compilation of latex files require 2 passes to get correct table of contents. @UnusedVariable
+        # note : we use subprocess.Popen instead of subprocess.check_call because for some unexplained reasons, subprocess.check_call doesn't wait for the call to complete before ending. This resulted in currupted pdf files (see https://github.com/g-raffy/pymusco/issues/1)
+        p = subprocess.Popen(["pdflatex", "-halt-on-error", "./stub.tex"], cwd=tmp_dir)
+        p.wait()
+    
+    bug1_is_alive = True  # https://github.com/g-raffy/pymusco/issues/1
+    if bug1_is_alive:
+        check_pdf(tmp_dir + '/stub.pdf')
     
     os.rename(tmp_dir + '/stub.pdf', dst_stub_pdf_file_path)
+    # this check sometimes fails :
+    # check_pdf(dst_stub_pdf_file_path)
 
 
 def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orchestra, stub_toc=None):
