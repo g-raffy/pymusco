@@ -6,12 +6,72 @@ Created on Sep 8, 2018
 import os
 import datetime
 import subprocess
+import hashlib
+import time
 import PyPDF2
 from .core import Track
 from .pdf import extract_pdf_page_main_image
 from .core import rotate_image
 from .core import get_stub_tracks
 from .pdf import check_pdf
+
+
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
+def is_locked(filepath):
+    """Checks if a file is locked by opening it in append mode.
+    If no exception thrown, then the file is not locked.
+    """
+    locked = None
+    file_object = None
+    if os.path.exists(filepath):
+        try:
+            print "Trying to open %s." % filepath
+            buffer_size = 8
+            # Opening file in append mode and read the first 8 characters.
+            file_object = open(filepath, 'a', buffer_size)
+            if file_object:
+                print "%s is not locked." % filepath
+                locked = False
+        except IOError, message:
+            print "File is locked (unable to open in append mode). %s." % \
+                  message
+            locked = True
+        finally:
+            if file_object:
+                file_object.close()
+                print "%s closed." % filepath
+    else:
+        print "%s not found." % filepath
+    return locked
+
+
+def wait_for_files(filepaths):
+    """Checks if the files are ready.
+
+    For a file to be ready it must exist and can be opened in append
+    mode.
+    """
+    wait_time = 5
+    for filepath in filepaths:
+        # If the file doesn't exist, wait wait_time seconds and try again
+        # until it's found.
+        while not os.path.exists(filepath):
+            print "%s hasn't arrived. Waiting %s seconds." % \
+                  (filepath, wait_time)
+            time.sleep(wait_time)
+        # If the file exists but locked, wait wait_time seconds and check
+        # again until it's no longer locked by another process.
+        while is_locked(filepath):
+            print "%s is currently in use. Waiting %s seconds." % \
+                  (filepath, wait_time)
+            time.sleep(wait_time)
 
 
 def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0, rotate_images=False):
@@ -135,19 +195,31 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
             current_track_page_number += 1
         latex_file.write(r'\end{document}' + '\n')
 
-    # compile stub.tex document into stub.pdf
-    for pass_index in range(2):  # the compilation of latex files require 2 passes to get correct table of contents. @UnusedVariable
-        # note : we use subprocess.Popen instead of subprocess.check_call because for some unexplained reasons, subprocess.check_call doesn't wait for the call to complete before ending. This resulted in currupted pdf files (see https://github.com/g-raffy/pymusco/issues/1)
-        p = subprocess.Popen(["pdflatex", "-halt-on-error", "./stub.tex"], cwd=tmp_dir)
-        p.wait()
-    
     bug1_is_alive = True  # https://github.com/g-raffy/pymusco/issues/1
-    if bug1_is_alive:
-        check_pdf(tmp_dir + '/stub.pdf')
+
+    # compile stub.tex document into stub.pdf
+    for pass_index in range(2):  # the compilation of latex files require 2 passes to get correct table of contents.
+        # note : we use subprocess.Popen instead of subprocess.check_call because for some unexplained reasons, subprocess.check_call doesn't wait for the call to complete before ending. This resulted in currupted pdf files (see https://github.com/g-raffy/pymusco/issues/1)
+        command = ["pdflatex", "-halt-on-error", "./stub.tex"]
+        p = subprocess.Popen(command, cwd=tmp_dir)
+        return_code = p.wait()
+        assert return_code == 0, "pass %d the command '%s' failed with return code %d" % (pass_index, str(command), return_code)
+        if bug1_is_alive:
+            assert not is_locked(tmp_dir + '/stub.pdf')
+            time.sleep(5)  # this seems to prevent the file corruption
     
+    stub_hash = 0
+    if bug1_is_alive:
+        stub_hash = md5(tmp_dir + '/stub.pdf')
+        print("stub hash of %s : %s" % (tmp_dir + '/stub.pdf', str(stub_hash)))
+        check_pdf(tmp_dir + '/stub.pdf')
+        
     os.rename(tmp_dir + '/stub.pdf', dst_stub_pdf_file_path)
-    # this check sometimes fails :
-    # check_pdf(dst_stub_pdf_file_path)
+    if bug1_is_alive:
+        stub_hash_after_move = md5(dst_stub_pdf_file_path)
+        print("stub hash of %s : %s" % (dst_stub_pdf_file_path, str(stub_hash_after_move)))
+        assert stub_hash == stub_hash_after_move
+        check_pdf(dst_stub_pdf_file_path)
 
 
 def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orchestra, stub_toc=None):
