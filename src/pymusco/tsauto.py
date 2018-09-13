@@ -16,7 +16,7 @@ class AutoTrackSelector(ITrackSelector):
     def __init__(self, musician_count, orchestra):
         """
         :param dict(str, int) musician_count:
-        :param Orchestra: the inventory of musical instruments
+        :param Orchestra orchestra: the inventory of musical instruments
         """
         self.musician_count = musician_count
         self.orchestra = orchestra
