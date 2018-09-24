@@ -42,9 +42,9 @@ class Harmony(Orchestra):
             Instrument('bb baritone horn', player='euphonist', order=9.001),  # aka 'baritone' 'euphonium'
 
             Instrument('c tuba', player='tubist', order=10.000),  # actually a f tuba but players read c parts
-            Instrument('bb contrabass tuba', player='tubist', order=10.001),
+            Instrument('bb contrabass tuba', player='bbtubist', order=10.001),
             Instrument('c bass', player='tubist', order=10.002),
-            Instrument('bb bass', player='tubist', order=10.003),
+            Instrument('bb bass', player='bbtubist', order=10.003),
             Instrument('eb bass', player='tubist', order=10.004, is_rare=True),
 
             Instrument('drum set', player='percussionist', order=11.001),
@@ -64,6 +64,14 @@ class Harmony(Orchestra):
             Instrument('side drum', player='percussionist', order=11.015),
             Instrument('gong', player='percussionist', order=11.016),
             Instrument('castanets', player='percussionist', order=11.017),
+            Instrument('claves', player='percussionist', order=11.018),
+            Instrument('vibraslap', player='percussionist', order=11.019),
+            Instrument('congas', player='percussionist', order=11.020),
+            Instrument('slide whistle', player='percussionist', order=11.021),
+            Instrument('toms', player='percussionist', order=11.022),
+            Instrument('tam tam', player='percussionist', order=11.023),
+            Instrument('whip', player='percussionist', order=11.024),
+            Instrument('slap stick', player='percussionist', order=11.025),
             
             Instrument('bells', player='percussionist', order=11.100),  # mallet percussion
             Instrument('bell tree', player='percussionist', order=11.101),
@@ -71,11 +79,14 @@ class Harmony(Orchestra):
             Instrument('wind chimes', player='percussionist', order=11.103),
             Instrument('triangle', player='percussionist', order=11.104),
             Instrument('sleigh bells', player='percussionist', order=11.105),
+            Instrument('cowbell', player='percussionist', order=11.106),
+
             Instrument('mallet percussion', player='percussionist', order=11.200),
             Instrument('xylophone', player='percussionist', order=11.201),
             Instrument('marimba', player='percussionist', order=11.202),
             Instrument('vibraphone', player='percussionist', order=11.203),
             Instrument('glockenspiel', player='percussionist', order=11.204),
+
             Instrument('timpani', player='percussionist', order=11.300),  # timbales
 
             Instrument('string bass', player='bassist', order=12.000, is_rare=True),

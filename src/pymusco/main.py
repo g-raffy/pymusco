@@ -165,7 +165,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         latex_file.write(r'  \tableofcontents' + '\n')
         latex_file.write(r'  \end{spacing}' + '\n')
         
-        current_track = None
+        current_tracks = None
         current_track_page_number = 0
         current_track_num_pages = 0
         date_as_string = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -179,16 +179,17 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
                 latex_file.write(r'\node at (%f,%f) {\includegraphics[scale=%f]{%s}};' % (tx, ty, scale, stamp_file_path) + '\n')
                 latex_file.write(r'\end{tikzpicture}' + '\n')
 
-            if toc.get_label(page_index) is not None:
-                current_track = toc.get_label(page_index)
+            if len(toc.get_labels_for_page(page_index)) > 0:
+                current_tracks = '/'.join(toc.get_labels_for_page(page_index))
+                print('current tracks :', current_tracks)
                 current_track_page_number = 1
-                current_track_num_pages = toc.get_label_last_page_index(current_track, len(scanned_image_file_paths)) - toc.get_label_first_page_index(current_track) + 1
-                latex_file.write(r'\invisiblesection{%s}' % current_track + '\n')
+                current_track_num_pages = toc.get_tracks_last_page_index(current_tracks, len(scanned_image_file_paths)) - toc.get_tracks_first_page_index(current_tracks) + 1
+                latex_file.write(r'\invisiblesection{%s}' % current_tracks + '\n')
             else:
                 latex_file.write(r'\null' + '\n')
 
             latex_file.write(r'\begin{textblock*}{20cm}(0.2cm,27cm) % {block width} (coords)' + '\n')
-            latex_file.write(r'%s on %s - page %d/%d : %s - page %d/%d' % (title, date_as_string, page_index, len(scanned_image_file_paths), current_track, current_track_page_number, current_track_num_pages) + '\n')
+            latex_file.write(r'%s on %s - page %d/%d : %s - page %d/%d' % (title, date_as_string, page_index, len(scanned_image_file_paths), current_tracks, current_track_page_number, current_track_num_pages) + '\n')
             latex_file.write(r'\end{textblock*}' + '\n')
 
             page_index += 1
@@ -206,7 +207,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         assert return_code == 0, "pass %d the command '%s' failed with return code %d" % (pass_index, str(command), return_code)
         if bug1_is_alive:
             assert not is_locked(tmp_dir + '/stub.pdf')
-            time.sleep(5)  # this seems to prevent the file corruption
+            time.sleep(10)  # this seems to prevent the file corruption
     
     stub_hash = 0
     if bug1_is_alive:
@@ -254,8 +255,8 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
                 track_id = track.get_id()
                 num_copies = track_to_print_count[track_id]
                 if num_copies > 0:
-                    first_page_index = stub_toc.get_label_first_page_index(track_id)
-                    last_page_index = stub_toc.get_label_last_page_index(track_id, stub_pdf.getNumPages())
+                    first_page_index = stub_toc.get_tracks_first_page_index(track_id)
+                    last_page_index = stub_toc.get_tracks_last_page_index(track_id, stub_pdf.getNumPages())
                     print('adding %d copies of %s (pages %d-%d)' % (num_copies, track_id, first_page_index, last_page_index))
                     assert first_page_index <= last_page_index
                     assert last_page_index <= stub_pdf.getNumPages()

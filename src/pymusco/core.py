@@ -228,17 +228,24 @@ class TableOfContents(object):
     def get_labels(self):
         return self.label_to_page.keys()
     
-    def get_label(self, page_index):
+    def get_labels_for_page(self, page_index):
+        labels = []
         for label, page in self.label_to_page.iteritems():
             if page == page_index:
-                return label
-        return None
+                labels.append(label)
+        return labels
     
-    def get_label_first_page_index(self, label):
-        return self.label_to_page[label]
+    def get_tracks_first_page_index(self, tracks):
+        """
+        :param str tracks: slash separated tracks
+        """
+        return self.label_to_page[tracks.split('/')[0]]
     
-    def get_label_last_page_index(self, label, num_pages):
-        first_page_index = self.get_label_first_page_index(label)
+    def get_tracks_last_page_index(self, tracks, num_pages):
+        """
+        :param str tracks: slash separated tracks
+        """
+        first_page_index = self.get_tracks_first_page_index(tracks)
         
         next_section_first_page_index = num_pages + 1
         for page_index in self.label_to_page.itervalues():
