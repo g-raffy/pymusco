@@ -11,7 +11,6 @@ import time
 import PyPDF2
 from .core import Track
 from .pdf import extract_pdf_page_main_image
-from .core import rotate_image
 from .core import get_stub_tracks
 from .pdf import check_pdf
 
@@ -74,7 +73,7 @@ def wait_for_files(filepaths):
             time.sleep(wait_time)
 
 
-def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0, rotate_images=False):
+def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0):
     """
     creates musical score stub from a musical score raw scan :
     - adds a table of contents
@@ -108,11 +107,6 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
             print('page_index = %d' % page_index)
             page = pdf_reader.getPage(page_index)
             image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
-            
-            if rotate_images:
-                # some extracted images are not in portrait mode as we would expect, so rotate them
-                # TODO: automatically detect when rotation is needed
-                rotate_image(image_file_path, 90.0, image_file_path)
             
             scanned_image_file_paths.append(image_file_path)
             # break

@@ -7,7 +7,7 @@ import os
 import shutil
 import sys
 import traceback
-
+from .core import rotate_image
 
 """
 Extract images from pdf: http://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python
@@ -144,7 +144,22 @@ def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
             img.close()
     assert saved_image_file_path is not None
     return saved_image_file_path
+
+
+def find_pdf_page_raster_image(pdf_page):
+    """
+    finds the first raster image in this page
     
+    :param PyPDF2.pdf.PageObject pdf_page:
+    :return PyPDF2.generic.EncodedStreamObject: a pdf node which is supposed to contain an image
+    """
+    if '/XObject' in pdf_page['/Resources']:
+        xObject = pdf_page['/Resources']['/XObject'].getObject()
+        for obj in xObject:
+            if xObject[obj]['/Subtype'] == '/Image':
+                return xObject[obj]
+    return None
+
 
 def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
     """
@@ -153,18 +168,50 @@ def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
     :param str image_name: the name of the saved file image, without file extension
     :return str: the saved image file path with file extension
     """
-    xObject = pdf_page['/Resources']['/XObject'].getObject()
-    saved_image_file_path = None
-    for obj in xObject:
-        if xObject[obj]['/Subtype'] == '/Image':
-            try:
-                saved_image_file_path = extract_pdf_stream_image(pdf_stream=xObject[obj], image_dir=image_dir, image_name=image_name)
-            except NotImplementedError as e:
-                print("warning : NotImplementedError(%s). Maybe pypdf2 is unable to decode this stream. Falling back to a resampling method." % e.message)
-                image = pdf_page_to_png(pdf_page, resolution=300)
-                saved_image_file_path = "%s/%s.png" % (image_dir, image_name)
-                cv2.imwrite(saved_image_file_path, image)
-                print("resampled image saved to %s" % saved_image_file_path)
+    pdf_stream = find_pdf_page_raster_image(pdf_page)
+    
+    if pdf_stream is not None:
+        # this pdf page contains a raster image; we deduce from that that it has been scanned
+        try:
+            saved_image_file_path = extract_pdf_stream_image(pdf_stream=pdf_stream, image_dir=image_dir, image_name=image_name)
+        except NotImplementedError as e:
+            print("warning : NotImplementedError(%s). Maybe pypdf2 is unable to decode this stream. Falling back to a resampling method." % e.message)
+            image = pdf_page_to_png(pdf_page, resolution=300)
+            saved_image_file_path = "%s/%s.png" % (image_dir, image_name)
+            cv2.imwrite(saved_image_file_path, image)
+            print("resampled image saved to %s" % saved_image_file_path)
+                    
+        if pdf_page['/Rotate'] != 0:
+            # some extracted images are not in portrait mode as we would expect, so rotate them
+            
+            # non rotated page contents
+            #     {
+            #         '/Parent': IndirectObject(3, 0),
+            #         '/Contents': IndirectObject(29, 0),
+            #         '/Type': '/Page',
+            #         '/Resources': IndirectObject(31, 0),
+            #         '/Rotate': 0,
+            #         '/MediaBox': [0, 0, 595.32, 841.92]
+            #     }
+        
+            # rotated_page_contents:
+            #     {
+            #         '/Parent': IndirectObject(3, 0),
+            #         '/Contents': IndirectObject(33, 0),
+            #         '/Type': '/Page',
+            #         '/Resources': IndirectObject(35, 0),
+            #         '/Rotate': 270,
+            #         '/MediaBox': [0, 0, 841.8, 595.2]
+            #     }
+            print('rotating image %s by %f degrees' % (saved_image_file_path, -pdf_page['/Rotate']))
+            rotate_image(saved_image_file_path, -pdf_page['/Rotate'], saved_image_file_path)
+    else:
+        # this page doesn't contain a raster image, so we keep it in its original vectorial form
+        saved_image_file_path = "%s/%s.pdf" % (image_dir, image_name)
+        with open(saved_image_file_path, 'wb') as pdf_file:
+            dst_pdf = PyPDF2.PdfFileWriter()
+            dst_pdf.addPage(pdf_page)
+            dst_pdf.write(pdf_file)
     return saved_image_file_path
 
 

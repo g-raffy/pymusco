@@ -72,6 +72,7 @@ class Harmony(Orchestra):
             Instrument('tam tam', player='percussionist', order=11.023),
             Instrument('whip', player='percussionist', order=11.024),
             Instrument('slap stick', player='percussionist', order=11.025),
+            Instrument('cabaza', player='percussionist', order=11.026),
             
             Instrument('bells', player='percussionist', order=11.100),  # mallet percussion
             Instrument('bell tree', player='percussionist', order=11.101),
