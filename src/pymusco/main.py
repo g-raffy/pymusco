@@ -10,7 +10,8 @@ import hashlib
 import time
 import PyPDF2
 from .core import Track
-from .pdf import extract_pdf_page_main_image
+# from .pdf import extract_pdf_page_main_image
+from .pdf import extract_pdf_page
 from .core import get_stub_tracks
 from .pdf import check_pdf
 
@@ -106,7 +107,8 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         for page_index in range(pdf_reader.numPages):
             print('page_index = %d' % page_index)
             page = pdf_reader.getPage(page_index)
-            image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
+            # image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
+            image_file_path = extract_pdf_page(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
             
             scanned_image_file_paths.append(image_file_path)
             # break

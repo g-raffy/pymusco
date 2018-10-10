@@ -46,7 +46,9 @@ class Harmony(Orchestra):
             Instrument('c bass', player='tubist', order=10.002),
             Instrument('bb bass', player='bbtubist', order=10.003),
             Instrument('eb bass', player='tubist', order=10.004, is_rare=True),
-
+            Instrument('bb tuba', player='tubist', order=10.005),
+            Instrument('eb tuba', player='tubist', order=10.006),
+            
             Instrument('drum set', player='percussionist', order=11.001),
             Instrument('crash cymbals', player='percussionist', order=11.002),
             Instrument('concert bass drum', player='percussionist', order=11.003),
@@ -92,6 +94,8 @@ class Harmony(Orchestra):
 
             Instrument('string bass', player='bassist', order=12.000, is_rare=True),
         
-            Instrument('piano', player='pianist', order=13.000)]
+            Instrument('piano', player='pianist', order=13.000),
+            
+            Instrument('voice', player='singer', order=1.000, is_rare=True)]
         
         Orchestra.__init__(self, instruments)
