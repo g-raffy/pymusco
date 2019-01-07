@@ -44,6 +44,7 @@ class Instrument(object):
                               'english horn',
                               'bb bass clarinet',
                               'eb clarinet',
+                              'bb soprano saxophone',
                               'eb baritone saxophone',
                               'c bass trombone',
                               'piano',
@@ -82,6 +83,7 @@ class Track(object):
         self.instrument = None
         self.voice = None
         self.clef = None  # 'tc' for treble clef, 'bc' for bass clef
+        self.is_solo = False
         parts = track_id.split(' ')
         instrument_first_part_index = 0
         instrument_last_part_index = len(parts) - 1
@@ -97,6 +99,10 @@ class Track(object):
         if last_part.isdigit():
             self.voice = int(last_part)
             instrument_last_part_index -= 1
+        last_part = parts[instrument_last_part_index]
+        if last_part == 'solo':
+            self.is_solo = True
+            instrument_last_part_index -= 1
         instrument_id = ' '.join(parts[instrument_first_part_index:instrument_last_part_index + 1])
         self.instrument = orchestra.get_instrument(instrument_id)
 
@@ -110,6 +116,8 @@ class Track(object):
         :return str: the identifier of this track in the form "bb trombone 2 tc"
         """
         uid = self.instrument.get_id()
+        if self.is_solo:
+            uid = '%s solo' % uid
         if self.voice is not None:
             uid = '%s %d' % (uid, self.voice)
         if self.clef is not None:

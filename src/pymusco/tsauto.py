@@ -48,6 +48,9 @@ class AutoTrackSelector(ITrackSelector):
                             # only print twice for tracks such as 'bb bass clarinet' or 'c piccolo', as they're not supposed to be more than one in an orchestra (one fore the player + 1 extra)
                             print("info: 2 copies for single instrument %s" % track.get_id())
                             track_to_print_count[track.get_id()] = 2
+                        elif track.is_solo:
+                            print("info: 2 copies for solo instrument %s" % track.get_id())
+                            track_to_print_count[track.get_id()] = 2
                         else:
                             playable_tracks.append(track)
             if len(playable_tracks) == 0:

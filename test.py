@@ -86,7 +86,7 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
         'eb bass tc'
         'eb bass bc'
         'drum set'
-        'crash cymbals'
+        'clash cymbals'
         'concert bass drum'
         'suspended cymbal'
         'bongos'
@@ -171,7 +171,7 @@ scan_toc = pymusco.TableOfContents({
     'bb baritone horn bc' : 45,
     'c tuba' : 47,
     'drum set' : 49,
-    'crash cymbals' : 51,
+    'clash cymbals' : 51,
     'concert bass drum' : 51,
     'suspended cymbal' : 51,
     'bongos' : 51,

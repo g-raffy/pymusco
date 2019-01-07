@@ -24,12 +24,14 @@ class Harmony(Orchestra):
             Instrument('bb contrabass clarinet', player='clarinetist', order=4.004, is_rare=True),
             Instrument('eb contrabass clarinet', player='clarinetist', order=4.005, is_rare=True),
 
-            Instrument('eb alto saxophone', player='saxophonist', order=5.000),
-            Instrument('bb tenor saxophone', player='saxophonist', order=5.001),
-            Instrument('eb baritone saxophone', player='saxophonist', order=5.002),
+            Instrument('bb soprano saxophone', player='saxophonist', order=5.000),
+            Instrument('eb alto saxophone', player='saxophonist', order=5.001),
+            Instrument('bb tenor saxophone', player='saxophonist', order=5.002),
+            Instrument('eb baritone saxophone', player='saxophonist', order=5.003),
 
             Instrument('bb trumpet', player='trumpetist', order=6.000),
             Instrument('bb cornet', player='trumpetist', order=6.001),
+            Instrument('bb flugelhorn', player='trumpetist', order=6.002),
 
             Instrument('f horn', player='hornist', order=7.000),
             Instrument('eb horn', player='hornist', order=7.001, is_rare=True),
@@ -37,6 +39,7 @@ class Harmony(Orchestra):
             Instrument('c trombone', player='trombonist', order=8.000),
             Instrument('bb trombone', player='trombonist', order=8.001, is_rare=True),
             Instrument('c bass trombone', player='trombonist', order=8.002),
+            Instrument('bb bass trombone', player='trombonist', order=8.003),
 
             Instrument('c baritone horn', player='euphonist', order=9.000),  # aka 'baritone' 'euphonium'
             Instrument('bb baritone horn', player='euphonist', order=9.001),  # aka 'baritone' 'euphonium'
@@ -50,7 +53,7 @@ class Harmony(Orchestra):
             Instrument('eb tuba', player='tubist', order=10.006),
             
             Instrument('drum set', player='percussionist', order=11.001),
-            Instrument('crash cymbals', player='percussionist', order=11.002),
+            Instrument('clash cymbals', player='percussionist', order=11.002),  # aka concert cymbals, cymbales frappees
             Instrument('concert bass drum', player='percussionist', order=11.003),
             Instrument('suspended cymbal', player='percussionist', order=11.004),
             Instrument('bongos', player='percussionist', order=11.005),
@@ -83,6 +86,7 @@ class Harmony(Orchestra):
             Instrument('triangle', player='percussionist', order=11.104),
             Instrument('sleigh bells', player='percussionist', order=11.105),
             Instrument('cowbell', player='percussionist', order=11.106),
+            Instrument('tubular bells', player='percussionist', order=11.107),
 
             Instrument('mallet percussion', player='percussionist', order=11.200),
             Instrument('xylophone', player='percussionist', order=11.201),
@@ -93,8 +97,10 @@ class Harmony(Orchestra):
             Instrument('timpani', player='percussionist', order=11.300),  # timbales
 
             Instrument('string bass', player='bassist', order=12.000, is_rare=True),
+            Instrument('electric guitar', player='guitarist', order=12.001, is_rare=True),
         
             Instrument('piano', player='pianist', order=13.000),
+            Instrument('synthesizer', player='pianist', order=13.001),
             
             Instrument('voice', player='singer', order=1.000, is_rare=True)]
         
