@@ -84,6 +84,7 @@ class Track(object):
         self.voice = None
         self.clef = None  # 'tc' for treble clef, 'bc' for bass clef
         self.is_solo = False
+        self.is_disabled = False  # for tracks that we want to ignore (eg a track that is present in a stub more than once)
         parts = track_id.split(' ')
         instrument_first_part_index = 0
         instrument_last_part_index = len(parts) - 1
@@ -91,6 +92,10 @@ class Track(object):
         #    self.tone = parts[0]
         #   instrument_start_part_index = 1
         last_part = parts[-1]
+        if last_part == 'disabled':
+            self.is_disabled = True
+            instrument_last_part_index -= 1
+        last_part = parts[instrument_last_part_index]
         allowed_clefs = ['tc', 'bc']
         if last_part in allowed_clefs:
             self.clef = last_part
@@ -122,6 +127,8 @@ class Track(object):
             uid = '%s %d' % (uid, self.voice)
         if self.clef is not None:
             uid = '%s %s' % (uid, self.clef)
+        if self.is_disabled:
+            uid = '%s disabled' % uid
         return uid
 
     def __lt__(self, other):

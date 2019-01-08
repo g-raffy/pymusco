@@ -53,7 +53,7 @@ class Harmony(Orchestra):
             Instrument('eb tuba', player='tubist', order=10.006),
             
             Instrument('drum set', player='percussionist', order=11.001),
-            Instrument('clash cymbals', player='percussionist', order=11.002),  # aka concert cymbals, cymbales frappees
+            Instrument('clash cymbals', player='percussionist', order=11.002),  # aka concert cymbals, cymbales frappees : https://en.wikipedia.org/wiki/Clash_cymbals
             Instrument('concert bass drum', player='percussionist', order=11.003),
             Instrument('suspended cymbal', player='percussionist', order=11.004),
             Instrument('bongos', player='percussionist', order=11.005),
@@ -78,6 +78,8 @@ class Harmony(Orchestra):
             Instrument('whip', player='percussionist', order=11.024),
             Instrument('slap stick', player='percussionist', order=11.025),
             Instrument('cabaza', player='percussionist', order=11.026),
+            Instrument('crotales', player='percussionist', order=11.027),  # https://en.wikipedia.org/wiki/Crotales
+            Instrument('finger cymbals', player='percussionist', order=11.028),  # https://en.wikipedia.org/wiki/Zill (sagattes, sagates, ou zil )
             
             Instrument('bells', player='percussionist', order=11.100),  # mallet percussion
             Instrument('bell tree', player='percussionist', order=11.101),
@@ -91,7 +93,7 @@ class Harmony(Orchestra):
             Instrument('mallet percussion', player='percussionist', order=11.200),
             Instrument('xylophone', player='percussionist', order=11.201),
             Instrument('marimba', player='percussionist', order=11.202),
-            Instrument('vibraphone', player='percussionist', order=11.203),
+            Instrument('vibraphone', player='percussionist', order=11.203),  # vibraphone (also known as the vibraharp or simply the vibes)
             Instrument('glockenspiel', player='percussionist', order=11.204),
 
             Instrument('timpani', player='percussionist', order=11.300),  # timbales

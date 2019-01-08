@@ -37,7 +37,7 @@ class AutoTrackSelector(ITrackSelector):
                 track = Track(track_id, self.orchestra)
                 # print('processing track %s' % track.get_id())
                 # print('track.instrument.get_player() = %s' % track.instrument.get_player())
-                if track.instrument.get_player() == musician_type_id:
+                if track.instrument.get_player() == musician_type_id and not track.is_disabled:
                     # print('this is a track for %s' % musician_type_id)
                     # print('track.instrument', track.instrument.get_id())
                     if not track.is_rare:
