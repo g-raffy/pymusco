@@ -28,6 +28,7 @@ class Harmony(Orchestra):
             Instrument('eb alto saxophone', player='saxophonist', order=5.001),
             Instrument('bb tenor saxophone', player='saxophonist', order=5.002),
             Instrument('eb baritone saxophone', player='saxophonist', order=5.003),
+            Instrument('bb bass saxophone', player='saxophonist', order=5.004, is_rare=True),
 
             Instrument('bb trumpet', player='trumpetist', order=6.000),
             Instrument('bb cornet', player='trumpetist', order=6.001),
@@ -80,6 +81,7 @@ class Harmony(Orchestra):
             Instrument('cabaza', player='percussionist', order=11.026),
             Instrument('crotales', player='percussionist', order=11.027),  # https://en.wikipedia.org/wiki/Crotales
             Instrument('finger cymbals', player='percussionist', order=11.028),  # https://en.wikipedia.org/wiki/Zill (sagattes, sagates, ou zil )
+            Instrument('rumberas', player='percussionist', order=11.029),
             
             Instrument('bells', player='percussionist', order=11.100),  # mallet percussion
             Instrument('bell tree', player='percussionist', order=11.101),
