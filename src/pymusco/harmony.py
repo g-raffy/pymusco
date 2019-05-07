@@ -73,15 +73,18 @@ class Harmony(Orchestra):
             Instrument('claves', player='percussionist', order=11.018),
             Instrument('vibraslap', player='percussionist', order=11.019),
             Instrument('congas', player='percussionist', order=11.020),
-            Instrument('slide whistle', player='percussionist', order=11.021),
             Instrument('toms', player='percussionist', order=11.022),
             Instrument('tam tam', player='percussionist', order=11.023),
             Instrument('whip', player='percussionist', order=11.024),
             Instrument('slap stick', player='percussionist', order=11.025),
-            Instrument('cabaza', player='percussionist', order=11.026),
+            Instrument('cabasa', player='percussionist', order=11.026),  # aka cabaza
             Instrument('crotales', player='percussionist', order=11.027),  # https://en.wikipedia.org/wiki/Crotales
             Instrument('finger cymbals', player='percussionist', order=11.028),  # https://en.wikipedia.org/wiki/Zill (sagattes, sagates, ou zil )
             Instrument('rumberas', player='percussionist', order=11.029),
+            Instrument('crash cymbals', player='percussionist', order=11.030),
+            Instrument('anvil', player='percussionist', order=11.031),
+            Instrument('hi-hat cymbals', player='percussionist', order=11.032),
+            Instrument('guiro', player='percussionist', order=11.033),
             
             Instrument('bells', player='percussionist', order=11.100),  # mallet percussion
             Instrument('bell tree', player='percussionist', order=11.101),
@@ -100,12 +103,23 @@ class Harmony(Orchestra):
 
             Instrument('timpani', player='percussionist', order=11.300),  # timbales
 
-            Instrument('string bass', player='bassist', order=12.000, is_rare=True),
-            Instrument('electric guitar', player='guitarist', order=12.001, is_rare=True),
+            Instrument('slide whistle', player='percussionist', order=11.400),
+            Instrument('train whistle', player='percussionist', order=11.401),
+
+            Instrument('double bass', player='bassist', order=12.000, is_rare=True),  # other names : Bass, upright bass, string bass, acoustic bass, acoustic string bass, contrabass, contrabass viol, bass viol, standup bass, bull fiddle, doghouse bass and bass fiddle
+            Instrument('bass guitar', player='bassist', order=12.001, is_rare=True),  # other names : Bass, electric bass guitar, electric bass
+
+            Instrument('electric guitar', player='guitarist', order=12.002, is_rare=True),
         
             Instrument('piano', player='pianist', order=13.000),
             Instrument('synthesizer', player='pianist', order=13.001),
-            
+
+            Instrument('double bass', player='doublebassplayer', order=14.000, is_rare=True),  # contrebasse
+
+            Instrument('bb violin', player='violinist', order=15.000, is_rare=True),
+            Instrument('bb viola', player='violinist', order=15.001, is_rare=True),
+            Instrument('bb cello', player='violinist', order=15.002, is_rare=True),
+
             Instrument('voice', player='singer', order=1.000, is_rare=True)]
         
         Orchestra.__init__(self, instruments)
