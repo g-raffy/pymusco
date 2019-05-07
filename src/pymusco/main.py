@@ -80,7 +80,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     - adds a table of contents
     - adds a stamp
     - numbers the pages
-    
+
     :param str src_scanned_pdf_file_path: the source file that is expected to contain the scanned musical scores
     :param str dst_stub_pdf_file_path: the destination file that is expected to contain the stub of musical scores
     :param TableOfContents toc:
@@ -92,7 +92,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     # check that the track_ids in the toc are known
     for track_id in toc.get_labels():
         try:
-            track = Track(track_id, orchestra)  # @UnusedVariable
+            track = Track(track_id, orchestra)  # @UnusedVariable  pylint: disable=unused-variable
         except KeyError as e:
             raise Exception("Failed to identify track id '%s'. Either its syntax is incorrect or the related instrument (%s) in not yet registered in the orchestra." % (track_id, e.message))
 
@@ -109,17 +109,17 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
             page = pdf_reader.getPage(page_index)
             # image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
             image_file_path = extract_pdf_page(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
-            
+
             scanned_image_file_paths.append(image_file_path)
             # break
-    
+
     latex_file_path = tmp_dir + '/stub.tex'
     with open(latex_file_path, 'w') as latex_file:
         latex_file.write(r'\documentclass{article}' + '\n')
-        
+
         latex_file.write(r'% tikz package is used to use scanned images as background' + '\n')
         latex_file.write(r'\usepackage{tikz}' + '\n')
-        
+
         latex_file.write(r'% hyperref package is used to create a clickable table of contents' + '\n')
         latex_file.write(r'\usepackage{hyperref}' + '\n')
         latex_file.write(r'\hypersetup{' + '\n')
@@ -128,23 +128,23 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         latex_file.write(r'   filecolor=black,' + '\n')
         latex_file.write(r'   urlcolor=black' + '\n')
         latex_file.write(r'}')
-        
+
         latex_file.write(r'% textpos package is used to position text at a specific position in the page (eg page number)' + '\n')
         latex_file.write(r'\usepackage[absolute,overlay]{textpos}')
-        
+
         latex_file.write(r'% setspace package is used to to reduce the spacing between table of contents imes' + '\n')
         latex_file.write(r'\usepackage{setspace}')
         latex_file.write(r'\renewcommand{\contentsname}{}' + '\n')  # remove the title of the table of contents ("contents")
-        
+
         latex_file.write(r'% command to declare invisible sections (sections that appear in the table of contents but not in the text itself)' + '\n')
         latex_file.write(r'\newcommand\invisiblesection[1]{%' + '\n')
         latex_file.write(r'  \refstepcounter{section}%' + '\n')
         latex_file.write(r'  \addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}%' + '\n')
         latex_file.write(r'  \sectionmark{#1}}' + '\n')
-        
+
         latex_file.write(r'\newcommand*{\PageBackground}[1]{' + '\n')
         latex_file.write(r'    \tikz[remember picture,overlay] \node[opacity=1.0,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{#1}};')
-        
+
         latex_file.write(r'% remove page numbers as default' + '\n')
         latex_file.write(r'\thispagestyle{empty}' + '\n')
 
@@ -153,14 +153,14 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
 
         latex_file.write(r'  \title{%s}' % title + '\n')
         latex_file.write(r'  \date{}' + '\n')  # remove the date from the title
-        
+
         latex_file.write(r'  \maketitle' + '\n')
-        
+
         latex_file.write(r'  \begin{spacing}{0.1}' + '\n')
-            
+
         latex_file.write(r'  \tableofcontents' + '\n')
         latex_file.write(r'  \end{spacing}' + '\n')
-        
+
         current_tracks = None
         current_track_page_number = 0
         current_track_num_pages = 0
@@ -169,7 +169,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         for scanned_image_file_path in scanned_image_file_paths:
             latex_file.write(r'\newpage' + '\n')
             latex_file.write(r'\PageBackground{%s}' % scanned_image_file_path + '\n')
-            
+
             if stamp_file_path is not None:
                 latex_file.write(r'\begin{tikzpicture}[overlay]' + '\n')
                 latex_file.write(r'\node at (%f,%f) {\includegraphics[scale=%f]{%s}};' % (tx, ty, scale, stamp_file_path) + '\n')
@@ -204,13 +204,13 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         if bug1_is_alive:
             assert not is_locked(tmp_dir + '/stub.pdf')
             time.sleep(10)  # this seems to prevent the file corruption
-    
+
     stub_hash = 0
     if bug1_is_alive:
         stub_hash = md5(tmp_dir + '/stub.pdf')
         print("stub hash of %s : %s" % (tmp_dir + '/stub.pdf', str(stub_hash)))
         check_pdf(tmp_dir + '/stub.pdf')
-        
+
     os.rename(tmp_dir + '/stub.pdf', dst_stub_pdf_file_path)
     if bug1_is_alive:
         stub_hash_after_move = md5(dst_stub_pdf_file_path)
@@ -234,13 +234,13 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
 
     track_to_print_count = track_selector.get_track_to_copy(stub_toc.get_labels())
     print(track_to_print_count)
-    
+
     with open(dst_print_file_path, 'wb') as print_file, open(dst_print_file_path.replace('.pdf', '.log'), 'wb') as log_file:
         print_pdf = PyPDF2.PdfFileWriter()
         log_file.write("contents of print file %s :\n\n" % dst_print_file_path)
         with open(src_stub_file_path, 'rb') as stub_file:
             stub_pdf = PyPDF2.PdfFileReader(stub_file)
-            
+
             sorted_tracks = [Track(track_id, orchestra) for track_id in track_to_print_count.iterkeys()]
             sorted_tracks.sort()
             ranges = []
@@ -279,7 +279,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
                 num_copies = range_to_num_copies[page_range]
                 log_file.write("%d copies of %s\n" % (num_copies, '/'.join(range_to_tracks[page_range])))
                 # print(page_range, num_copies)
-                for copy_index in range(num_copies):  # @UnusedVariable
+                for copy_index in range(num_copies):  # @UnusedVariable pylint: disable=unused-variable
                     for page_index in range(first_page_index, last_page_index + 1):
                         track_page = stub_pdf.getPage(page_index - 1)  # -1 to convert 1-based index into 0-based index
                         # print('adding page %d' % page_index)

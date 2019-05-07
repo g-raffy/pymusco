@@ -36,7 +36,7 @@ class Harmony(Orchestra):
 
             Instrument('f horn', player='hornist', order=7.000),
             Instrument('eb horn', player='hornist', order=7.001, is_rare=True),
-            
+
             Instrument('c trombone', player='trombonist', order=8.000),
             Instrument('bb trombone', player='trombonist', order=8.001, is_rare=True),
             Instrument('c bass trombone', player='trombonist', order=8.002),
@@ -52,7 +52,7 @@ class Harmony(Orchestra):
             Instrument('eb bass', player='tubist', order=10.004, is_rare=True),
             Instrument('bb tuba', player='tubist', order=10.005),
             Instrument('eb tuba', player='tubist', order=10.006),
-            
+
             Instrument('drum set', player='percussionist', order=11.001),
             Instrument('clash cymbals', player='percussionist', order=11.002),  # aka concert cymbals, cymbales frappees : https://en.wikipedia.org/wiki/Clash_cymbals
             Instrument('concert bass drum', player='percussionist', order=11.003),
@@ -85,7 +85,7 @@ class Harmony(Orchestra):
             Instrument('anvil', player='percussionist', order=11.031),
             Instrument('hi-hat cymbals', player='percussionist', order=11.032),
             Instrument('guiro', player='percussionist', order=11.033),
-            
+
             Instrument('bells', player='percussionist', order=11.100),  # mallet percussion
             Instrument('bell tree', player='percussionist', order=11.101),
             Instrument('chimes', player='percussionist', order=11.102),
@@ -110,7 +110,7 @@ class Harmony(Orchestra):
             Instrument('bass guitar', player='bassist', order=12.001, is_rare=True),  # other names : Bass, electric bass guitar, electric bass
 
             Instrument('electric guitar', player='guitarist', order=12.002, is_rare=True),
-        
+
             Instrument('piano', player='pianist', order=13.000),
             Instrument('synthesizer', player='pianist', order=13.001),
 
@@ -121,5 +121,5 @@ class Harmony(Orchestra):
             Instrument('bb cello', player='violinist', order=15.002, is_rare=True),
 
             Instrument('voice', player='singer', order=1.000, is_rare=True)]
-        
+
         Orchestra.__init__(self, instruments)
