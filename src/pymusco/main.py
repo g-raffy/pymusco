@@ -10,10 +10,12 @@ import hashlib
 import time
 import PyPDF2
 from .core import Track
-# from .pdf import extract_pdf_page_main_image
+from .pdf import extract_pdf_page_main_image
 from .pdf import extract_pdf_page
 from .core import get_stub_tracks
 from .pdf import check_pdf
+import cv2
+import abc
 
 
 def md5(fname):
@@ -74,7 +76,223 @@ def wait_for_files(filepaths):
             time.sleep(wait_time)
 
 
-def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_file_path=None, scale=1.0, tx=500.0, ty=770.0):
+class StampDesc(object):
+
+    def __init__(self, file_path, scale=1.0, tx=500.0, ty=770.0):
+        self.file_path = file_path
+        self.scale = scale
+        self.tx = tx
+        self.ty = ty
+
+
+class PdfContents(object):
+
+    def __init__(self):
+        pass
+
+    @abc.abstractmethod
+    def get_image_file_paths(self):
+        pass
+
+    @property
+    def title(self):
+        return None
+
+    @property
+    def stamp_desc(self):
+        return None
+
+    def get_page_footers(self):
+        return {}
+
+    def get_sections(self):
+        return {}
+
+
+class SimplePdfDescription(PdfContents):
+    def __init__(self, image_file_paths):
+        """
+        :param list(str) image_file_paths: the file path for each image
+        """
+        self.image_file_paths = image_file_paths
+
+    def get_image_file_paths(self):
+        return self.image_file_paths
+
+
+class StubContents(PdfContents):
+    def __init__(self, image_file_paths, toc, title, stamp_desc=None):
+        """
+        creates a pdf file from a set of pages (either)
+
+        :param list(str) image_file_paths: the file path for each image
+        :param TableOfContents or None toc:
+        :param str title: the title
+        :param StampDesc or None stamp_desc: the image to overlay on each page
+        """
+        self.image_file_paths = image_file_paths
+        self.toc = toc
+        self._title = title
+        self._stamp_desc = stamp_desc
+        self.page_footers = {}
+        self.page_to_section = {}
+        current_tracks = None
+        current_track_page_number = 0
+        current_track_num_pages = 0
+        date_as_string = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+        for page_index in range(1, len(self.image_file_paths()) + 1):
+
+            if self.toc and len(self.toc.get_labels_for_page(page_index)) > 0:
+                toc = self.toc
+                current_tracks = '/'.join(toc.get_labels_for_page(page_index))
+                print('current tracks :', current_tracks)
+                current_track_page_number = 1
+                current_track_num_pages = toc.get_tracks_last_page_index(current_tracks, len(self.image_file_paths)) - toc.get_tracks_first_page_index(current_tracks) + 1
+                self.page_to_section[page_index] = current_tracks
+
+            self.page_footers[page_index] = r'%s on %s - page %d/%d : %s - page %d/%d' % (self.title, date_as_string, page_index, len(self.image_file_paths), current_tracks, current_track_page_number, current_track_num_pages)
+
+            current_track_page_number += 1
+
+    def get_image_file_paths(self):
+        return self.image_file_paths
+
+    @property
+    def title(self):
+        return self._title
+
+    @property
+    def stamp_desc(self):
+        return self.stamp_desc
+
+    def get_page_footers(self):
+        return self.page_footers
+
+    def get_sections(self):
+        return self.page_to_section
+
+
+def images_to_pdf(pdf_contents, dst_pdf_file_path):
+    """
+    creates a pdf file from a set of pages (either)
+
+    :param PdfContents pdf_contents:
+    :param list(str) image_file_paths: the file path for each image
+    :param str dst_pdf_file_path: the destination pdf file path
+    :param TableOfContents or None toc:
+    :param str title: the title
+    :param str or None stamp_file_path: the image to overlay on each page
+    """
+    tmp_dir = os.getcwd() + '/tmp'
+
+    latex_file_path = tmp_dir + '/stub.tex'
+    with open(latex_file_path, 'w') as latex_file:
+        page_to_footers = pdf_contents.get_page_footers()
+        page_to_section = pdf_contents.get_sections()
+        has_toc = len(page_to_section) > 0
+        latex_file.write(r'\documentclass{article}' + '\n')
+
+        latex_file.write(r'% tikz package is used to use scanned images as background' + '\n')
+        latex_file.write(r'\usepackage{tikz}' + '\n')
+
+        if has_toc:
+            latex_file.write(r'% hyperref package is used to create a clickable table of contents' + '\n')
+            latex_file.write(r'\usepackage{hyperref}' + '\n')
+            latex_file.write(r'\hypersetup{' + '\n')
+            latex_file.write(r'   colorlinks,' + '\n')
+            latex_file.write(r'   citecolor=black,' + '\n')
+            latex_file.write(r'   filecolor=black,' + '\n')
+            latex_file.write(r'   urlcolor=black' + '\n')
+            latex_file.write(r'}')
+
+        latex_file.write(r'% textpos package is used to position text at a specific position in the page (eg page number)' + '\n')
+        latex_file.write(r'\usepackage[absolute,overlay]{textpos}')
+
+        if has_toc:
+            latex_file.write(r'% setspace package is used to to reduce the spacing between table of contents items' + '\n')
+            latex_file.write(r'\usepackage{setspace}')
+            latex_file.write(r'\renewcommand{\contentsname}{}' + '\n')  # remove the title of the table of contents ("contents")
+
+        latex_file.write(r'% command to declare invisible sections (sections that appear in the table of contents but not in the text itself)' + '\n')
+        latex_file.write(r'\newcommand\invisiblesection[1]{%' + '\n')
+        latex_file.write(r'  \refstepcounter{section}%' + '\n')
+        latex_file.write(r'  \addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}%' + '\n')
+        latex_file.write(r'  \sectionmark{#1}}' + '\n')
+
+        latex_file.write(r'\newcommand*{\PageBackground}[1]{' + '\n')
+        latex_file.write(r'    \tikz[remember picture,overlay] \node[opacity=1.0,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{#1}};')
+
+        latex_file.write(r'% remove page numbers as default' + '\n')
+        latex_file.write(r'\thispagestyle{empty}' + '\n')
+
+        latex_file.write(r'}')
+        latex_file.write(r'\begin{document}' + '\n')
+
+        if pdf_contents.title:
+
+            latex_file.write(r'  \title{%s}' % pdf_contents.title + '\n')
+            latex_file.write(r'  \date{}' + '\n')  # remove the date from the title
+
+            latex_file.write(r'  \maketitle' + '\n')
+
+        if has_toc:
+            latex_file.write(r'  \begin{spacing}{0.1}' + '\n')
+
+            latex_file.write(r'  \tableofcontents' + '\n')
+            latex_file.write(r'  \end{spacing}' + '\n')
+
+        page_index = 1
+        for scanned_image_file_path in pdf_contents.get_image_file_paths():
+            latex_file.write(r'\newpage' + '\n')
+            latex_file.write(r'\PageBackground{%s}' % scanned_image_file_path + '\n')
+
+            if pdf_contents.stamp_desc:
+                stamp_desc = pdf_contents.stamp_desc
+                latex_file.write(r'\begin{tikzpicture}[overlay]' + '\n')
+                latex_file.write(r'\node at (%f,%f) {\includegraphics[scale=%f]{%s}};' % (stamp_desc.tx, stamp_desc.ty, stamp_desc.scale, stamp_desc.file_path) + '\n')
+                latex_file.write(r'\end{tikzpicture}' + '\n')
+
+            if page_index in page_to_section:
+                latex_file.write(r'\invisiblesection{%s}' % page_to_section[page_index] + '\n')
+            else:
+                latex_file.write(r'\null' + '\n')
+
+            if page_index in page_to_footers:
+                latex_file.write(r'\begin{textblock*}{20cm}(0.2cm,27cm) % {block width} (coords)' + '\n')
+                latex_file.write(page_to_footers[page_index] + '\n')
+                latex_file.write(r'\end{textblock*}' + '\n')
+
+            page_index += 1
+        latex_file.write(r'\end{document}' + '\n')
+
+    bug1_is_alive = False  # True  # https://github.com/g-raffy/pymusco/issues/1
+
+    # compile stub.tex document into stub.pdf
+    for pass_index in range(2):  # the compilation of latex files require 2 passes to get correct table of contents.
+        # note : we use subprocess.Popen instead of subprocess.check_call because for some unexplained reasons, subprocess.check_call doesn't wait for the call to complete before ending. This resulted in currupted pdf files (see https://github.com/g-raffy/pymusco/issues/1)
+        command = ["pdflatex", "-halt-on-error", "./stub.tex"]
+        p = subprocess.Popen(command, cwd=tmp_dir)
+        return_code = p.wait()
+        assert return_code == 0, "pass %d the command '%s' failed with return code %d" % (pass_index, str(command), return_code)
+        if bug1_is_alive:
+            assert not is_locked(tmp_dir + '/stub.pdf')
+            time.sleep(10)  # this seems to prevent the file corruption
+
+    stub_hash = 0
+    if bug1_is_alive:
+        stub_hash = md5(tmp_dir + '/stub.pdf')
+        print("stub hash of %s : %s" % (tmp_dir + '/stub.pdf', str(stub_hash)))
+        check_pdf(tmp_dir + '/stub.pdf')
+
+    os.rename(tmp_dir + '/stub.pdf', dst_pdf_file_path)
+    if bug1_is_alive:
+        stub_hash_after_move = md5(dst_pdf_file_path)
+        print("stub hash of %s : %s" % (dst_pdf_file_path, str(stub_hash_after_move)))
+        assert stub_hash == stub_hash_after_move
+        check_pdf(dst_pdf_file_path)
+
+
+def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_desc=None):
     """
     creates musical score stub from a musical score raw scan :
     - adds a table of contents
@@ -86,7 +304,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     :param TableOfContents toc:
     :param str title: musical piece title
     :param Orchestra orchestra: the inventory of musical instruments
-    :param str or None stamp_file_path:
+    :param StampDesc or None stamp_desc: desctiption of the stamp to overlay on each page
     """
 
     # check that the track_ids in the toc are known
@@ -113,110 +331,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
             scanned_image_file_paths.append(image_file_path)
             # break
 
-    latex_file_path = tmp_dir + '/stub.tex'
-    with open(latex_file_path, 'w') as latex_file:
-        latex_file.write(r'\documentclass{article}' + '\n')
-
-        latex_file.write(r'% tikz package is used to use scanned images as background' + '\n')
-        latex_file.write(r'\usepackage{tikz}' + '\n')
-
-        latex_file.write(r'% hyperref package is used to create a clickable table of contents' + '\n')
-        latex_file.write(r'\usepackage{hyperref}' + '\n')
-        latex_file.write(r'\hypersetup{' + '\n')
-        latex_file.write(r'   colorlinks,' + '\n')
-        latex_file.write(r'   citecolor=black,' + '\n')
-        latex_file.write(r'   filecolor=black,' + '\n')
-        latex_file.write(r'   urlcolor=black' + '\n')
-        latex_file.write(r'}')
-
-        latex_file.write(r'% textpos package is used to position text at a specific position in the page (eg page number)' + '\n')
-        latex_file.write(r'\usepackage[absolute,overlay]{textpos}')
-
-        latex_file.write(r'% setspace package is used to to reduce the spacing between table of contents imes' + '\n')
-        latex_file.write(r'\usepackage{setspace}')
-        latex_file.write(r'\renewcommand{\contentsname}{}' + '\n')  # remove the title of the table of contents ("contents")
-
-        latex_file.write(r'% command to declare invisible sections (sections that appear in the table of contents but not in the text itself)' + '\n')
-        latex_file.write(r'\newcommand\invisiblesection[1]{%' + '\n')
-        latex_file.write(r'  \refstepcounter{section}%' + '\n')
-        latex_file.write(r'  \addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}%' + '\n')
-        latex_file.write(r'  \sectionmark{#1}}' + '\n')
-
-        latex_file.write(r'\newcommand*{\PageBackground}[1]{' + '\n')
-        latex_file.write(r'    \tikz[remember picture,overlay] \node[opacity=1.0,inner sep=0pt] at (current page.center){\includegraphics[width=\paperwidth,height=\paperheight]{#1}};')
-
-        latex_file.write(r'% remove page numbers as default' + '\n')
-        latex_file.write(r'\thispagestyle{empty}' + '\n')
-
-        latex_file.write(r'}')
-        latex_file.write(r'\begin{document}' + '\n')
-
-        latex_file.write(r'  \title{%s}' % title + '\n')
-        latex_file.write(r'  \date{}' + '\n')  # remove the date from the title
-
-        latex_file.write(r'  \maketitle' + '\n')
-
-        latex_file.write(r'  \begin{spacing}{0.1}' + '\n')
-
-        latex_file.write(r'  \tableofcontents' + '\n')
-        latex_file.write(r'  \end{spacing}' + '\n')
-
-        current_tracks = None
-        current_track_page_number = 0
-        current_track_num_pages = 0
-        date_as_string = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-        page_index = 1
-        for scanned_image_file_path in scanned_image_file_paths:
-            latex_file.write(r'\newpage' + '\n')
-            latex_file.write(r'\PageBackground{%s}' % scanned_image_file_path + '\n')
-
-            if stamp_file_path is not None:
-                latex_file.write(r'\begin{tikzpicture}[overlay]' + '\n')
-                latex_file.write(r'\node at (%f,%f) {\includegraphics[scale=%f]{%s}};' % (tx, ty, scale, stamp_file_path) + '\n')
-                latex_file.write(r'\end{tikzpicture}' + '\n')
-
-            if len(toc.get_labels_for_page(page_index)) > 0:
-                current_tracks = '/'.join(toc.get_labels_for_page(page_index))
-                print('current tracks :', current_tracks)
-                current_track_page_number = 1
-                current_track_num_pages = toc.get_tracks_last_page_index(current_tracks, len(scanned_image_file_paths)) - toc.get_tracks_first_page_index(current_tracks) + 1
-                latex_file.write(r'\invisiblesection{%s}' % current_tracks + '\n')
-            else:
-                latex_file.write(r'\null' + '\n')
-
-            latex_file.write(r'\begin{textblock*}{20cm}(0.2cm,27cm) % {block width} (coords)' + '\n')
-            latex_file.write(r'%s on %s - page %d/%d : %s - page %d/%d' % (title, date_as_string, page_index, len(scanned_image_file_paths), current_tracks, current_track_page_number, current_track_num_pages) + '\n')
-            latex_file.write(r'\end{textblock*}' + '\n')
-
-            page_index += 1
-            current_track_page_number += 1
-        latex_file.write(r'\end{document}' + '\n')
-
-    bug1_is_alive = True  # https://github.com/g-raffy/pymusco/issues/1
-
-    # compile stub.tex document into stub.pdf
-    for pass_index in range(2):  # the compilation of latex files require 2 passes to get correct table of contents.
-        # note : we use subprocess.Popen instead of subprocess.check_call because for some unexplained reasons, subprocess.check_call doesn't wait for the call to complete before ending. This resulted in currupted pdf files (see https://github.com/g-raffy/pymusco/issues/1)
-        command = ["pdflatex", "-halt-on-error", "./stub.tex"]
-        p = subprocess.Popen(command, cwd=tmp_dir)
-        return_code = p.wait()
-        assert return_code == 0, "pass %d the command '%s' failed with return code %d" % (pass_index, str(command), return_code)
-        if bug1_is_alive:
-            assert not is_locked(tmp_dir + '/stub.pdf')
-            time.sleep(10)  # this seems to prevent the file corruption
-
-    stub_hash = 0
-    if bug1_is_alive:
-        stub_hash = md5(tmp_dir + '/stub.pdf')
-        print("stub hash of %s : %s" % (tmp_dir + '/stub.pdf', str(stub_hash)))
-        check_pdf(tmp_dir + '/stub.pdf')
-
-    os.rename(tmp_dir + '/stub.pdf', dst_stub_pdf_file_path)
-    if bug1_is_alive:
-        stub_hash_after_move = md5(dst_stub_pdf_file_path)
-        print("stub hash of %s : %s" % (dst_stub_pdf_file_path, str(stub_hash_after_move)))
-        assert stub_hash == stub_hash_after_move
-        check_pdf(dst_stub_pdf_file_path)
+    images_to_pdf(StubContents(image_file_paths=scanned_image_file_paths, toc=toc, title=title, stamp_desc=stamp_desc), dst_stub_pdf_file_path)
 
 
 def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orchestra, stub_toc=None):
@@ -299,3 +414,36 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
                 if not label_is_printed:
                     log_file.write("no copies of %s\n" % label)
             print_pdf.write(print_file)
+
+
+def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, split_pos=[0.5]):
+    """
+    :param list(float) split_pos: where to split the pages (ratio of the width of the double page). If this list contains more than one element, the positions are used sequencially and in a cyclic way
+    """
+    tmp_dir = os.getcwd() + '/tmp'
+    scanned_image_file_paths = []
+    with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
+        pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
+        for page_index in range(pdf_reader.numPages):
+            print('page_index = %d' % page_index)
+            double_page = pdf_reader.getPage(page_index)
+            image_name = ('page%03d' % page_index)
+            double_image_file_path = extract_pdf_page_main_image(double_page, image_dir=tmp_dir, image_name=image_name)
+            double_png_file_path = "%s.png" % double_image_file_path
+            # convert to png because opencv doesn't handle 1-bit tiff images
+            subprocess.Popen(['convert', double_image_file_path, double_png_file_path]).communicate()
+            # double_image_file_path='/Users/graffy/data/Perso/pymusco/tmp/page177.png'
+            print(double_png_file_path)
+            double_page = cv2.imread(double_png_file_path, cv2.IMREAD_GRAYSCALE)
+            assert double_page is not None
+            x_split_pos = int(double_page.shape[1] * split_pos[page_index % len(split_pos)])
+
+            single_image_file_path = '%s/%s_left.png' % (tmp_dir, image_name)
+            cv2.imwrite(single_image_file_path, double_page[:, :x_split_pos])
+            scanned_image_file_paths.append(single_image_file_path)
+
+            single_image_file_path = '%s/%s_right.png' % (tmp_dir, image_name)
+            cv2.imwrite(single_image_file_path, double_page[:, x_split_pos:])
+            scanned_image_file_paths.append(single_image_file_path)
+
+    images_to_pdf(SimplePdfDescription(image_file_paths=scanned_image_file_paths), dst_scanned_pdf_file_path)
