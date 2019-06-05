@@ -140,7 +140,7 @@ class StubContents(PdfContents):
         current_track_page_number = 0
         current_track_num_pages = 0
         date_as_string = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-        for page_index in range(1, len(self.image_file_paths()) + 1):
+        for page_index in range(1, len(self.image_file_paths) + 1):
 
             if self.toc and len(self.toc.get_labels_for_page(page_index)) > 0:
                 toc = self.toc
@@ -160,10 +160,6 @@ class StubContents(PdfContents):
     @property
     def title(self):
         return self._title
-
-    @property
-    def stamp_desc(self):
-        return self.stamp_desc
 
     def get_page_footers(self):
         return self.page_footers

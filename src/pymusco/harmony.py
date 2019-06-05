@@ -91,9 +91,10 @@ class Harmony(Orchestra):
             Instrument('chimes', player='percussionist', order=11.102),
             Instrument('wind chimes', player='percussionist', order=11.103),
             Instrument('triangle', player='percussionist', order=11.104),
-            Instrument('sleigh bells', player='percussionist', order=11.105),
-            Instrument('cowbell', player='percussionist', order=11.106),
-            Instrument('tubular bells', player='percussionist', order=11.107),
+            Instrument('small triangle', player='percussionist', order=11.105),
+            Instrument('sleigh bells', player='percussionist', order=11.106),
+            Instrument('cowbell', player='percussionist', order=11.107),
+            Instrument('tubular bells', player='percussionist', order=11.108),
 
             Instrument('mallet percussion', player='percussionist', order=11.200),
             Instrument('xylophone', player='percussionist', order=11.201),
