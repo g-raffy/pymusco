@@ -48,7 +48,8 @@ class Instrument(object):
                               'eb baritone saxophone',
                               'c bass trombone',
                               'piano',
-                              'string bass']
+                              'string bass',
+                              'double bass']
         return self.uid in single_instruments
 
 
@@ -266,6 +267,7 @@ class TableOfContents(object):
         for page_index in self.label_to_page.itervalues():
             if page_index > first_page_index:
                 next_section_first_page_index = min(next_section_first_page_index, page_index)
+        # assert next_section_first_page_index <= num_pages, 'next_section_first_page_index = %d, num_pages=%d' % (next_section_first_page_index, num_pages)
         return next_section_first_page_index - 1
     
     def shift_page_indices(self, offset):

@@ -107,15 +107,15 @@ class Harmony(Orchestra):
             Instrument('slide whistle', player='percussionist', order=11.400),
             Instrument('train whistle', player='percussionist', order=11.401),
 
-            Instrument('double bass', player='bassist', order=12.000, is_rare=True),  # other names : Bass, upright bass, string bass, acoustic bass, acoustic string bass, contrabass, contrabass viol, bass viol, standup bass, bull fiddle, doghouse bass and bass fiddle
-            Instrument('bass guitar', player='bassist', order=12.001, is_rare=True),  # other names : Bass, electric bass guitar, electric bass
+            # not set to rare because david the tuba player can use them, so we want one in the print
+            Instrument('double bass', player='bassist', order=12.000),  # other names : Bass, upright bass, string bass, acoustic bass, acoustic string bass, contrabass, contrabass viol, bass viol, standup bass, bull fiddle, doghouse bass and bass fiddle, contrebasse
+            Instrument('bass guitar', player='bassist', order=12.001),  # other names : Bass, electric bass guitar, electric bass
 
             Instrument('electric guitar', player='guitarist', order=12.002, is_rare=True),
 
             Instrument('piano', player='pianist', order=13.000),
             Instrument('synthesizer', player='pianist', order=13.001),
 
-            Instrument('double bass', player='doublebassplayer', order=14.000, is_rare=True),  # contrebasse
 
             Instrument('bb violin', player='violinist', order=15.000, is_rare=True),
             Instrument('bb viola', player='violinist', order=15.001, is_rare=True),
