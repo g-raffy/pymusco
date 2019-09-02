@@ -228,7 +228,7 @@ def get_bookmarks_tree(bookmarks_filename):
 
 class TableOfContents(object):
     
-    def __init__(self, label_to_page):
+    def __init__(self, label_to_page={}):
         """
         :param dict(str, int) label_to_page:
         """
@@ -318,27 +318,107 @@ def rotate_image(image_path, degrees_to_rotate, saved_location):
     rotated_image.save(saved_location)
     # rotated_image.show()
 
-
 def get_stub_tracks(src_stub_file_path):
     """
     :param str src_stub_file_path:
     :return TableOfContents:
     """
+
+    def get_pdf_toc_item_page_complicated(pdf_toc_item, pdf_reader):
+        print('getting page number for table of contents item %s' % pdf_toc_item['/Title'])
+        print('pdf_toc_item : %s' % pdf_toc_item)
+        print('number of pages : ', len(list(pdf_reader.pages))) # Process all the objects.
+        page_indirect_object = pdf_toc_item['/Page']
+        page_indirect_object = pdf_toc_item.get('/Page')  # pdf_toc_item['/Page'] would return a PyPDF2.generic.DictionaryObject instead of PyPDF2.generic.IndirectObject, probably because it would dereference the IndirectObject. 
+
+        #page_indirect_object = pdf_toc_item['/Page']
+        #print('Page : ', page_indirect_object)
+        # {'/Contents': IndirectObject(229, 0), '/Parent': IndirectObject(203, 0), '/Type': '/Page', '/Resources': IndirectObject(227, 0), '/MediaBox': [0, 0, 612, 792]}
+        # print('Page/Contents : ', page_indirect_object['/Contents'])
+        # print('Page/Resources : ', page_indirect_object['/Resources'])
+
+        print(type(page_indirect_object))
+        print('Page : ', page_indirect_object)
+
+        for page_index in [2]:
+            page = pdf_reader.pages[page_index]
+            print('page ', page_index+1, ': ', page)
+            print(type(page))
+            print(type(page["/Contents"]))
+            for k, v in page.iteritems():
+                print(k, v)
+                if k == '/Contents':
+                    contents = v
+                    print(type(contents))
+                    if isinstance(contents, PyPDF2.generic.IndirectObject):
+                        indirect_object = contents
+                        print(indirect_object.idnum)
+
+            # contents = page['/Contents']
+            #contents = page.getContents()  # ['/Contents']
+            #print(type(contents), repr(contents))
+            #print(contents)
+            # print('contents : %d\n', contents.idnum)
+            # print('Annots: %d\n' % len(page['/Annots']))
+            # reader.pages[0]: {'/Contents': IndirectObject(196, 0), '/Parent': IndirectObject(203, 0), '/Type': '/Page', '/Resources': IndirectObject(195, 0), '/MediaBox': [0, 0, 612, 792], '/Annots': [IndirectObject(171, 0), IndirectObject(172, 0), IndirectObject(173, 0), IndirectObject(174, 0), IndirectObject(175, 0), IndirectObject(176, 0), IndirectObject(177, 0), IndirectObject(178, 0), IndirectObject(179, 0), IndirectObject(180, 0), IndirectObject(181, 0), IndirectObject(182, 0), IndirectObject(183, 0), IndirectObject(184, 0), IndirectObject(185, 0), IndirectObject(186, 0), IndirectObject(187, 0), IndirectObject(188, 0), IndirectObject(189, 0), IndirectObject(190, 0), IndirectObject(191, 0), IndirectObject(192, 0), IndirectObject(193, 0)]}
+            # reader.pages[2]: {'/Contents': IndirectObject(229, 0), '/Parent': IndirectObject(203, 0), '/Type': '/Page', '/Resources': IndirectObject(227, 0), '/MediaBox': [0, 0, 612, 792]}
+
+            # print('page ', page+1, ' resolved: ', reader.resolvedObjects[page + 1])
+        #for k, v in reader.resolvedObjects.iteritems():
+        #    print(k, v['/Contents'])
+        assert False
+
+    def get_pdf_toc_item_page(pdf_toc_item, pdf_reader):
+        print(pdf_reader)
+        list(pdf_reader.pages)
+        # print(pdf_reader.resolvedObjects)
+        print('getting page number for table of contents item %s' % pdf_toc_item['/Title'])
+        # print('pdf_toc_item : %s' % pdf_toc_item)  # {'/Title': u'c piccolo 1', '/Left': 155.354, '/Type': '/XYZ', '/Top': 669.191, '/Zoom': <PyPDF2.generic.NullObject object at 0x1194f1d50>, '/Page': IndirectObject(228, 0)}
+        # print('number of pages : ', len(list(pdf_reader.pages))) # Process all the objects.
+        # toc_item_page = pdf_toc_item['/Page']
+        toc_item_page_indirect_obj = pdf_toc_item.get('/Page')  # pdf_toc_item['/Page'] would return a PyPDF2.generic.DictionaryObject instead of PyPDF2.generic.IndirectObject, probably because it would dereference the IndirectObject. 
+        # print('toc_item_page : %s' % toc_item_page_indirect_obj)
+        # print('idnum=%d' % toc_item_page_indirect_obj.idnum)
+        object1 = pdf_reader.resolvedObjects[(0, toc_item_page_indirect_obj.idnum)]
+        # print(type(object1))  # PyPDF2.generic.DictionaryObject
+        # print(object1) # {'/Contents': IndirectObject(229, 0), '/Parent': IndirectObject(203, 0), '/Type': '/Page', '/Resources': IndirectObject(227, 0), '/MediaBox': [0, 0, 612, 792]}
+        page_object_id = object1.get('/Contents').idnum
+        print('looking for page with id %d' % page_object_id)
+        for page_index in range(len(pdf_reader.pages)):
+            page = pdf_reader.pages[page_index]
+            # print('page ', page_index+1, ': ', page)
+            # print('page.getContents() : %s' % page.getContents().getObject())
+            page_indirect_obj = page.get("/Contents")
+            # print('page_indirect_obj : %s' % page_indirect_obj)
+            # print('page_indirect_obj.getObject() : %s' % page_indirect_obj.getObject())
+            
+            if page_indirect_obj.idnum == page_object_id:
+                print('found %s at page %d' % (pdf_toc_item['/Title'], page_index+1))
+                return page_index + 1
+            # assert False
+
+        assert False
+
     with open(src_stub_file_path, 'rb') as stub_file:
         reader = PyPDF2.PdfFileReader(stub_file)
-
         toc = reader.outlines
-        # print(toc)
+        #print(toc)
         """
         [
             {'/Title': u'c piccolo', '/Left': 155.354, '/Type': '/XYZ', '/Top': 669.191, '/Zoom': <PyPDF2.generic.NullObject object at 0x1110b1a90>, '/Page': IndirectObject(29, 0)},
             {'/Title': u'c flute', '/Left': 155.354, '/Type': '/XYZ', '/Top': 669.191, '/Zoom': <PyPDF2.generic.NullObject object at 0x1110b1b10>, '/Page': IndirectObject(47, 0)}
         ]
         """
-        stub_tracks = TableOfContents
-        for toc_item in toc:
-            assert False, 'the implementation of this function is not finished yet'
-            track_page_number = 2  # TODO: find the proper page number
-            stub_tracks.add_toc_item(toc_item['/Title'], track_page_number)
+
+
+        stub_tracks = TableOfContents()
+        for pdf_toc_item in toc:
+
+
+            track_page_number = get_pdf_toc_item_page(pdf_toc_item, reader)
+            # assert False, 'the implementation of this function is not finished yet'
+            instruments = pdf_toc_item['/Title'].split('/')
+            for instrument in instruments:
+                stub_tracks.add_toc_item(instrument, track_page_number)
 
         return(stub_tracks)

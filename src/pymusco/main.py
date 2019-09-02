@@ -330,7 +330,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     images_to_pdf(StubContents(image_file_paths=scanned_image_file_paths, toc=toc, title=title, stamp_desc=stamp_desc), dst_stub_pdf_file_path)
 
 
-def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orchestra, stub_toc=None):
+def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orchestra):
     """
     :param str src_stub_file_path:
     :param str dst_print_file_path:
@@ -339,8 +339,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
     :param dict(str, int) musician_count: gets the number of musicians for each musical intrument family
     :param TableOfContents or None stub_toc: if defined, gets the start page number for each track in the stub
     """
-    if stub_toc is None:
-        stub_toc = get_stub_tracks(src_stub_file_path)
+    stub_toc = get_stub_tracks(src_stub_file_path)
     print(stub_toc)
 
     track_to_print_count = track_selector.get_track_to_copy(stub_toc.get_labels())
