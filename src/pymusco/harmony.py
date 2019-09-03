@@ -85,6 +85,9 @@ class Harmony(Orchestra):
             Instrument('anvil', player='percussionist', order=11.031),
             Instrument('hi-hat cymbals', player='percussionist', order=11.032),
             Instrument('guiro', player='percussionist', order=11.033),
+            Instrument('ocean drum', player='percussionist', order=11.034),
+            Instrument('rainstick', player='percussionist', order=11.035),
+            
 
             Instrument('bells', player='percussionist', order=11.100),  # mallet percussion
             Instrument('bell tree', player='percussionist', order=11.101),
