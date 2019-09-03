@@ -158,6 +158,10 @@ class StubContents(PdfContents):
         return self.image_file_paths
 
     @property
+    def stamp_desc(self):
+        return self._stamp_desc
+
+    @property
     def title(self):
         return self._title
 
@@ -440,5 +444,33 @@ def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, spl
             single_image_file_path = '%s/%s_right.png' % (tmp_dir, image_name)
             cv2.imwrite(single_image_file_path, double_page[:, x_split_pos:])
             scanned_image_file_paths.append(single_image_file_path)
+
+    images_to_pdf(SimplePdfDescription(image_file_paths=scanned_image_file_paths), dst_scanned_pdf_file_path)
+
+
+def crop_pdf(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, x_scale, y_scale):
+    tmp_dir = os.getcwd() + '/tmp'
+    scanned_image_file_paths = []
+    with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
+        pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
+        for page_index in range(pdf_reader.numPages):
+            print('page_index = %d' % page_index)
+            page = pdf_reader.getPage(page_index)
+            image_name = ('page%03d' % page_index)
+            image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=image_name)
+            png_file_path = "%s.png" % image_file_path
+            # convert to png because opencv doesn't handle 1-bit tiff images
+            subprocess.Popen(['convert', image_file_path, png_file_path]).communicate()
+            # double_image_file_path='/Users/graffy/data/Perso/pymusco/tmp/page177.png'
+            print(png_file_path)
+
+            image = cv2.imread(png_file_path, cv2.IMREAD_GRAYSCALE)
+            assert image is not None
+            x_size = int(x_scale * image.shape[1])
+            y_size = int(y_scale * image.shape[0])
+
+            cropped_image_file_path = '%s/%s_cropped.png' % (tmp_dir, image_name)
+            cv2.imwrite(cropped_image_file_path, image[:y_size, :x_size])
+            scanned_image_file_paths.append(cropped_image_file_path)
 
     images_to_pdf(SimplePdfDescription(image_file_paths=scanned_image_file_paths), dst_scanned_pdf_file_path)
