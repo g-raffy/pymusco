@@ -14,6 +14,7 @@ class Harmony(Orchestra):
         instruments = [
             Instrument('c piccolo', player='flutist', order=1.000),
             Instrument('c flute', player='flutist', order=1.001),
+            Instrument('c alto flute', player='flutist', order=1.002, is_rare=True),
             Instrument('oboe', player='oboeist', order=2.000),
             Instrument('english horn', player='oboeist', order=2.001),
             Instrument('bassoon', player='bassoonist', order=3.000),
@@ -33,6 +34,7 @@ class Harmony(Orchestra):
             Instrument('bb trumpet', player='trumpetist', order=6.000),
             Instrument('bb cornet', player='trumpetist', order=6.001),
             Instrument('bb flugelhorn', player='trumpetist', order=6.002),
+            Instrument('c trumpet', player='trumpetist', order=6.003, is_rare=True),
 
             Instrument('f horn', player='hornist', order=7.000),
             Instrument('eb horn', player='hornist', order=7.001, is_rare=True),
@@ -87,7 +89,12 @@ class Harmony(Orchestra):
             Instrument('guiro', player='percussionist', order=11.033),
             Instrument('ocean drum', player='percussionist', order=11.034),
             Instrument('rainstick', player='percussionist', order=11.035),
-            
+            Instrument('bell cymbal', player='percussionist', order=11.036),  # aka bell splash cymbal or ice bell https://en.wikipedia.org/wiki/Bell_cymbal
+            Instrument('finger cymbal tree', player='percussionist', order=11.037),  # string of suspended finger cymbals
+            Instrument('meinl spark shaker', player='percussionist', order=11.038),  # https://www.soundtravels.co.uk/p-Meinl_Spark_Shaker-2824.aspx
+            Instrument('timbales', player='percussionist', order=11.039),  # aka pailas https://en.wikipedia.org/wiki/Timbales
+            Instrument('sizzle cymbal', player='percussionist', order=11.040),  # https://en.wikipedia.org/wiki/Sizzle_cymbal 
+            Instrument('maracas', player='percussionist', order=11.041),
 
             Instrument('bells', player='percussionist', order=11.100),  # mallet percussion
             Instrument('bell tree', player='percussionist', order=11.101),
@@ -98,6 +105,9 @@ class Harmony(Orchestra):
             Instrument('sleigh bells', player='percussionist', order=11.106),
             Instrument('cowbell', player='percussionist', order=11.107),
             Instrument('tubular bells', player='percussionist', order=11.108),
+            Instrument('tibetan bowl', player='percussionist', order=11.109),  # aka standing bell or resting bell https://en.wikipedia.org/wiki/Standing_bell
+            Instrument('mark tree', player='percussionist', order=11.110),  # aka chime tree or bar chimes, https://en.wikipedia.org/wiki/Mark_tree
+            Instrument('bike horn', player='percussionist', order=11.111),
 
             Instrument('mallet percussion', player='percussionist', order=11.200),
             Instrument('xylophone', player='percussionist', order=11.201),
@@ -118,7 +128,9 @@ class Harmony(Orchestra):
 
             Instrument('piano', player='pianist', order=13.000),
             Instrument('synthesizer', player='pianist', order=13.001),
+            Instrument('toy piano', player='pianist', order=13.002),
 
+            Instrument('harp', player='harpist', order=14.000),
 
             Instrument('bb violin', player='violinist', order=15.000, is_rare=True),
             Instrument('bb viola', player='violinist', order=15.001, is_rare=True),
