@@ -244,11 +244,13 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
         page_index = 1
         for scanned_image_file_path in pdf_contents.get_image_file_paths():
             latex_file.write(r'\newpage' + '\n')
+            assert scanned_image_file_path is not None
             latex_file.write(r'\PageBackground{%s}' % scanned_image_file_path + '\n')
 
             if pdf_contents.stamp_desc:
                 stamp_desc = pdf_contents.stamp_desc
                 latex_file.write(r'\begin{tikzpicture}[overlay]' + '\n')
+                assert stamp_desc.file_path is not None
                 latex_file.write(r'\node at (%f,%f) {\includegraphics[scale=%f]{%s}};' % (stamp_desc.tx, stamp_desc.ty, stamp_desc.scale, stamp_desc.file_path) + '\n')
                 latex_file.write(r'\end{tikzpicture}' + '\n')
 
