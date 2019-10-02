@@ -228,10 +228,13 @@ def get_bookmarks_tree(bookmarks_filename):
 
 class TableOfContents(object):
     
-    def __init__(self, label_to_page={}):
+    def __init__(self, label_to_page=None):
         """
-        :param dict(str, int) label_to_page:
+        :param dict(str, int) or None label_to_page:
         """
+        # beware default mutable arguments such as dict, see https://docs.python-guide.org/writing/gotchas/
+        if label_to_page is None:
+            label_to_page = {}
         self.label_to_page = label_to_page
     
     def add_toc_item(self, label, page_index):
@@ -395,6 +398,7 @@ def get_stub_tracks(src_stub_file_path):
         # ]
 
         stub_tracks = TableOfContents()
+        assert len(stub_tracks.get_labels()) == 0
         for pdf_toc_item in pdf_toc:
             track_page_number = get_pdf_toc_item_page(pdf_toc_item, reader)
             # assert False, 'the implementation of this function is not finished yet'
