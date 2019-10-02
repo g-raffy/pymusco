@@ -14,7 +14,7 @@ class Harmony(Orchestra):
         instruments = [
             Instrument('c piccolo', player='flutist', order=1.000),
             Instrument('c flute', player='flutist', order=1.001),
-            Instrument('c alto flute', player='flutist', order=1.002, is_rare=True),
+            Instrument('g alto flute', player='flutist', order=1.002, is_rare=True),
             Instrument('oboe', player='oboeist', order=2.000),
             Instrument('english horn', player='oboeist', order=2.001),
             Instrument('bassoon', player='bassoonist', order=3.000),
