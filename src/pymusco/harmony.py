@@ -75,8 +75,8 @@ class Harmony(Orchestra):
             Instrument('claves', player='percussionist', order=11.018),
             Instrument('vibraslap', player='percussionist', order=11.019),
             Instrument('congas', player='percussionist', order=11.020),
-            Instrument('toms', player='percussionist', order=11.022),
-            Instrument('tam tam', player='percussionist', order=11.023),
+            Instrument('toms', player='percussionist', order=11.022),  # https://en.wikipedia.org/wiki/Tom-tom_drum
+            Instrument('tam-tam', player='percussionist', order=11.023),  # https://en.wikipedia.org/wiki/Gong#Chau_gong_(Tam-tam)
             Instrument('whip', player='percussionist', order=11.024),
             Instrument('slap stick', player='percussionist', order=11.025),
             Instrument('cabasa', player='percussionist', order=11.026),  # aka cabaza
@@ -95,6 +95,8 @@ class Harmony(Orchestra):
             Instrument('timbales', player='percussionist', order=11.039),  # aka pailas https://en.wikipedia.org/wiki/Timbales
             Instrument('sizzle cymbal', player='percussionist', order=11.040),  # https://en.wikipedia.org/wiki/Sizzle_cymbal 
             Instrument('maracas', player='percussionist', order=11.041),
+            Instrument('bodhran', player='percussionist', order=11.042),
+            Instrument('chinese cymbal', player='percussionist', order=11.043),
 
             Instrument('bells', player='percussionist', order=11.100),  # mallet percussion
             Instrument('bell tree', player='percussionist', order=11.101),
@@ -114,6 +116,7 @@ class Harmony(Orchestra):
             Instrument('marimba', player='percussionist', order=11.202),
             Instrument('vibraphone', player='percussionist', order=11.203),  # vibraphone (also known as the vibraharp or simply the vibes)
             Instrument('glockenspiel', player='percussionist', order=11.204),
+            Instrument('mbira', player='percussionist', order=11.205),  # aka kalimba or finger piano https://en.wikipedia.org/wiki/Mbira
 
             Instrument('timpani', player='percussionist', order=11.300),  # timbales
 

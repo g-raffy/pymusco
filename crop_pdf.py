@@ -23,6 +23,7 @@ if __name__ == '__main__':
     x_scale=0.89
     y_scale=x_scale/letter_ratio*a4_ratio
     #pymusco.crop_pdf(src_scanned_pdf_file_path='/Users/graffy/data/Perso/MeltingNotes_work.git/partitions/scans/toto-original-scan.pdf', dst_scanned_pdf_file_path='/Users/graffy/data/Perso/MeltingNotes_work.git/partitions/scans/toto.pdf', x_scale=x_scale, y_scale=y_scale)
-    pymusco.crop_pdf(src_scanned_pdf_file_path='/Users/graffy/data/Perso/MeltingNotes_work.git/partitions/scans/194-atlantis-original-scan.pdf', dst_scanned_pdf_file_path='/Users/graffy/data/Perso/MeltingNotes_work.git/partitions/scans/194-atlantis.pdf', x_scale=x_scale, y_scale=y_scale)
-
+    # pymusco.crop_pdf(src_scanned_pdf_file_path='/Users/graffy/data/Perso/MeltingNotes_work.git/partitions/scans/194-atlantis-original-scan.pdf', dst_scanned_pdf_file_path='/Users/graffy/data/Perso/MeltingNotes_work.git/partitions/scans/194-atlantis.pdf', x_scale=x_scale, y_scale=y_scale)
+    # pymusco.crop_pdf(src_scanned_pdf_file_path='/Users/graffy/data/Perso/MeltingNotes_work.git/partitions/scans/196-serpent-sea-original-scan.pdf', dst_scanned_pdf_file_path='/Users/graffy/data/Perso/MeltingNotes_work.git/partitions/scans/196-serpent-sea.pdf', x_scale=x_scale, y_scale=y_scale)
+    pymusco.crop_pdf(src_scanned_pdf_file_path='/Users/graffy/data/Perso/MeltingNotes_work.git/partitions/scans/196-serpent-sea-conductor-brut.pdf', dst_scanned_pdf_file_path='/Users/graffy/data/Perso/MeltingNotes_work.git/partitions/scans/196-serpent-sea-conductor.pdf', x_scale=x_scale, y_scale=y_scale)
 
