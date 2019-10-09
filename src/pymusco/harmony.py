@@ -67,7 +67,7 @@ class Harmony(Orchestra):
             Instrument('ratchet', player='percussionist', order=11.010),
             Instrument('flexatone', player='percussionist', order=11.011),
             Instrument('temple blocks', player='percussionist', order=11.012),
-            Instrument('wood block', player='percussionist', order=11.013),
+            Instrument('woodblock', player='percussionist', order=11.013),
             Instrument('cymbals', player='percussionist', order=11.014),  # TODO: check if they're not the same as crash cymbals
             Instrument('side drum', player='percussionist', order=11.015),
             Instrument('gong', player='percussionist', order=11.016),
@@ -97,6 +97,9 @@ class Harmony(Orchestra):
             Instrument('maracas', player='percussionist', order=11.041),
             Instrument('bodhran', player='percussionist', order=11.042),
             Instrument('chinese cymbal', player='percussionist', order=11.043),
+            Instrument('sand shaker', player='percussionist', order=11.044),
+            Instrument('medium suspended cymbal', player='percussionist', order=11.045),
+            Instrument('small suspended cymbal', player='percussionist', order=11.046),
 
             Instrument('bells', player='percussionist', order=11.100),  # mallet percussion
             Instrument('bell tree', player='percussionist', order=11.101),
