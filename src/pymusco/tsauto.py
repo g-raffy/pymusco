@@ -37,22 +37,24 @@ class AutoTrackSelector(ITrackSelector):
                 track = Track(track_id, self.orchestra)
                 # print('processing track %s' % track.get_id())
                 # print('track.instrument.get_player() = %s' % track.instrument.get_player())
-                if track.instrument.get_player() == musician_type_id and not track.is_disabled:
-                    # print('this is a track for %s' % musician_type_id)
-                    # print('track.instrument', track.instrument.get_id())
-                    if not track.is_rare:
-                        if musician_type_id == 'percussionist':
-                            # special case : each percussionist wants all tracks
-                            track_to_print_count[track.get_id()] = num_musicians + 1
-                        elif track.instrument.is_single():
-                            # only print twice for tracks such as 'bb bass clarinet' or 'c piccolo', as they're not supposed to be more than one in an orchestra (one fore the player + 1 extra)
-                            print("info: 2 copies for single instrument %s" % track.get_id())
-                            track_to_print_count[track.get_id()] = 2
-                        elif track.is_solo:
-                            print("info: 2 copies for solo instrument %s" % track.get_id())
-                            track_to_print_count[track.get_id()] = 2
-                        else:
-                            playable_tracks.append(track)
+                if not track.is_disabled:
+                    if track.is_solo and track.get_id() not in track_to_print_count:
+                        print("info: 2 copies for solo instrument %s" % track.get_id())
+                        track_to_print_count[track.get_id()] = 2
+
+                    if track.instrument.get_player() == musician_type_id:
+                        # print('this is a track for %s' % musician_type_id)
+                        # print('track.instrument', track.instrument.get_id())
+                        if not track.is_rare:
+                            if musician_type_id == 'percussionist':
+                                # special case : each percussionist wants all tracks
+                                track_to_print_count[track.get_id()] = num_musicians + 1
+                            elif track.instrument.is_single():
+                                # only print twice for tracks such as 'bb bass clarinet' or 'c piccolo', as they're not supposed to be more than one in an orchestra (one fore the player + 1 extra)
+                                print("info: 2 copies for single instrument %s" % track.get_id())
+                                track_to_print_count[track.get_id()] = 2
+                            else:
+                                playable_tracks.append(track)
             if len(playable_tracks) == 0:
                 print("warning: no playable tracks found for player type %s" % musician_type_id)
             else:
