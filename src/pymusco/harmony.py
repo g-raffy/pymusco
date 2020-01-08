@@ -16,7 +16,7 @@ class Harmony(Orchestra):
             Instrument('c flute', player='flutist', order=1.001),
             Instrument('g alto flute', player='flutist', order=1.002, is_rare=True),
             Instrument('oboe', player='oboeist', order=2.000),
-            Instrument('english horn', player='oboeist', order=2.001),
+            Instrument('english horn', player='oboeist', order=2.001),  # F english horn
             Instrument('bassoon', player='bassoonist', order=3.000),
             Instrument('eb clarinet', player='clarinetist', order=4.000),  # aka Eb sopranino clarinet
             Instrument('eb alto clarinet', player='clarinetist', order=4.001, is_rare=True),
@@ -68,14 +68,14 @@ class Harmony(Orchestra):
             Instrument('flexatone', player='percussionist', order=11.011),
             Instrument('temple blocks', player='percussionist', order=11.012),
             Instrument('woodblock', player='percussionist', order=11.013),
-            Instrument('cymbals', player='percussionist', order=11.014),  # TODO: check if they're not the same as crash cymbals
+            Instrument('cymbals', player='percussionist', order=11.014),  # aka piatti https://en.wikipedia.org/wiki/Cymbal TODO: check if they're not the same as crash cymbals
             Instrument('side drum', player='percussionist', order=11.015),
             Instrument('gong', player='percussionist', order=11.016),
             Instrument('castanets', player='percussionist', order=11.017),
             Instrument('claves', player='percussionist', order=11.018),
             Instrument('vibraslap', player='percussionist', order=11.019),
             Instrument('congas', player='percussionist', order=11.020),
-            Instrument('toms', player='percussionist', order=11.022),  # https://en.wikipedia.org/wiki/Tom-tom_drum
+            Instrument('toms', player='percussionist', order=11.022),  # aka tom-toms https://en.wikipedia.org/wiki/Tom-tom_drum
             Instrument('tam-tam', player='percussionist', order=11.023),  # https://en.wikipedia.org/wiki/Gong#Chau_gong_(Tam-tam)
             Instrument('whip', player='percussionist', order=11.024),
             Instrument('slap stick', player='percussionist', order=11.025),
@@ -100,6 +100,12 @@ class Harmony(Orchestra):
             Instrument('sand shaker', player='percussionist', order=11.044),
             Instrument('medium suspended cymbal', player='percussionist', order=11.045),
             Instrument('small suspended cymbal', player='percussionist', order=11.046),
+            Instrument('ptti sosp', player='percussionist', order=11.047),
+            Instrument('chinese gong', player='percussionist', order=11.048),
+            Instrument('field drum', player='percussionist', order=11.049),
+            Instrument('goblet drum', player='percussionist', order=11.050),  # aka dumbek  https://en.wikipedia.org/wiki/Goblet_drum
+            Instrument('egg shaker', player='percussionist', order=11.051),
+            Instrument('tenor drum', player='percussionist', order=11.052),
 
             Instrument('bells', player='percussionist', order=11.100),  # mallet percussion
             Instrument('bell tree', player='percussionist', order=11.101),
@@ -113,6 +119,7 @@ class Harmony(Orchestra):
             Instrument('tibetan bowl', player='percussionist', order=11.109),  # aka standing bell or resting bell https://en.wikipedia.org/wiki/Standing_bell
             Instrument('mark tree', player='percussionist', order=11.110),  # aka chime tree or bar chimes, https://en.wikipedia.org/wiki/Mark_tree
             Instrument('bike horn', player='percussionist', order=11.111),
+            Instrument('glass chimes', player='percussionist', order=11.112),
 
             Instrument('mallet percussion', player='percussionist', order=11.200),
             Instrument('xylophone', player='percussionist', order=11.201),
@@ -120,11 +127,13 @@ class Harmony(Orchestra):
             Instrument('vibraphone', player='percussionist', order=11.203),  # vibraphone (also known as the vibraharp or simply the vibes)
             Instrument('glockenspiel', player='percussionist', order=11.204),
             Instrument('mbira', player='percussionist', order=11.205),  # aka kalimba or finger piano https://en.wikipedia.org/wiki/Mbira
+            Instrument('celesta', player='percussionist', order=11.206),
 
             Instrument('timpani', player='percussionist', order=11.300),  # timbales
 
             Instrument('slide whistle', player='percussionist', order=11.400),
             Instrument('train whistle', player='percussionist', order=11.401),
+            Instrument('acme siren whistle', player='percussionist', order=11.402),
 
             # not set to rare because david the tuba player can use them, so we want one in the print
             Instrument('double bass', player='bassist', order=12.000),  # other names : Bass, upright bass, string bass, acoustic bass, acoustic string bass, contrabass, contrabass viol, bass viol, standup bass, bull fiddle, doghouse bass and bass fiddle, contrebasse
