@@ -433,6 +433,24 @@ def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, spl
             double_png_file_path = "%s.png" % double_image_file_path
             # convert to png because opencv doesn't handle 1-bit tiff images
             subprocess.Popen(['convert', double_image_file_path, double_png_file_path]).communicate()
+            # this command can fail with 
+            # graffy@graffy-ws2:~/private/pymusco$ convert /home/graffy/private/pymusco/tmp/page000.tiff /home/graffy/private/pymusco/tmp/page000.png
+            # convert-im6.q16: DistributedPixelCache '127.0.0.1' @ error/distribute-cache.c/ConnectPixelCacheServer/244.
+            # convert-im6.q16: cache resources exhausted `/home/graffy/private/pymusco/tmp/page000.png' @ error/cache.c/OpenPixelCache/3984.
+            # convert-im6.q16: No IDATs written into file `/home/graffy/private/pymusco/tmp/page000.png' @ error/png.c/MagickPNGErrorHandler/1628.
+            # to fix this I had to change the value of disk from 1GiB to 10GiB in sudo vi /etc/ImageMagick-6/policy.xml (see https://github.com/ImageMagick/ImageMagick/issues/396) so that :
+            # graffy@graffy-ws2:~/private/pymusco$ identify -list resource
+            # Resource limits:
+            #   Width: 16KP
+            #   Height: 16KP
+            #   Area: 128MP
+            #   Memory: 1GiB
+            #   Map: 512MiB
+            #   Disk: 10GiB
+            #   File: 6144
+            #   Thread: 8
+            #   Throttle: 0
+            #   Time: unlimited
             # double_image_file_path='/Users/graffy/data/Perso/pymusco/tmp/page177.png'
             print(double_png_file_path)
             double_page = cv2.imread(double_png_file_path, cv2.IMREAD_GRAYSCALE)
