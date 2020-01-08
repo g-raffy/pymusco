@@ -42,13 +42,13 @@ class AutoTrackSelector(ITrackSelector):
                     if track.is_solo:
                         if track.get_id() not in track_to_print_count:
                             # solos are always wanted even if the orchestra doesn't have its player
-                            print("info: 2 copies for solo instrument %s" % track.get_id())
+                            print("info: 2 copies for solo track %s" % track.get_id())
                             track_to_print_count[track.get_id()] = 2
 
-                    if track.instrument.get_player() == 'bassist':
+                    if track.instrument.is_single:
                         if track.get_id() not in track_to_print_count:
-                            # force adding bass tracks even if there's no bass player in the orchestra because some tuba players can use them
-                            print("info: 2 copies for bass instrument %s" % track.get_id())
+                            # force adding single instrument tracks such as harp or piano even if there's no player in the orchestra because these parts are often played by external musicians
+                            print("info: 2 copies for single instrument %s" % track.get_id())
                             track_to_print_count[track.get_id()] = 2
 
                     if track.instrument.get_player() == musician_type_id:

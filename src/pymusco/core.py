@@ -47,9 +47,11 @@ class Instrument(object):
                               'bb soprano saxophone',
                               'eb baritone saxophone',
                               'c bass trombone',
+                              'harp',
                               'piano',
                               'string bass',
-                              'double bass']
+                              'double bass',
+                              'voice']
         return self.uid in single_instruments
 
 
