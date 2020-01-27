@@ -150,6 +150,9 @@ class Harmony(Orchestra):
             Instrument('bb violin', player='violinist', order=15.000, is_rare=True),
             Instrument('bb viola', player='violinist', order=15.001, is_rare=True),
             Instrument('bb cello', player='violinist', order=15.002, is_rare=True),
+            Instrument('c violin', player='violinist', order=15.010, is_rare=True),
+            Instrument('c viola', player='violinist', order=15.011, is_rare=True),
+            Instrument('c cello', player='violinist', order=15.012, is_rare=True),
 
             Instrument('voice', player='singer', order=1.000, is_rare=True)]
 
