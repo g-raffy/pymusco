@@ -20,10 +20,23 @@ import re
 class Instrument(object):
 
     def __init__(self, uid, player, order, is_rare=False):
+        """ Constructor
+
+        Parameters
+        ----------
+        uid : str
+            unique identifier of a musical instrument, eg 'eb alto clarinet'
+        player : str
+            unique identifier of a musical instrument player, eg 'bassoonist'
+        order : float        
+            value that is used to order instruments
+        is_rare : bool
+            defines if the instrument is rare (so rare its sheet music are never included in the prints)
         """
-        :param str uid: unique identififer of a musical instrument, eg 'eb alto clarinet'
-        :para float order: value that is used to order instruments
-        """
+        assert isinstance(uid, str)
+        assert isinstance(player, str)
+        assert isinstance(order, float)
+        
         self.uid = uid
         self.player = player
         self.order = order
@@ -56,11 +69,29 @@ class Instrument(object):
 
 
 class Orchestra(object):
-    
+    """ Set of known instruments
+    """
     def __init__(self, instruments):
+        """ Constructor
+
+        Parameters
+        ----------
+        instruments : list(Instrument)
+
+        """
+        assert isinstance(instruments, list)
+        for instrument in instruments:
+            assert isinstance(instrument, Instrument)
         self.instruments = instruments
 
     def get_instrument(self, instrument_id):
+        """
+        Parameters
+        ----------
+        instrument_id : str
+            unique identifier of a musical instrument, eg 'eb alto clarinet'
+        """
+        assert isinstance(instrument_id, basestring)
         for instrument in self.instruments:
             if instrument.get_id() == instrument_id:
                 return instrument
@@ -82,6 +113,7 @@ class Track(object):
         :param str track_id: the identifier of a track in the form "bb trombone 2 bc"
         :param Orchestra orchestra:
         """
+        assert isinstance(track_id, basestring)
         self.orchestra = orchestra
         self.instrument = None
         self.voice = None
@@ -118,7 +150,28 @@ class Track(object):
     #    self.intrument = instrument
     #    self.voice_number = voice_number
     #    self.clef = clef
-    
+
+#    def __repr__(self):
+#        return str(self.__dict__)
+
+    def __str__(self):
+        return self.id
+
+    @property
+    def id(self):
+        return self.get_id()
+
+    def __hash__(self):
+        """ for use as dictionary key
+        """
+        return hash(self.get_id())
+
+    def __eq__(self, other):
+        """ for use as dictionary key
+        """
+        return hash(self.get_id()) == hash(other.get_id())
+
+
     def get_id(self):
         """
         :return str: the identifier of this track in the form "bb trombone 2 tc"
@@ -169,107 +222,102 @@ class Track(object):
                 return False
 
 
-def get_bookmarks_tree(bookmarks_filename):
-    """Get bookmarks tree from TEXT-format file
-    Bookmarks tree structure:
-        >>> get_bookmarks_tree('sample_bookmarks.txt')
-        [(u'Foreword', 0, []), (u'Chapter 1: Introduction', 1, [(u'1.1 Python', 1, [(u'1.1.1 Basic syntax', 1, []), (u'1.1.2 Hello world', 2, [])]), (u'1.2 Exercises', 3, [])]), (u'Chapter 2: Conclusion', 4, [])]
-    The above test result may be more readable in the following format:
-        [
-            (u'Foreword', 0, []),
-            (u'Chapter 1: Introduction', 1,
-                [
-                    (u'1.1 Python', 1,
-                        [
-                            (u'1.1.1 Basic syntax', 1, []),
-                            (u'1.1.2 Hello world', 2, [])
-                        ]
-                    ),
-                    (u'1.2 Exercises', 3, [])
-                ]
-            ),
-            (u'Chapter 2: Conclusion', 4, [])
-        ]
-    Thanks Stefan, who share us a perfect solution for Python tree.
-    See http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
-    Since dictionary in Python is unordered, I use list instead now.
-    Also thanks Caicono, who inspiring me that it's not a bad idea to record bookmark titles and page numbers by hand.
-    See here: http://www.caicono.cn/wordpress/2010/01/%E6%80%9D%E8%80%83%E5%85%85%E5%88%86%E5%86%8D%E8%A1%8C%E5%8A%A8-python%E8%AF%95%E6%B0%B4%E8%AE%B0.html
-    And I think it's the only solution for scan version PDFs to be processed automatically.
-    """
-
-    # bookmarks tree
-    tree = []
-
-    # the latest nodes (the old node will be replaced by a new one if they have the same level)
-    #
-    # each item (key, value) in dictionary represents a node
-    # `key`: the level of the node
-    # `value`: the children list of the node
-    latest_nodes = {0: tree}
-
-    prev_level = 0
-    for line in codecs.open(bookmarks_filename, 'r', encoding='utf-8'):
-        res = re.match(r'(\+*)\s*?"([^"]+)"\s*\|\s*(\d+)', line.strip())
-        if res:
-            pluses, title, pagenum = res.groups()
-            cur_level = len(pluses)  # plus count stands for level
-            cur_node = (title, int(pagenum) - 1, [])
-
-            if not (cur_level > 0 and cur_level <= prev_level + 1):
-                raise Exception('plus (+) count is invalid here: %s' % line.strip())
-            else:
-                # append the current node into its parent node (with the level `cur_level` - 1)
-                latest_nodes[cur_level - 1].append(cur_node)
-
-            latest_nodes[cur_level] = cur_node[2]
-            prev_level = cur_level
-
-    return tree
-
-
 class TableOfContents(object):
     
-    def __init__(self, label_to_page=None):
-        """
-        :param dict(str, int) or None label_to_page:
+    def __init__(self, orchestra, track_id_to_page=None):
+        """ Constructor
+
+        Args
+        ----
+
+        orchestra: Orchestra
+            the catalog of all possible instruments
+        track_id_to_page: dict(str, int) or None
+            a dictionary describing the tracks in this table of contents, and their associated page. A given track can only have at most one page while a page can have multiple tracks (typical example is percussion tracks)
         """
         # beware default mutable arguments such as dict, see https://docs.python-guide.org/writing/gotchas/
-        if label_to_page is None:
-            label_to_page = {}
-        self.label_to_page = label_to_page
-    
-    def add_toc_item(self, label, page_index):
+        assert isinstance(orchestra, Orchestra)
+        self.orchestra = orchestra
+        self.track_to_page = {}
+        if track_id_to_page:
+            for track_id, page in track_id_to_page.iteritems():
+                track = Track(track_id, orchestra)
+                self.track_to_page[track] = page
+
+    def __repr__(self):
+        return "{%s}" % ', '.join(["%s: %d" % (str(key), value) for key, value in self.track_to_page.iteritems()])
+
+    def __str__(self):
+        return "[%s]" % ', '.join(['"%s"' % str(key) for key in self.track_to_page.iterkeys()])
+
+    @property
+    def tracks(self):
+        return self.track_to_page.keys()
+
+    def add_toc_item(self, track_id, page_index):
         """
-        :param str label:
+        :param str track_id:
         :param int page_index:
         """
-        self.label_to_page[label] = page_index
+        assert isinstance(track_id, basestring)
+        track = Track(track_id, self.orchestra)
+        self.track_to_page[track] = page_index
     
-    def get_labels(self):
-        return self.label_to_page.keys()
+    def get_track_ids(self):
+        return [ track.id for track in self.track_to_page.keys() ]
     
-    def get_labels_for_page(self, page_index):
-        labels = []
-        for label, page in self.label_to_page.iteritems():
+    def get_tracks_for_page(self, page_index):
+        tracks = []
+        for track, page in self.track_to_page.iteritems():
             if page == page_index:
-                labels.append(label)
-        return labels
+                tracks.append(track)
+        return tracks
     
     def get_tracks_first_page_index(self, tracks):
         """
-        :param str tracks: slash separated tracks
+        Parameters
+        ----------
+
+        tracks : list(Tracks)
+            list of tracks
+
+        Returns
+        -------
+        page_index : int
+            the first page index for the given tracks
         """
-        return self.label_to_page[tracks.split('/')[0]]
+        assert isinstance(tracks, list)
+        assert len(tracks) > 0
+        assert isinstance(tracks[0], Track)
+        first_track = tracks[0]
+        assert first_track in self.track_to_page.keys(), "key '%s' not found in track_to_page dict %s" % (str(first_track), str(self))
+        first_track_page_index = self.track_to_page[first_track]
+        for track in tracks:
+            assert isinstance(track, Track)
+            assert self.track_to_page[track] == first_track_page_index
+        return first_track_page_index
     
     def get_tracks_last_page_index(self, tracks, num_pages):
         """
-        :param str tracks: slash separated tracks
+        Parameters
+        ----------
+
+        tracks : list(Tracks)
+            list of tracks
+
+        Returns
+        -------
+        page_index : int
+            the last page index for the given tracks
         """
+        assert len(tracks) > 0
+        for track in tracks:
+            assert isinstance(track, Track)
+
         first_page_index = self.get_tracks_first_page_index(tracks)
         
         next_section_first_page_index = num_pages + 1
-        for page_index in self.label_to_page.itervalues():
+        for page_index in self.track_to_page.itervalues():
             if page_index > first_page_index:
                 next_section_first_page_index = min(next_section_first_page_index, page_index)
         # assert next_section_first_page_index <= num_pages, 'next_section_first_page_index = %d, num_pages=%d' % (next_section_first_page_index, num_pages)
@@ -281,8 +329,8 @@ class TableOfContents(object):
         
         useful to adjust page numbers when a page is inserted or deleted
         """
-        for label in self.label_to_page.iterkeys():
-            self.label_to_page[label] += offset
+        for track in self.track_to_page.iterkeys():
+            self.track_to_page[track] += offset
 
     # def copy(self, page_number_offset=0 ):
     #    toc = TableOfContents()
@@ -324,11 +372,19 @@ def rotate_image(image_path, degrees_to_rotate, saved_location):
     # rotated_image.show()
 
 
-def get_stub_tracks(src_stub_file_path):
+def get_stub_tracks(src_stub_file_path, orchestra):
     """reads and returns the table of contents of the given stub pdf file.
 
-    :param str src_stub_file_path:
-    :return TableOfContents:
+    Parameters
+    ----------
+    src_stub_file_path : str
+        the path to the input pdf stub file we want to extract the table of contents from
+    orchestra : Orchestra
+        the set of allowed instruments in the stub
+
+    Returns
+    -------
+    table_of_contents : TableOfContents
     """
     # note: this function was implemented using trial & error. There must be cleaner and easier ways to do this.
     def find_page_number(page_contents_id, pdf_reader):
@@ -399,13 +455,14 @@ def get_stub_tracks(src_stub_file_path):
         #     {'/Title': u'c flute', '/Left': 155.354, '/Type': '/XYZ', '/Top': 669.191, '/Zoom': <PyPDF2.generic.NullObject object at 0x1110b1b10>, '/Page': IndirectObject(47, 0)}
         # ]
 
-        stub_tracks = TableOfContents()
-        assert len(stub_tracks.get_labels()) == 0
+        stub_tracks = TableOfContents(orchestra)
+        assert len(stub_tracks.get_track_ids()) == 0
         for pdf_toc_item in pdf_toc:
             track_page_number = get_pdf_toc_item_page(pdf_toc_item, reader)
             # assert False, 'the implementation of this function is not finished yet'
-            instruments = pdf_toc_item['/Title'].split('/')
-            for instrument in instruments:
-                stub_tracks.add_toc_item(instrument, track_page_number)
-
+            track_ids = pdf_toc_item['/Title'].split('/')
+            for track_id in track_ids:
+                assert isinstance(track_id, basestring), "unexpected type for track_id (%s)" % type(track_id)
+                stub_tracks.add_toc_item(track_id, track_page_number)
+        assert len(stub_tracks.tracks) > 0, 'no track found in %s' % src_stub_file_path
         return(stub_tracks)

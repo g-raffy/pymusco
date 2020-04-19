@@ -142,15 +142,16 @@ class StubContents(PdfContents):
         date_as_string = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         for page_index in range(1, len(self.image_file_paths) + 1):
 
-            if self.toc and len(self.toc.get_labels_for_page(page_index)) > 0:
-                toc = self.toc
-                current_tracks = '/'.join(toc.get_labels_for_page(page_index))
-                print('current tracks :', current_tracks)
-                current_track_page_number = 1
-                current_track_num_pages = toc.get_tracks_last_page_index(current_tracks, len(self.image_file_paths)) - toc.get_tracks_first_page_index(current_tracks) + 1
-                self.page_to_section[page_index] = current_tracks
+            if self.toc:
+                current_tracks = self.toc.get_tracks_for_page(page_index)
+                if len(current_tracks) > 0:
+                    toc = self.toc
+                    print('current tracks :', [track.id for track in current_tracks])
+                    current_track_page_number = 1
+                    current_track_num_pages = toc.get_tracks_last_page_index(current_tracks, len(self.image_file_paths)) - toc.get_tracks_first_page_index(current_tracks) + 1
+                    self.page_to_section[page_index] = '/'.join([track.id for track in current_tracks])
 
-            self.page_footers[page_index] = r'%s on %s - page %d/%d : %s - page %d/%d' % (self.title, date_as_string, page_index, len(self.image_file_paths), current_tracks, current_track_page_number, current_track_num_pages)
+            self.page_footers[page_index] = r'%s on %s - page %d/%d : %s - page %d/%d' % (self.title, date_as_string, page_index, len(self.image_file_paths), '/'.join([track.id for track in current_tracks]), current_track_page_number, current_track_num_pages)
 
             current_track_page_number += 1
 
@@ -308,9 +309,9 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     :param Orchestra orchestra: the inventory of musical instruments
     :param StampDesc or None stamp_desc: desctiption of the stamp to overlay on each page
     """
-
+    assert len(toc.tracks) > 0
     # check that the track_ids in the toc are known
-    for track_id in toc.get_labels():
+    for track_id in toc.get_track_ids():
         try:
             track = Track(track_id, orchestra)  # @UnusedVariable  pylint: disable=unused-variable
         except KeyError as e:
@@ -345,10 +346,10 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
     :param dict(str, int) musician_count: gets the number of musicians for each musical intrument family
     :param TableOfContents or None stub_toc: if defined, gets the start page number for each track in the stub
     """
-    stub_toc = get_stub_tracks(src_stub_file_path)
+    stub_toc = get_stub_tracks(src_stub_file_path, orchestra)
     print(stub_toc)
 
-    track_to_print_count = track_selector.get_track_to_copy(stub_toc.get_labels())
+    track_to_print_count = track_selector.get_track_to_copy(stub_toc.get_track_ids())
     print(track_to_print_count)
 
     with open(dst_print_file_path, 'wb') as print_file, open(dst_print_file_path.replace('.pdf', '.log'), 'wb') as log_file:
@@ -364,12 +365,12 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
             range_to_tracks = {}
             for track in sorted_tracks:
                 # for track_id, num_copies in track_to_print_count.iteritems().sorted():
-                track_id = track.get_id()
+                # track_id = track.get_id()
                 num_copies = track_to_print_count[track_id]
                 if num_copies > 0:
-                    first_page_index = stub_toc.get_tracks_first_page_index(track_id)
-                    last_page_index = stub_toc.get_tracks_last_page_index(track_id, stub_pdf.getNumPages())
-                    print('adding %d copies of %s (pages %d-%d)' % (num_copies, track_id, first_page_index, last_page_index))
+                    first_page_index = stub_toc.get_tracks_first_page_index([track])
+                    last_page_index = stub_toc.get_tracks_last_page_index([track], stub_pdf.getNumPages())
+                    print('adding %d copies of %s (pages %d-%d)' % (num_copies, track.id, first_page_index, last_page_index))
                     assert first_page_index <= last_page_index
                     assert last_page_index <= stub_pdf.getNumPages()
                     page_range = (first_page_index, last_page_index)
@@ -402,7 +403,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
                         print_pdf.addPage(track_page)
 
             log_file.write("\nunprinted tracks :\n\n")
-            for label in stub_toc.get_labels():
+            for label in stub_toc.get_track_ids():
                 label_is_printed = False
                 for tracks in range_to_tracks.itervalues():
                     for track in tracks:

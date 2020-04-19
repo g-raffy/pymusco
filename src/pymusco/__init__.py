@@ -1,4 +1,6 @@
 from core import Instrument
+from core import Track
+from core import Orchestra
 from core import TableOfContents
 from main import scan_to_stub
 from main import stub_to_print
