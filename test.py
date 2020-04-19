@@ -145,7 +145,7 @@ orchestra = pymusco.Harmony()
 
 track_selector = pymusco.AutoTrackSelector(musician_count, orchestra)
 
-scan_toc = pymusco.TableOfContents({
+scan_toc = pymusco.TableOfContents(orchestra, {
     'c piccolo': 1,
     'c flute': 3,
     'oboe': 5,
