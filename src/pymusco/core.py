@@ -91,7 +91,7 @@ class Orchestra(object):
         instrument_id : str
             unique identifier of a musical instrument, eg 'eb alto clarinet'
         """
-        assert isinstance(instrument_id, basestring)
+        assert isinstance(instrument_id, str)
         for instrument in self.instruments:
             if instrument.get_id() == instrument_id:
                 return instrument
@@ -113,7 +113,7 @@ class Track(object):
         :param str track_id: the identifier of a track in the form "bb trombone 2 bc"
         :param Orchestra orchestra:
         """
-        assert isinstance(track_id, basestring)
+        assert isinstance(track_id, str)
         self.orchestra = orchestra
         self.instrument = None
         self.voice = None
@@ -245,10 +245,10 @@ class TableOfContents(object):
                 self.track_to_page[track] = page
 
     def __repr__(self):
-        return "{%s}" % ', '.join(["%s: %d" % (str(key), value) for key, value in self.track_to_page.iteritems()])
+        return "{%s}" % ', '.join(["%s: %d" % (str(key), value) for key, value in self.track_to_page.items()])
 
     def __str__(self):
-        return "[%s]" % ', '.join(['"%s"' % str(key) for key in self.track_to_page.iterkeys()])
+        return "[%s]" % ', '.join(['"%s"' % str(key) for key in self.track_to_page.keys()])
 
     @property
     def tracks(self):
@@ -259,7 +259,7 @@ class TableOfContents(object):
         :param str track_id:
         :param int page_index:
         """
-        assert isinstance(track_id, basestring)
+        assert isinstance(track_id, str)
         track = Track(track_id, self.orchestra)
         self.track_to_page[track] = page_index
     
@@ -268,7 +268,7 @@ class TableOfContents(object):
     
     def get_tracks_for_page(self, page_index):
         tracks = []
-        for track, page in self.track_to_page.iteritems():
+        for track, page in self.track_to_page.items():
             if page == page_index:
                 tracks.append(track)
         return tracks
@@ -317,7 +317,7 @@ class TableOfContents(object):
         first_page_index = self.get_tracks_first_page_index(tracks)
         
         next_section_first_page_index = num_pages + 1
-        for page_index in self.track_to_page.itervalues():
+        for page_index in self.track_to_page.values():
             if page_index > first_page_index:
                 next_section_first_page_index = min(next_section_first_page_index, page_index)
         # assert next_section_first_page_index <= num_pages, 'next_section_first_page_index = %d, num_pages=%d' % (next_section_first_page_index, num_pages)
@@ -329,7 +329,7 @@ class TableOfContents(object):
         
         useful to adjust page numbers when a page is inserted or deleted
         """
-        for track in self.track_to_page.iterkeys():
+        for track in self.track_to_page.keys():
             self.track_to_page[track] += offset
 
     # def copy(self, page_number_offset=0 ):
@@ -462,7 +462,7 @@ def get_stub_tracks(src_stub_file_path, orchestra):
             # assert False, 'the implementation of this function is not finished yet'
             track_ids = pdf_toc_item['/Title'].split('/')
             for track_id in track_ids:
-                assert isinstance(track_id, basestring), "unexpected type for track_id (%s)" % type(track_id)
+                assert isinstance(track_id, str), "unexpected type for track_id (%s)" % type(track_id)
                 stub_tracks.add_toc_item(track_id, track_page_number)
         assert len(stub_tracks.tracks) > 0, 'no track found in %s' % src_stub_file_path
         return(stub_tracks)

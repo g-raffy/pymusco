@@ -8,15 +8,18 @@ import datetime
 import subprocess
 import hashlib
 import time
-import PyPDF2
+import shutil
+import PyPDF2  # sudo apt-get install python3-pypdf2
+from pathlib import Path
 from .core import Track
 from .pdf import extract_pdf_page_main_image
 from .pdf import extract_pdf_page
 from .core import get_stub_tracks
 from .pdf import check_pdf
-import cv2
-import abc
+from .settings import Settings
 
+import cv2   # sudo apt-get install python3-opencv
+import abc
 
 def md5(fname):
     hash_md5 = hashlib.md5()
@@ -34,23 +37,22 @@ def is_locked(filepath):
     file_object = None
     if os.path.exists(filepath):
         try:
-            print "Trying to open %s." % filepath
+            print("Trying to open %s." % filepath)
             buffer_size = 8
             # Opening file in append mode and read the first 8 characters.
             file_object = open(filepath, 'a', buffer_size)
             if file_object:
-                print "%s is not locked." % filepath
+                print("%s is not locked." % filepath)
                 locked = False
-        except IOError, message:
-            print "File is locked (unable to open in append mode). %s." % \
-                  message
+        except IOError as e:
+            print("File is locked (unable to open in append mode). %s." % e.strerror)
             locked = True
         finally:
             if file_object:
                 file_object.close()
-                print "%s closed." % filepath
+                print("%s closed." % filepath)
     else:
-        print "%s not found." % filepath
+        print("%s not found." % filepath)
     return locked
 
 
@@ -65,14 +67,14 @@ def wait_for_files(filepaths):
         # If the file doesn't exist, wait wait_time seconds and try again
         # until it's found.
         while not os.path.exists(filepath):
-            print "%s hasn't arrived. Waiting %s seconds." % \
-                  (filepath, wait_time)
+            print("%s hasn't arrived. Waiting %s seconds." % \
+                  (filepath, wait_time))
             time.sleep(wait_time)
         # If the file exists but locked, wait wait_time seconds and check
         # again until it's no longer locked by another process.
         while is_locked(filepath):
-            print "%s is currently in use. Waiting %s seconds." % \
-                  (filepath, wait_time)
+            print("%s is currently in use. Waiting %s seconds." % \
+                  (filepath, wait_time))
             time.sleep(wait_time)
 
 
@@ -184,9 +186,10 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
     :param str title: the title
     :param str or None stamp_file_path: the image to overlay on each page
     """
-    tmp_dir = os.getcwd() + '/tmp'
+    assert isinstance(dst_pdf_file_path, Path)
+    tmp_dir = Path(os.getcwd()) / '/tmp'
 
-    latex_file_path = tmp_dir + '/stub.tex'
+    latex_file_path = tmp_dir / 'stub.tex'
     with open(latex_file_path, 'w') as latex_file:
         page_to_footers = pdf_contents.get_page_footers()
         page_to_section = pdf_contents.get_sections()
@@ -283,11 +286,14 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
 
     stub_hash = 0
     if bug1_is_alive:
-        stub_hash = md5(tmp_dir + '/stub.pdf')
+        stub_hash = md5(tmp_dir / 'stub.pdf')
         print("stub hash of %s : %s" % (tmp_dir + '/stub.pdf', str(stub_hash)))
         check_pdf(tmp_dir + '/stub.pdf')
 
-    os.rename(tmp_dir + '/stub.pdf', dst_pdf_file_path)
+    dst_pdf_file_path.parent.mkdir(parents=True, exist_ok=True)
+    # os.rename(tmp_dir / 'stub.pdf', dst_pdf_file_path)
+    #(tmp_dir / 'stub.pdf').replace(dst_pdf_file_path)
+    shutil.move(tmp_dir / 'stub.pdf', dst_pdf_file_path)
     if bug1_is_alive:
         stub_hash_after_move = md5(dst_pdf_file_path)
         print("stub hash of %s : %s" % (dst_pdf_file_path, str(stub_hash_after_move)))
@@ -310,12 +316,14 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     :param StampDesc or None stamp_desc: desctiption of the stamp to overlay on each page
     """
     assert len(toc.tracks) > 0
+    assert isinstance(src_scanned_pdf_file_path, Path)
+    assert isinstance(dst_stub_pdf_file_path, Path)
     # check that the track_ids in the toc are known
     for track_id in toc.get_track_ids():
         try:
             track = Track(track_id, orchestra)  # @UnusedVariable  pylint: disable=unused-variable
-        except KeyError as e:
-            raise Exception("Failed to identify track id '%s'. Either its syntax is incorrect or the related instrument (%s) in not yet registered in the orchestra." % (track_id, e.message))
+        except KeyError as e:  # pylint: disable=unused-variable
+            raise Exception("Failed to identify track id '%s'. Either its syntax is incorrect or the related instrument in not yet registered in the orchestra." % (track_id))
 
     # tmp_dir = tempfile.mkdtemp()
     tmp_dir = os.getcwd() + '/tmp'
@@ -366,7 +374,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
             for track in sorted_tracks:
                 # for track_id, num_copies in track_to_print_count.iteritems().sorted():
                 # track_id = track.get_id()
-                num_copies = track_to_print_count[track_id]
+                num_copies = track_to_print_count[track.id]
                 if num_copies > 0:
                     first_page_index = stub_toc.get_tracks_first_page_index([track])
                     last_page_index = stub_toc.get_tracks_last_page_index([track], stub_pdf.getNumPages())
@@ -380,17 +388,17 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
                             # we don't want to duplicate these shared pages for each track so
                             # we make as many copies as the track that asks for the most
                             range_to_num_copies[page_range] = max(range_to_num_copies[page_range], num_copies)
-                            range_to_tracks[page_range].append(track_id)
+                            range_to_tracks[page_range].append(track.id)
                         else:
                             # here we're in the case of a page that contains 2 non percussion tracks (eg bassoon 1,2)
                             # these must be not be merged, but be treated as 2 separate copies :
                             # if we request 2 copies of bassoon 1 and 2 copies of bassoon 2, we want 4 copies of bassoon 1,2, not 2
                             range_to_num_copies[page_range] += num_copies
-                            range_to_tracks[page_range].append(track_id)
+                            range_to_tracks[page_range].append(track.id)
                     else:
                         ranges.append(page_range)
                         range_to_num_copies[page_range] = num_copies
-                        range_to_tracks[page_range] = [track_id]
+                        range_to_tracks[page_range] = [track.id]
             for page_range in ranges:
                 (first_page_index, last_page_index) = page_range
                 num_copies = range_to_num_copies[page_range]
@@ -405,7 +413,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
             log_file.write("\nunprinted tracks :\n\n")
             for label in stub_toc.get_track_ids():
                 label_is_printed = False
-                for tracks in range_to_tracks.itervalues():
+                for tracks in range_to_tracks.values():
                     for track in tracks:
                         # print(track, label)
                         if track == label:
@@ -495,3 +503,5 @@ def crop_pdf(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, x_scale, y_sc
             scanned_image_file_paths.append(cropped_image_file_path)
 
     images_to_pdf(SimplePdfDescription(image_file_paths=scanned_image_file_paths), dst_scanned_pdf_file_path)
+
+

@@ -1,0 +1,44 @@
+{
+    "format": "pymusco.piece_description.v1",
+    "uid": 174,
+    "title": "le voyage dans la lune",
+    "scan_toc" : {
+        "format": "pymusco.toc.v1",
+        "track_id_to_page": {
+            "c piccolo": 1,
+            "c flute 1": 6,
+            "c flute 2": 12,
+            "oboe": 17,
+            "bassoon 1": 22,
+            "bassoon 2": 26,
+            "bb clarinet 1": 30,
+            "bb clarinet 2": 35,
+            "bb clarinet 3": 40,
+            "bb bass clarinet": 45,
+            "eb alto saxophone 1": 49,
+            "eb alto saxophone 2": 53,
+            "bb tenor saxophone": 57,
+            "eb baritone saxophone": 61,
+            "bb trumpet 1": 65,
+            "bb trumpet 2": 69,
+            "bb trumpet 3": 73,
+            "f horn 1": 77,
+            "f horn 2": 81,
+            "c trombone 1": 85,
+            "c trombone 2": 89,
+            "bb baritone horn tc": 93,  // bb euphonium
+            "c tuba": 97,
+
+            // mallet percussion
+            "glockenspiel": 102,
+            "marimba": 105,
+            "snare drum": 109,  // caisse claire
+            "clash cymbals disabled": 111,  // cymbales (disabled car on préfère la partition combinée cymbale/grosse caisse)
+            "concert bass drum disabled": 113, // grosse caisse (disabled car on préfère la partition combinée cymbale/grosse caisse)
+
+            "timpani": 116,
+            "clash cymbals": 120,  // cymbales
+            "concert bass drum": 120}  // grosse caisse    
+    },
+    "missing_tracks" : {}
+}
