@@ -6,6 +6,7 @@ from pymusco import load_orchestra
 from pymusco import Settings
 from pymusco import load_musician_count
 from pymusco import AutoTrackSelector
+from pymusco import SingleTrackSelector
 from pymusco import stub_to_print
 
 import sys
@@ -29,8 +30,16 @@ if __name__ == '__main__':
 
     build_print_subparser = subparsers.add_parser("build-print", help="builds a print pdf file from a stub pdf of a musical score")
     build_print_subparser.add_argument('--stub-file-path', required=True, help="the location of the input stub file")
-    build_print_subparser.add_argument('--headcount-file-path', required=True, help="the location of the input orchestra headcount file")
     build_print_subparser.add_argument('--print-file-path', required=True, help="the location of the output print file")
+
+    track_selector_parsers = build_print_subparser.add_subparsers(dest='track_selector')
+    ts_auto_parser = track_selector_parsers.add_parser("ts-auto", help="automatically works out what tracks to select based on the user provided musician headcount file")
+    #build_print_subparser.add_('--track-selector', required=True, help="the location of the output print file")
+    ts_auto_parser.add_argument('--headcount-file-path', required=True, help="the location of the input orchestra headcount file")
+
+    ts_single_parser = track_selector_parsers.add_parser("ts-single", help="only the given single track is included in the print")
+    #build_print_subparser.add_('--track-selector', required=True, help="the location of the output print file")
+    ts_single_parser.add_argument('track_id', help="the identifier of the track to put in the print")
 
     try:
         namespace = parser.parse_args()
@@ -56,14 +65,19 @@ if __name__ == '__main__':
     if namespace.command == 'build-print':
 
         try:
-            musician_count = load_musician_count(Path(namespace.headcount_file_path))
-            track_selector = AutoTrackSelector(musician_count, orchestra)
+            track_selector = None
+            if namespace.track_selector == 'ts-auto' :
+                musician_count = load_musician_count(Path(namespace.headcount_file_path))
+                track_selector = AutoTrackSelector(musician_count, orchestra)
+            if namespace.track_selector == 'ts-single' :
+                track_selector = SingleTrackSelector(namespace.track_id, orchestra)
+            assert track_selector is not None
             stub_to_print(src_stub_file_path=Path(namespace.stub_file_path),
                 dst_print_file_path=Path(namespace.print_file_path),
                 track_selector=track_selector,
                 orchestra=orchestra)
         except Exception as e:
             print(RED, str(e), RESET)
-            #sys.exit(1)
+            sys.exit(1)
             raise
 
