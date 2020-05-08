@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# converts a vector pdf into another pdf after applying image processing techniques aimed at faking the effects of a flatbed scanner
+
+function create_random()
+{
+    local strSeedString="$1" # 
+    local fScale="$2"  # the resulting random sumber is between -$fScale and $fScale
+    echo $strSeedString | md5sum | cut -c1-2 | awk --non-decimal-data "\
+        {\
+            irandom=sprintf(\"%d\", \"0x\"\$1); \
+            printf(\"%f\", $fScale/128.0*(irandom-128));\
+        }"
+}
+
+function scanify()
+{
+    local strSrcPdfFilePath="$1" # eg ~/private/pymusco/samples/origpdf/007-captain-future-galaxy-drift-1.pdf
+    local strDstScanPdfFilePath="$2" # eg ~/private/pymusco/samples/scans/007-captain-future-galaxy-drift-1.pdf
+
+    # make sure that imagemagick's convert program is allowed to read and write pdfs (see https://cromwell-intl.com/open-source/pdf-not-authorized.html) :
+    # in /etc/ImageMagick-6/policy.xml, replace
+    #   <policy domain="coder" rights="none" pattern="PDF" />
+    # with
+    #   <policy domain="coder" rights="read|write" pattern="PDF" />
+
+    local strTmpDir='/tmp/scanify'
+    if [ -d "$strTmpDir" ]
+    then
+        rm -R "$strTmpDir"
+    fi
+    mkdir -p "$strTmpDir"
+    local strAddNoiseParams="+noise Gaussian -attenuate 0.1"
+    local strConvertToGrayParams="-set colorspace Gray"
+    local fSlope='0.95'
+    local fOffset='0.0'
+    local strContrastParams="-function Polynomial $fSlope,$fOffset"
+    local iWantedDpi=150
+    local iOverSample=4  # to blur black and white into greyscale
+
+    # digitize vector images into raster images
+    local iSamplingDpi=$(echo | awk "{print($iWantedDpi*$iOverSample)}")
+    echo "iSamplingDpi=$iSamplingDpi"
+    local fScalePercent=$(echo | awk "{print(100.0/$iOverSample)}")
+    echo "fScalePercent=$fScalePercent"
+    convert -define profile:skip=ICC $strConvertToGrayParams -density $iSamplingDpi -alpha off  "$strSrcPdfFilePath" $strTmpDir/page-%d.png
+    # make the pages dirty
+    local strPagePath=''
+    for strPagePath in $strTmpDir/page-*.png
+    do
+        # reduce size to blur black and white into greyscale
+        local strPageName=$(basename $strPagePath | sed s'/\.png$//')
+        echo "processing page $strPageName"
+        convert -scale "${fScalePercent}%" $strContrastParams "$strPagePath" "$strTmpDir/dirty1_${strPageName}.png"
+        #identify "$strTmpDir/dirty1_${strPageName}.png"
+
+        local fAngleInDegrees=$(create_random $strPagePath 1.0)
+        echo "fAngleInDegrees=$fAngleInDegrees"
+        # rotate and crop
+        convert "$strTmpDir/dirty1_${strPageName}.png" \( +clone -background 'rgb(5%,5%,5%)' -rotate $fAngleInDegrees \) -gravity center -compose Src -composite $strConvertToGrayParams "$strTmpDir/dirty2_${strPageName}.png"
+        #identify "$strTmpDir/dirty2_${strPageName}.png"
+
+        # add noise
+        convert  $strConvertToGrayParams $strAddNoiseParams "$strTmpDir/dirty2_${strPageName}.png" "$strTmpDir/dirty3_${strPageName}.jpg"
+        #identify "$strTmpDir/dirty3_${strPageName}.jpg"
+    done
+    # and create a pdf from the dirty pages
+    convert $strTmpDir/dirty3_page-*.jpg "$strDstScanPdfFilePath"
+    rm -R "$strTmpDir"
+}
+
+scanify "$1" "$2"

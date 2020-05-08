@@ -1,0 +1,16 @@
+{
+    "format": "pymusco.piece_description.v1",
+    "uid": 7,
+    "title": "captain future galaxy drift 1",
+    "scan_toc" : {
+        "format": "pymusco.toc.v1",
+        "track_id_to_page": {
+            "bb soprano saxophone": 1,
+            "c violin 1": 2,
+            "c violin 2": 2,
+            "c acoustic guitar": 3,
+            "c electric bass": 5,
+            "drumset": 6}   // snare drum & cymbal
+    },
+    "missing_tracks" : {}
+}
