@@ -8,13 +8,59 @@ import abc
 import PyPDF2
 # from PyPDF2 import PdfFileMerger, PdfFileReader
 from PIL import Image
-
+import json
 
 # from wand.image import Image
 import re
 
 
 # from enum import Enum
+
+
+class InstrumentNotFound(Exception):
+    """This exception means that the given instrument id is not known (it hasn't been registered in the instruments list)
+    """
+
+    def __init__(self, instrument_id):
+        """
+        instrument_id : str
+            an instrument identifier (eg 'c piccolo')
+        """
+        self.instrument_id = instrument_id
+
+    def __str__(self):
+        return "unknown instrument ('%s'). Make sure this instrument has been registered in the instruments catalog." % self.instrument_id
+
+def dict_to_instrument(instrument_as_dict):
+    """
+    Returns
+    -------
+    instrument : Instrument
+        a musical instrument
+    """
+    # assert instrument_as_dict['format'] == 'pymusco.instrument.v1'
+    is_rare = False
+    if 'is_rare' in instrument_as_dict:
+        is_rare = instrument_as_dict['is_rare']
+    instrument = Instrument(uid=instrument_as_dict['uid'], player=instrument_as_dict['player'], order=instrument_as_dict['order'], is_rare=is_rare)
+    return instrument
+
+def instrument_to_dict(instrument):
+    """
+    Parameters
+    ----------
+    instrument : Instrument
+        the instrument
+    """
+    instrument_as_dict = {}
+    # instrument_as_dict['format'] = 'pymusco.instrument.v1'
+    instrument_as_dict['uid'] = instrument.get_id()
+    instrument_as_dict['player'] = instrument.player
+    instrument_as_dict['order'] = instrument.order
+    if instrument.is_rare:
+        instrument_as_dict['is_rare'] = True
+
+    return instrument_as_dict
 
 
 class Instrument(object):
@@ -68,6 +114,36 @@ class Instrument(object):
         return self.uid in single_instruments
 
 
+def dict_to_orchestra(orchestra_as_dict):
+    """
+    Returns
+    -------
+    orchestra : Orchestra
+        an instruments database
+    """
+    assert orchestra_as_dict['format'] == 'pymusco.orchestra.v1'
+    instruments_list = orchestra_as_dict['instruments']
+    instruments = []
+    for instrument_dict in instruments_list:
+        instruments.append(dict_to_instrument(instrument_dict))
+    orchestra = Orchestra(instruments=instruments)
+    return orchestra
+
+def orchestra_to_dict(orchestra):
+    """
+    Parameters
+    ----------
+    orchestra : Orchestra
+        the instruments database
+    """
+    orchestra_as_dict = {}
+    orchestra_as_dict['format'] = 'pymusco.orchestra.v1'
+    instruments_list = []
+    orchestra_as_dict['instruments'] = instruments_list
+    for instrument in orchestra.instruments:
+        instruments_list.append(instrument_to_dict(instrument))
+    return orchestra_as_dict
+
 class Orchestra(object):
     """ Set of known instruments
     """
@@ -90,13 +166,42 @@ class Orchestra(object):
         ----------
         instrument_id : str
             unique identifier of a musical instrument, eg 'eb alto clarinet'
+
+        raises
+        ------
+            InstrumentNotFound
         """
         assert isinstance(instrument_id, str)
         for instrument in self.instruments:
             if instrument.get_id() == instrument_id:
                 return instrument
-        assert False, 'unknown instrument id : %s' % instrument_id
-        return None
+        raise InstrumentNotFound(instrument_id)
+
+
+def load_orchestra(orchestra_file_path):
+    """
+
+    Parameters
+    ----------
+    orchestra_file_path : Path
+        the path to the file describing the set of instruments in the orchestra
+
+    Returns
+    -------
+    ochestra : Orchestra
+    """
+    uncommented_json_contents = ''
+    with open(orchestra_file_path, 'rt') as file:
+
+        for line in file.readlines():
+            uncommented_line = re.sub('//.*$', '', line)
+            # print("line : %s" % line[:-1])
+            # print("uncommented_line : %s" % uncommented_line[:-1])
+            uncommented_json_contents += uncommented_line
+            # exit()
+    # print(uncommented_json_contents)
+    orchestra_as_dict = json.loads(uncommented_json_contents)
+    return dict_to_orchestra(orchestra_as_dict)
 
 
 """

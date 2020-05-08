@@ -2,8 +2,9 @@
 import argparse
 from pathlib import Path
 from pymusco import Piece, load_piece_description
-from pymusco import Harmony
+from pymusco import load_orchestra
 from pymusco import Settings
+import sys
 
 RED   = "\033[1;31m"  
 BLUE  = "\033[1;34m"
@@ -25,7 +26,7 @@ if __name__ == '__main__':
     namespace = parser.parse_args()
     print(namespace)
     settings = Settings()
-    orchestra = Harmony()
+    orchestra = load_orchestra(Path('./samples/harmony.orchestra'))
 
     if namespace.command == 'build-stub':
 
@@ -35,6 +36,8 @@ if __name__ == '__main__':
                 piece = load_piece_description(scan_desc_file_path, orchestra, settings)
                 piece.build_stub()
                 print(BLUE, Path(scan_desc_file_path), RESET)
-            except:
-                print(RED, "failed to process %s" % scan_desc_file_path, RESET)
-                raise
+            except Exception as e:
+                print(RED, "failed to process %s (%s)" % (scan_desc_file_path, str(e)), RESET)
+                sys.exit(1)
+                
+

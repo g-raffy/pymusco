@@ -1,0 +1,151 @@
+{
+    "format": "pymusco.orchestra.v1",
+    "instruments" : [
+        { "uid": "c piccolo", "player": "flutist", "order": 1.000 },
+        { "uid": "c piccolo", "player": "flutist", "order": 1.000 },
+        { "uid": "c flute", "player": "flutist", "order": 1.001 },
+        { "uid": "g alto flute", "player": "flutist", "order": 1.002, "is_rare": true },
+        { "uid": "oboe", "player": "oboeist", "order": 2.000 },
+        { "uid": "english horn", "player": "oboeist", "order": 2.001 },  // F english horn
+        { "uid": "bassoon", "player": "bassoonist", "order": 3.000 },
+        { "uid": "eb clarinet", "player": "clarinetist", "order": 4.000 },  // aka Eb sopranino clarinet
+        { "uid": "eb alto clarinet", "player": "clarinetist", "order": 4.001, "is_rare": true },
+        { "uid": "bb clarinet", "player": "clarinetist", "order": 4.002 },  // aka Bb soprano clarinet, most common clarinet
+        { "uid": "bb bass clarinet", "player": "clarinetist", "order": 4.003 },
+        { "uid": "bb contrabass clarinet", "player": "clarinetist", "order": 4.004, "is_rare": true },
+        { "uid": "eb contrabass clarinet", "player": "clarinetist", "order": 4.005, "is_rare": true },
+
+        { "uid": "bb soprano saxophone", "player": "saxophonist", "order": 5.000 },
+        { "uid": "eb alto saxophone", "player": "saxophonist", "order": 5.001 },
+        { "uid": "bb tenor saxophone", "player": "saxophonist", "order": 5.002 },
+        { "uid": "eb baritone saxophone", "player": "saxophonist", "order": 5.003 },
+        { "uid": "bb bass saxophone", "player": "saxophonist", "order": 5.004, "is_rare": true },
+
+        { "uid": "bb trumpet", "player": "trumpetist", "order": 6.000 },
+        { "uid": "bb cornet", "player": "trumpetist", "order": 6.001 },
+        { "uid": "bb flugelhorn", "player": "trumpetist", "order": 6.002 },
+        { "uid": "c trumpet", "player": "trumpetist", "order": 6.003, "is_rare": true },
+
+        { "uid": "f horn", "player": "hornist", "order": 7.000 },
+        { "uid": "eb horn", "player": "hornist", "order": 7.001, "is_rare": true },
+
+        { "uid": "c trombone", "player": "trombonist", "order": 8.000 },
+        { "uid": "bb trombone", "player": "trombonist", "order": 8.001, "is_rare": true },
+        { "uid": "c bass trombone", "player": "trombonist", "order": 8.002 },
+        { "uid": "bb bass trombone", "player": "trombonist", "order": 8.003 },
+
+        { "uid": "c baritone horn", "player": "euphonist", "order": 9.000 },  // aka "baritone" "euphonium"
+        { "uid": "bb baritone horn", "player": "euphonist", "order": 9.001 },  // aka "baritone" "euphonium"
+
+        { "uid": "c tuba", "player": "tubist", "order": 10.000 },  // actually a f tuba but players read c parts
+        { "uid": "bb contrabass tuba", "player": "bbtubist", "order": 10.001 },
+        { "uid": "c bass", "player": "tubist", "order": 10.002 },
+        { "uid": "bb bass", "player": "bbtubist", "order": 10.003 },
+        { "uid": "eb bass", "player": "tubist", "order": 10.004, "is_rare": true },
+        { "uid": "bb tuba", "player": "tubist", "order": 10.005 },
+        { "uid": "eb tuba", "player": "tubist", "order": 10.006 },
+
+        { "uid": "drum set", "player": "percussionist", "order": 11.001 },
+        { "uid": "clash cymbals", "player": "percussionist", "order": 11.002 },  // aka concert cymbals, cymbales frappees : https://en.wikipedia.org/wiki/Clash_cymbals
+        { "uid": "concert bass drum", "player": "percussionist", "order": 11.003 },
+        { "uid": "suspended cymbal", "player": "percussionist", "order": 11.004 },
+        { "uid": "bongos", "player": "percussionist", "order": 11.005 },
+        { "uid": "shaker", "player": "percussionist", "order": 11.006 },
+        { "uid": "snare drum", "player": "percussionist", "order": 11.007 },
+        { "uid": "tambourine", "player": "percussionist", "order": 11.008 },
+        { "uid": "small crash cymbals", "player": "percussionist", "order": 11.009 },
+        { "uid": "ratchet", "player": "percussionist", "order": 11.010 },
+        { "uid": "flexatone", "player": "percussionist", "order": 11.011 },
+        { "uid": "temple blocks", "player": "percussionist", "order": 11.012 },
+        { "uid": "woodblock", "player": "percussionist", "order": 11.013 },
+        { "uid": "cymbals", "player": "percussionist", "order": 11.014 },  // aka piatti https://en.wikipedia.org/wiki/Cymbal TODO: check if they"re not the same as crash cymbals
+        { "uid": "side drum", "player": "percussionist", "order": 11.015 },
+        { "uid": "gong", "player": "percussionist", "order": 11.016 },
+        { "uid": "castanets", "player": "percussionist", "order": 11.017 },
+        { "uid": "claves", "player": "percussionist", "order": 11.018 },
+        { "uid": "vibraslap", "player": "percussionist", "order": 11.019 },
+        { "uid": "congas", "player": "percussionist", "order": 11.020 },
+        { "uid": "toms", "player": "percussionist", "order": 11.022 },  // aka tom-toms https://en.wikipedia.org/wiki/Tom-tom_drum
+        { "uid": "tam-tam", "player": "percussionist", "order": 11.023 },  // https://en.wikipedia.org/wiki/Gong#Chau_gong_(Tam-tam)
+        { "uid": "whip", "player": "percussionist", "order": 11.024 },
+        { "uid": "slap stick", "player": "percussionist", "order": 11.025 },
+        { "uid": "cabasa", "player": "percussionist", "order": 11.026 },  // aka cabaza
+        { "uid": "crotales", "player": "percussionist", "order": 11.027 },  // https://en.wikipedia.org/wiki/Crotales
+        { "uid": "finger cymbals", "player": "percussionist", "order": 11.028 },  // https://en.wikipedia.org/wiki/Zill (sagattes, sagates, ou zil )
+        { "uid": "rumberas", "player": "percussionist", "order": 11.029 },
+        { "uid": "crash cymbals", "player": "percussionist", "order": 11.030 },
+        { "uid": "anvil", "player": "percussionist", "order": 11.031 },
+        { "uid": "hi-hat cymbals", "player": "percussionist", "order": 11.032 },
+        { "uid": "guiro", "player": "percussionist", "order": 11.033 },
+        { "uid": "ocean drum", "player": "percussionist", "order": 11.034 },
+        { "uid": "rainstick", "player": "percussionist", "order": 11.035 },
+        { "uid": "bell cymbal", "player": "percussionist", "order": 11.036 },  // aka bell splash cymbal or ice bell https://en.wikipedia.org/wiki/Bell_cymbal
+        { "uid": "finger cymbal tree", "player": "percussionist", "order": 11.037 },  // string of suspended finger cymbals
+        { "uid": "meinl spark shaker", "player": "percussionist", "order": 11.038 },  // https://www.soundtravels.co.uk/p-Meinl_Spark_Shaker-2824.aspx
+        { "uid": "timbales", "player": "percussionist", "order": 11.039 },  // aka pailas https://en.wikipedia.org/wiki/Timbales
+        { "uid": "sizzle cymbal", "player": "percussionist", "order": 11.040 },  // https://en.wikipedia.org/wiki/Sizzle_cymbal 
+        { "uid": "maracas", "player": "percussionist", "order": 11.041 },
+        { "uid": "bodhran", "player": "percussionist", "order": 11.042 },
+        { "uid": "chinese cymbal", "player": "percussionist", "order": 11.043 },
+        { "uid": "sand shaker", "player": "percussionist", "order": 11.044 },
+        { "uid": "medium suspended cymbal", "player": "percussionist", "order": 11.045 },
+        { "uid": "small suspended cymbal", "player": "percussionist", "order": 11.046 },
+        { "uid": "ptti sosp", "player": "percussionist", "order": 11.047 },
+        { "uid": "chinese gong", "player": "percussionist", "order": 11.048 },
+        { "uid": "field drum", "player": "percussionist", "order": 11.049 },
+        { "uid": "goblet drum", "player": "percussionist", "order": 11.050 },  // aka dumbek  https://en.wikipedia.org/wiki/Goblet_drum
+        { "uid": "egg shaker", "player": "percussionist", "order": 11.051 },
+        { "uid": "tenor drum", "player": "percussionist", "order": 11.052 },
+
+        { "uid": "bells", "player": "percussionist", "order": 11.100 },  // mallet percussion
+        { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
+        { "uid": "chimes", "player": "percussionist", "order": 11.102 },
+        { "uid": "wind chimes", "player": "percussionist", "order": 11.103 },
+        { "uid": "triangle", "player": "percussionist", "order": 11.104 },
+        { "uid": "small triangle", "player": "percussionist", "order": 11.105 },
+        { "uid": "sleigh bells", "player": "percussionist", "order": 11.106 },
+        { "uid": "cowbell", "player": "percussionist", "order": 11.107 },
+        { "uid": "tubular bells", "player": "percussionist", "order": 11.108 },
+        { "uid": "tibetan bowl", "player": "percussionist", "order": 11.109 },  // aka standing bell or resting bell https://en.wikipedia.org/wiki/Standing_bell
+        { "uid": "mark tree", "player": "percussionist", "order": 11.110 },  // aka chime tree or bar chimes, https://en.wikipedia.org/wiki/Mark_tree
+        { "uid": "bike horn", "player": "percussionist", "order": 11.111 },
+        { "uid": "glass chimes", "player": "percussionist", "order": 11.112 },
+
+        { "uid": "mallet percussion", "player": "percussionist", "order": 11.200 },
+        { "uid": "xylophone", "player": "percussionist", "order": 11.201 },
+        { "uid": "marimba", "player": "percussionist", "order": 11.202 },
+        { "uid": "vibraphone", "player": "percussionist", "order": 11.203 },  // vibraphone (also known as the vibraharp or simply the vibes)
+        { "uid": "glockenspiel", "player": "percussionist", "order": 11.204 },
+        { "uid": "mbira", "player": "percussionist", "order": 11.205 },  // aka kalimba or finger piano https://en.wikipedia.org/wiki/Mbira
+        { "uid": "celesta", "player": "percussionist", "order": 11.206 },
+
+        { "uid": "timpani", "player": "percussionist", "order": 11.300 },  // timbales
+
+        { "uid": "slide whistle", "player": "percussionist", "order": 11.400 },
+        { "uid": "train whistle", "player": "percussionist", "order": 11.401 },
+        { "uid": "acme siren whistle", "player": "percussionist", "order": 11.402 },
+
+            // not set to rare because david the tuba player can use them, so we want one in the print
+        { "uid": "double bass", "player": "bassist", "order": 12.000 },  // other names : Bass, upright bass, string bass, acoustic bass, acoustic string bass, contrabass, contrabass viol, bass viol, standup bass, bull fiddle, doghouse bass and bass fiddle, contrebasse
+        { "uid": "bass guitar", "player": "bassist", "order": 12.001 },  // other names : Bass, electric bass guitar, electric bass
+
+        { "uid": "electric guitar", "player": "guitarist", "order": 12.002, "is_rare": true },
+        { "uid": "c acoustic guitar", "player": "guitarist", "order": 12.003, "is_rare": true },
+
+        { "uid": "piano", "player": "pianist", "order": 13.000 },
+        { "uid": "synthesizer", "player": "pianist", "order": 13.001 },
+        { "uid": "toy piano", "player": "pianist", "order": 13.002 },
+
+        { "uid": "harp", "player": "harpist", "order": 14.000 },
+
+        { "uid": "bb violin", "player": "violinist", "order": 15.000, "is_rare": true },
+        { "uid": "bb viola", "player": "violinist", "order": 15.001, "is_rare": true },
+        { "uid": "bb cello", "player": "violinist", "order": 15.002, "is_rare": true },
+        { "uid": "c violin", "player": "violinist", "order": 15.010, "is_rare": true },
+        { "uid": "c viola", "player": "violinist", "order": 15.011, "is_rare": true },
+        { "uid": "c cello", "player": "violinist", "order": 15.012, "is_rare": true },
+
+        { "uid": "voice", "player": "singer", "order": 1.000, "is_rare": true }
+    ]
+}
+

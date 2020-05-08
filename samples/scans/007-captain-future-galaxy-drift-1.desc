@@ -9,8 +9,8 @@
             "c violin 1": 2,
             "c violin 2": 2,
             "c acoustic guitar": 3,
-            "c electric bass": 5,
-            "drumset": 6}   // snare drum & cymbal
+            "bass guitar": 5,
+            "drum set": 6}   // snare drum & cymbal
     },
     "missing_tracks" : {}
 }
