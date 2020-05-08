@@ -16,7 +16,6 @@ from .pdf import extract_pdf_page_main_image
 from .pdf import extract_pdf_page
 from .core import get_stub_tracks
 from .pdf import check_pdf
-from .settings import Settings
 
 import cv2   # sudo apt-get install python3-opencv
 import abc

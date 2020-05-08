@@ -3,11 +3,12 @@ import argparse
 from pathlib import Path
 from pymusco import Piece, load_piece_description
 from pymusco import load_orchestra
-from pymusco import Settings
 from pymusco import load_musician_count
 from pymusco import AutoTrackSelector
 from pymusco import SingleTrackSelector
+from pymusco import scan_to_stub
 from pymusco import stub_to_print
+from pymusco import StampDesc
 
 import sys
 
@@ -28,7 +29,9 @@ if __name__ == '__main__':
     parser.add_argument('--orchestra-file-path', required=True, help="the location of the orchestra file")
 
     build_stub_subparser = subparsers.add_parser("build-stub", help="builds a stub pdf file from a scanned pdf of a musical score and a desription of its table of contents")
-    build_stub_subparser.add_argument('--scan-desc-file-path', required=True, nargs='+', help="the scan desciption files path")
+    build_stub_subparser.add_argument('--scan-file-path', required=True, help="the location of the input stub file")
+    build_stub_subparser.add_argument('--scan-desc-file-path', required=True, help="the scan desciption files path")
+    build_stub_subparser.add_argument('--stub-file-path', required=True, help="the location of the output stub file")
 
     build_print_subparser = subparsers.add_parser("build-print", help="builds a print pdf file from a stub pdf of a musical score")
     build_print_subparser.add_argument('--stub-file-path', required=True, help="the location of the input stub file")
@@ -36,17 +39,14 @@ if __name__ == '__main__':
 
     track_selector_parsers = build_print_subparser.add_subparsers(dest='track_selector')
     ts_auto_parser = track_selector_parsers.add_parser("ts-auto", help="automatically works out what tracks to select based on the user provided musician headcount file")
-    #build_print_subparser.add_('--track-selector', required=True, help="the location of the output print file")
     ts_auto_parser.add_argument('--headcount-file-path', required=True, help="the location of the input orchestra headcount file")
 
     ts_single_parser = track_selector_parsers.add_parser("ts-single", help="only the given single track is included in the print")
-    #build_print_subparser.add_('--track-selector', required=True, help="the location of the output print file")
     ts_single_parser.add_argument('track_id', help="the identifier of the track to put in the print")
 
     try:
         namespace = parser.parse_args()
         print(namespace)
-        settings = Settings()
         orchestra = load_orchestra(Path(namespace.orchestra_file_path))
     except Exception as e:
         print(RED, str(e), RESET)
@@ -54,15 +54,28 @@ if __name__ == '__main__':
 
     if namespace.command == 'build-stub':
 
-        for scan_desc_file_path in namespace.scan_desc_file_path:
-            print(scan_desc_file_path)
-            try:
-                piece = load_piece_description(scan_desc_file_path, orchestra, settings)
-                print("processing", BLUE, Path(scan_desc_file_path), RESET)
-                piece.build_stub()
-            except Exception as e:
-                print(RED, "failed to process %s (%s)" % (scan_desc_file_path, str(e)), RESET)
-                sys.exit(1)
+        try:
+            scan_desc_file_path = Path(namespace.scan_desc_file_path)
+            piece = load_piece_description(scan_desc_file_path, orchestra)
+            print("processing", BLUE, Path(scan_desc_file_path), RESET)
+            stamp_desc = None
+            if piece.stamp_file_path is not None:
+                stamp_desc = StampDesc(
+                    file_path=piece.stamp_file_path,
+                    scale=0.5,
+                    tx=14.0,
+                    ty=4.0)
+
+            scan_to_stub(
+                src_scanned_pdf_file_path=Path(namespace.scan_file_path),
+                dst_stub_pdf_file_path=Path(namespace.stub_file_path),
+                toc=piece.scan_toc,
+                title=piece.label,
+                orchestra=orchestra,
+                stamp_desc=stamp_desc)
+        except Exception as e:
+            print(RED, "failed to process %s (%s)" % (scan_desc_file_path, str(e)), RESET)
+            sys.exit(1)
 
     if namespace.command == 'build-print':
 

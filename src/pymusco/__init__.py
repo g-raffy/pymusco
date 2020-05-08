@@ -16,5 +16,4 @@ from .tsauto import AutoTrackSelector
 from .tssingle import SingleTrackSelector
 from .pdf import check_pdf
 from .piece import Piece, Pieces, load_piece_description
-from .settings import Settings
 

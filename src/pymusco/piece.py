@@ -37,7 +37,7 @@ def toc_to_dict(toc):
     return toc_as_dict
 
 
-def dict_to_piece(piece_as_dict, orchestra, settings):
+def dict_to_piece(piece_as_dict, orchestra):
     """
     Parameters
     ----------
@@ -51,13 +51,13 @@ def dict_to_piece(piece_as_dict, orchestra, settings):
     missing_tracks = piece_as_dict['missing_tracks']
     stamp_file_path = None
     if 'stamp_path' in piece_as_dict.keys():
-        stamp_file_path = settings.stamps_root + '/' + piece_as_dict['stamp_path']
+        stamp_file_path = piece_as_dict['stamp_path']
 
-    piece = Piece(uid=uid, title=title, orchestra=orchestra, scan_toc=scan_toc, scans_dir=settings.scans_dir, stubs_dir=settings.stubs_dir, prints_dir=settings.prints_dir, missing_tracks=missing_tracks, stamp_file_path=stamp_file_path)
+    piece = Piece(uid=uid, title=title, orchestra=orchestra, scan_toc=scan_toc, missing_tracks=missing_tracks, stamp_file_path=stamp_file_path)
     return piece
 
 
-def piece_to_dict(piece, settings):
+def piece_to_dict(piece):
     """
     Parameters
     ----------
@@ -71,11 +71,11 @@ def piece_to_dict(piece, settings):
     piece_as_dict['scan_toc'] = toc_to_dict(piece.scan_toc)
     piece_as_dict['missing_tracks'] = piece.missing_tracks
     if piece.stamp_file_path:
-        piece_as_dict['stamp_path'] = piece.stamp_file_path.relative_to(settings.stamps_root)
+        piece_as_dict['stamp_path'] = piece.stamp_file_path
     return piece_as_dict
     
 
-def load_piece_description(piece_desc_file_path, orchestra, settings):
+def load_piece_description(piece_desc_file_path, orchestra):
     """
 
     Parameters
@@ -87,9 +87,9 @@ def load_piece_description(piece_desc_file_path, orchestra, settings):
     -------
     scan_description : Piece
     """
-    return dict_to_piece(load_commented_json(piece_desc_file_path), orchestra, settings)
+    return dict_to_piece(load_commented_json(piece_desc_file_path), orchestra)
 
-def save_piece_description(piece, piece_desc_file_path, settings):
+def save_piece_description(piece, piece_desc_file_path):
     """
     Parameters
     ----------
@@ -98,7 +98,7 @@ def save_piece_description(piece, piece_desc_file_path, settings):
     piece_desc_file_path : Path
         the path to the file describing the scanned pdf sheet music
     """
-    piece_as_dict = piece_to_dict(piece, settings)
+    piece_as_dict = piece_to_dict(piece)
     with open(piece_desc_file_path, 'w') as file:
         json.dump(piece_as_dict, file)
 
@@ -112,7 +112,7 @@ class Vector2(object):
 
 class Piece(object):
 
-    def __init__(self, uid, title, orchestra, scan_toc, scans_dir, stubs_dir, prints_dir, missing_tracks={}, stamp_file_path=None):
+    def __init__(self, uid, title, orchestra, scan_toc, missing_tracks={}, stamp_file_path=None):
         """
         Parameters
         ----------
@@ -123,16 +123,10 @@ class Piece(object):
         :param dict(str, str): for each missing track, the reason why it's missing
         """
         assert len(scan_toc.tracks) > 0
-        assert isinstance(scans_dir, Path)
-        assert isinstance(stubs_dir, Path)
-        assert isinstance(prints_dir, Path)
         self.uid = uid  # match.group('uid')
         self.title = title  # match.group('title')
         self.orchestra = orchestra
         self.scan_toc = scan_toc
-        self.scans_dir = scans_dir
-        self.stubs_dir = stubs_dir
-        self.prints_dir = prints_dir
         self.missing_tracks = missing_tracks
         self.stamp_file_path = stamp_file_path
         self.stamp_scale = 0.5
@@ -140,25 +134,6 @@ class Piece(object):
     @property
     def label(self):
         return '%03d-%s' % (self.uid, self.title.replace(' ', '-'))
-
-    def build_stub(self):
-
-        stamp_desc = None
-        if self.stamp_file_path is not None:
-            stamp_desc = StampDesc(
-                file_path=self.stamp_file_path,
-                scale=0.5,
-                tx=14.0,
-                ty=4.0)
-
-        scan_to_stub(
-            src_scanned_pdf_file_path=(self.scans_dir / self.label).with_suffix('.pdf'),
-            dst_stub_pdf_file_path=(self.stubs_dir / self.label).with_suffix('.pdf'),
-            toc=self.scan_toc,
-            title=self.label,
-            orchestra=self.orchestra,
-            stamp_desc=stamp_desc
-        )
 
     # def get_stub_toc(self):
     #     """
@@ -168,35 +143,6 @@ class Piece(object):
     #     num_toc_pages = 1  # TODO: remove hardcoded value
     #     stub_toc.shift_page_indices(num_toc_pages)
     #     return stub_toc
-
-    def build_print(self, track_selector, prints_dir=None):
-        if prints_dir is None:
-            prints_dir = self.prints_dir
-
-        stub_to_print(
-            src_stub_file_path=self.stubs_dir + '/' + self.label + '.pdf',
-            dst_print_file_path=prints_dir + '/' + self.label + '.pdf',
-            track_selector=track_selector,
-            orchestra=self.orchestra)
-
-    def extract_single_track(self, track_id, output_dir=None):
-        """
-        :param str track_id: eg 'bb trumpet 3'
-        """
-        track_selector = SingleTrackSelector(track_id, self.orchestra)
-        if output_dir is None:
-            dst_dir = self.prints_dir
-        else:
-            dst_dir = output_dir
-        stub_to_print(
-            src_stub_file_path=self.stubs_dir + '/' + self.label + '.pdf',
-            dst_print_file_path=dst_dir + '/' + self.label + '.' + track_id + '.pdf',
-            track_selector=track_selector,
-            orchestra=self.orchestra)
-
-    def build_all(self, musician_count):
-        self.build_stub()
-        self.build_print(musician_count)
 
 
 class Pieces(object):
