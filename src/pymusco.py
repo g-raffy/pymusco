@@ -25,6 +25,8 @@ if __name__ == '__main__':
     subparsers.required = True
     subparsers.dest = 'command'
 
+    parser.add_argument('--orchestra-file-path', required=True, help="the location of the orchestra file")
+
     build_stub_subparser = subparsers.add_parser("build-stub", help="builds a stub pdf file from a scanned pdf of a musical score and a desription of its table of contents")
     build_stub_subparser.add_argument('--scan-desc-file-path', required=True, nargs='+', help="the scan desciption files path")
 
@@ -45,7 +47,7 @@ if __name__ == '__main__':
         namespace = parser.parse_args()
         print(namespace)
         settings = Settings()
-        orchestra = load_orchestra(Path('./samples/harmony.orchestra'))
+        orchestra = load_orchestra(Path(namespace.orchestra_file_path))
     except Exception as e:
         print(RED, str(e), RESET)
         sys.exit(1)
