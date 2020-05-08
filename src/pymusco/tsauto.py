@@ -6,6 +6,10 @@ Created on Sep 9, 2018
 
 from .core import ITrackSelector
 from .core import Track
+from .core import load_commented_json
+
+def load_musician_count(musician_count_file_path):
+    return load_commented_json(musician_count_file_path)
 
 
 class AutoTrackSelector(ITrackSelector):
@@ -29,7 +33,7 @@ class AutoTrackSelector(ITrackSelector):
         :return dict(str, int): the number of prints to do for each stub_track
         """
         track_to_print_count = {}
-        for musician_type_id, num_musicians in self.musician_count.iteritems():
+        for musician_type_id, num_musicians in self.musician_count.items():
             print('musician_type_id = %s' % musician_type_id)
             # collect the tracks than can be played by these musicians
             playable_tracks = []

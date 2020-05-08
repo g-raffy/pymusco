@@ -16,6 +16,19 @@ import re
 
 # from enum import Enum
 
+def load_commented_json(commented_json_file_path):
+    uncommented_json_contents = ''
+    with open(commented_json_file_path, 'rt') as file:
+
+        for line in file.readlines():
+            uncommented_line = re.sub('//.*$', '', line)
+            # print("line : %s" % line[:-1])
+            # print("uncommented_line : %s" % uncommented_line[:-1])
+            uncommented_json_contents += uncommented_line
+            # exit()
+    # print(uncommented_json_contents)
+    json_as_dict = json.loads(uncommented_json_contents)
+    return json_as_dict
 
 class InstrumentNotFound(Exception):
     """This exception means that the given instrument id is not known (it hasn't been registered in the instruments list)
@@ -177,7 +190,6 @@ class Orchestra(object):
                 return instrument
         raise InstrumentNotFound(instrument_id)
 
-
 def load_orchestra(orchestra_file_path):
     """
 
@@ -190,18 +202,7 @@ def load_orchestra(orchestra_file_path):
     -------
     ochestra : Orchestra
     """
-    uncommented_json_contents = ''
-    with open(orchestra_file_path, 'rt') as file:
-
-        for line in file.readlines():
-            uncommented_line = re.sub('//.*$', '', line)
-            # print("line : %s" % line[:-1])
-            # print("uncommented_line : %s" % uncommented_line[:-1])
-            uncommented_json_contents += uncommented_line
-            # exit()
-    # print(uncommented_json_contents)
-    orchestra_as_dict = json.loads(uncommented_json_contents)
-    return dict_to_orchestra(orchestra_as_dict)
+    return dict_to_orchestra(load_commented_json(orchestra_file_path))
 
 
 """

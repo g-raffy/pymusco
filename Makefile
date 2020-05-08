@@ -14,7 +14,15 @@ samples/scans/007-captain-future-galaxy-drift-1.pdf: samples/origpdf/007-captain
 .PHONY: clean
 clean:
 	rm $(SCANS)
+	rm samples/stubs/007-captain-future-galaxy-drift-1.pdf
+	rm samples/prints/007-captain-future-galaxy-drift-1.pdf
+
+samples/stubs/007-captain-future-galaxy-drift-1.pdf: samples/scans/007-captain-future-galaxy-drift-1.desc samples/scans/007-captain-future-galaxy-drift-1.pdf samples/harmony.orchestra
+	PYTHONPATH=./src ./src/pymusco.py build-stub --scan-desc-file-path ./samples/scans/007-captain-future-galaxy-drift-1.desc
+
+samples/prints/007-captain-future-galaxy-drift-1.pdf: samples/orchestra.headcount samples/stubs/007-captain-future-galaxy-drift-1.pdf samples/harmony.orchestra
+	PYTHONPATH=./src ./src/pymusco.py build-print --stub-file-path ./samples/stubs/007-captain-future-galaxy-drift-1.pdf --headcount-file-path ./samples/orchestra.headcount --print-file-path ./samples/prints/007-captain-future-galaxy-drift-1.pdf
 
 .PHONY: test
-test:
-	PYTHONPATH=./src ./src/pymusco.py build-stub --scan-desc-file-path ./samples/scans/007-captain-future-galaxy-drift-1.desc
+test: samples/prints/007-captain-future-galaxy-drift-1.pdf
+

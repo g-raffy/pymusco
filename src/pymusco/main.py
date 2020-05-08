@@ -360,13 +360,13 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
     track_to_print_count = track_selector.get_track_to_copy(stub_toc.get_track_ids())
     print(track_to_print_count)
 
-    with open(dst_print_file_path, 'wb') as print_file, open(dst_print_file_path.replace('.pdf', '.log'), 'wb') as log_file:
+    with open(dst_print_file_path, 'wb') as print_file, open(dst_print_file_path.with_suffix('.log'), 'wt') as log_file:
         print_pdf = PyPDF2.PdfFileWriter()
         log_file.write("contents of print file %s :\n\n" % dst_print_file_path)
         with open(src_stub_file_path, 'rb') as stub_file:
             stub_pdf = PyPDF2.PdfFileReader(stub_file)
 
-            sorted_tracks = [Track(track_id, orchestra) for track_id in track_to_print_count.iterkeys()]
+            sorted_tracks = [Track(track_id, orchestra) for track_id in track_to_print_count.keys()]
             sorted_tracks.sort()
             ranges = []
             range_to_num_copies = {}

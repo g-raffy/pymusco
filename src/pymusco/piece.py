@@ -5,6 +5,7 @@ from .main import StampDesc
 from .main import scan_to_stub
 from .main import stub_to_print
 from .core import TableOfContents
+from .core import load_commented_json
 from .tssingle import SingleTrackSelector
 
 def dict_to_toc(toc_as_dict, orchestra):
@@ -86,18 +87,7 @@ def load_piece_description(piece_desc_file_path, orchestra, settings):
     -------
     scan_description : Piece
     """
-    uncommented_json_contents = ''
-    with open(piece_desc_file_path, 'rt') as file:
-
-        for line in file.readlines():
-            uncommented_line = re.sub('//.*$', '', line)
-            # print("line : %s" % line[:-1])
-            # print("uncommented_line : %s" % uncommented_line[:-1])
-            uncommented_json_contents += uncommented_line
-            # exit()
-    # print(uncommented_json_contents)
-    piece_as_dict = json.loads(uncommented_json_contents)
-    return dict_to_piece(piece_as_dict, orchestra, settings)
+    return dict_to_piece(load_commented_json(piece_desc_file_path), orchestra, settings)
 
 def save_piece_description(piece, piece_desc_file_path, settings):
     """
