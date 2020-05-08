@@ -16,6 +16,7 @@ clean:
 	rm $(SCANS)
 	rm samples/stubs/007-captain-future-galaxy-drift-1.pdf
 	rm samples/prints/007-captain-future-galaxy-drift-1.pdf
+	rm samples/prints/007-captain-future-galaxy-drift-1-saxo-soprano.pdf
 
 samples/stubs/007-captain-future-galaxy-drift-1.pdf: samples/scans/007-captain-future-galaxy-drift-1.desc samples/scans/007-captain-future-galaxy-drift-1.pdf samples/harmony.orchestra
 	PYTHONPATH=./src ./src/pymusco.py build-stub --scan-desc-file-path ./samples/scans/007-captain-future-galaxy-drift-1.desc
