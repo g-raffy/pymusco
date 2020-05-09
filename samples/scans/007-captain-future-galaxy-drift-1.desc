@@ -10,6 +10,7 @@
             "ty": 28.2   // position of the center of the stampin cm from bottom of page
         }
     ],
+    "page_info_line_y_pos" : 1.0,  // from bottom of the page, in cm
     "scan_toc" : {
         "format": "pymusco.toc.v1",
         "track_id_to_page": {
@@ -20,5 +21,8 @@
             "bass guitar": 5,
             "drum set": 6}   // snare drum & cymbal
     },
-    "missing_tracks" : {}
+    "missing_tracks" : {
+        "c violin 3": "lost",  // the sheet music for this track is lost
+        "eb horn 1": "couldn_t_bother"  // additional parts for certain countries
+    }
 }
