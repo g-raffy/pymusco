@@ -72,8 +72,11 @@ def dict_to_piece(piece_as_dict, orchestra, piece_desc_file_path):
     if 'stamp_descs' in piece_as_dict.keys():
         for stamp_desc_as_dict in piece_as_dict['stamp_descs']:
             stamp_descs.append(dict_to_stamp_desc(stamp_desc_as_dict, piece_desc_file_path))
+    page_info_line_y_pos = 1.0  # in centimeters, relative to the bottom of the page
+    if 'page_info_line_y_pos' in piece_as_dict.keys():
+        page_info_line_y_pos = piece_as_dict['page_info_line_y_pos']
 
-    piece = Piece(uid=uid, title=title, orchestra=orchestra, scan_toc=scan_toc, missing_tracks=missing_tracks, stamp_descs=stamp_descs)
+    piece = Piece(uid=uid, title=title, orchestra=orchestra, scan_toc=scan_toc, missing_tracks=missing_tracks, stamp_descs=stamp_descs, page_info_line_y_pos=page_info_line_y_pos)
     return piece
 
 
@@ -132,7 +135,7 @@ class Vector2(object):
 
 class Piece(object):
 
-    def __init__(self, uid, title, orchestra, scan_toc, missing_tracks={}, stamp_descs=[]):
+    def __init__(self, uid, title, orchestra, scan_toc, missing_tracks={}, stamp_descs=[], page_info_line_y_pos = 1.0):
         """
         Parameters
         ----------
@@ -142,6 +145,7 @@ class Piece(object):
         :param pymusco.Orchestra orchestra: the inventory of musical instruments
         :param dict(str, str): for each missing track, the reason why it's missing
         :param list(StampDesc): stamp_descs
+        :param float page_info_line_y_pos: y position of the status line relative to the bottom of the page
         """
         assert len(scan_toc.tracks) > 0
         self.uid = uid  # match.group('uid')
@@ -150,6 +154,7 @@ class Piece(object):
         self.scan_toc = scan_toc
         self.missing_tracks = missing_tracks
         self.stamp_descs = stamp_descs
+        self.page_info_line_y_pos = page_info_line_y_pos
         # self.stamp_scale = 0.5
         # self.stamp_pos = Vector2(14.0, 4.0)
     @property

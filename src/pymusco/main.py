@@ -122,7 +122,7 @@ class SimplePdfDescription(PdfContents):
 
 
 class StubContents(PdfContents):
-    def __init__(self, image_file_paths, toc, title, stamp_descs=[]):
+    def __init__(self, image_file_paths, toc, title, stamp_descs=[], page_info_line_y_pos=2.7):
         """
         creates a pdf file from a set of pages (either)
 
@@ -137,6 +137,7 @@ class StubContents(PdfContents):
         self._stamp_descs = stamp_descs
         self.page_footers = {}
         self.page_to_section = {}
+        self.page_info_line_y_pos = page_info_line_y_pos
         current_tracks = None
         current_track_page_number = 0
         current_track_num_pages = 0
@@ -267,7 +268,8 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
                 latex_file.write(r'\null' + '\n')
 
             if page_index in page_to_footers:
-                latex_file.write(r'\begin{textblock*}{20cm}(0.2cm,27cm) % {block width} (coords)' + '\n')
+                text_block_pos_y = 29.7-pdf_contents.page_info_line_y_pos
+                latex_file.write(r'\begin{textblock*}{20cm}(0.2cm,%f cm) %% {block width} (coords)' % text_block_pos_y + '\n')
                 latex_file.write(page_to_footers[page_index] + '\n')
                 latex_file.write(r'\end{textblock*}' + '\n')
 
@@ -304,7 +306,7 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
         check_pdf(dst_pdf_file_path)
 
 
-def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_descs=[]):
+def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_descs=[], page_info_line_y_pos=1.0):
     """
     creates musical score stub from a musical score raw scan :
     - adds a table of contents
@@ -316,7 +318,8 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     :param TableOfContents toc:
     :param str title: musical piece title
     :param Orchestra orchestra: the inventory of musical instruments
-    :param StampDesc or None stamp_desc: desctiption of the stamp to overlay on each page
+    :param list(StampDesc) stamp_descs: description of the stamps to overlay on each page
+    :param float page_info_line_y_pos: y position of the status line relative to the bottom of the page
     """
     assert len(toc.tracks) > 0
     assert isinstance(src_scanned_pdf_file_path, Path)
@@ -345,7 +348,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
             scanned_image_file_paths.append(image_file_path)
             # break
 
-    images_to_pdf(StubContents(image_file_paths=scanned_image_file_paths, toc=toc, title=title, stamp_descs=stamp_descs), dst_stub_pdf_file_path)
+    images_to_pdf(StubContents(image_file_paths=scanned_image_file_paths, toc=toc, title=title, stamp_descs=stamp_descs, page_info_line_y_pos=page_info_line_y_pos), dst_stub_pdf_file_path)
 
 
 def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orchestra):

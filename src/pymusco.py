@@ -66,7 +66,8 @@ if __name__ == '__main__':
                 toc=piece.scan_toc,
                 title=piece.label,
                 orchestra=orchestra,
-                stamp_descs=piece.stamp_descs)
+                stamp_descs=piece.stamp_descs,
+                page_info_line_y_pos=piece.page_info_line_y_pos)
         except Exception as e:
             print(RED, "failed to process %s (%s)" % (scan_desc_file_path, str(e)), RESET)
             sys.exit(1)
