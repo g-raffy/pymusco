@@ -1,5 +1,7 @@
 ![musco-logo](./logo.svg)
 
+![Python application](https://github.com/g-raffy/pymusco/workflows/Python%20application/badge.svg)
+
 # pymusco
 
 a python library to ease creation of digitised orchestral musical scores  
