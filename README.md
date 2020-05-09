@@ -1,4 +1,7 @@
+![musco-logo](./logo.svg)
+
 # pymusco
+
 a python library to ease creation of digitised orchestral musical scores  
 
 A stub is a pdf file which contains a single sheet music for each instrument, but unlike the scan, also contains a table of contents.

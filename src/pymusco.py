@@ -51,6 +51,7 @@ if __name__ == '__main__':
     except Exception as e:
         print(RED, str(e), RESET)
         sys.exit(1)
+        #raise
 
     if namespace.command == 'build-stub':
 
@@ -58,13 +59,6 @@ if __name__ == '__main__':
             scan_desc_file_path = Path(namespace.scan_desc_file_path)
             piece = load_piece_description(scan_desc_file_path, orchestra)
             print("processing", BLUE, Path(scan_desc_file_path), RESET)
-            stamp_desc = None
-            if piece.stamp_file_path is not None:
-                stamp_desc = StampDesc(
-                    file_path=piece.stamp_file_path,
-                    scale=0.5,
-                    tx=14.0,
-                    ty=4.0)
 
             scan_to_stub(
                 src_scanned_pdf_file_path=Path(namespace.scan_file_path),
@@ -72,10 +66,11 @@ if __name__ == '__main__':
                 toc=piece.scan_toc,
                 title=piece.label,
                 orchestra=orchestra,
-                stamp_desc=stamp_desc)
+                stamp_descs=piece.stamp_descs)
         except Exception as e:
             print(RED, "failed to process %s (%s)" % (scan_desc_file_path, str(e)), RESET)
             sys.exit(1)
+            #raise
 
     if namespace.command == 'build-print':
 
@@ -94,5 +89,5 @@ if __name__ == '__main__':
         except Exception as e:
             print(RED, str(e), RESET)
             sys.exit(1)
-            raise
+            #raise
 

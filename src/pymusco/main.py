@@ -122,19 +122,19 @@ class SimplePdfDescription(PdfContents):
 
 
 class StubContents(PdfContents):
-    def __init__(self, image_file_paths, toc, title, stamp_desc=None):
+    def __init__(self, image_file_paths, toc, title, stamp_descs=[]):
         """
         creates a pdf file from a set of pages (either)
 
         :param list(str) image_file_paths: the file path for each image
         :param TableOfContents or None toc:
         :param str title: the title
-        :param StampDesc or None stamp_desc: the image to overlay on each page
+        :param list(StampDesc) or stamp_descs: the images to overlay on each page
         """
         self.image_file_paths = image_file_paths
         self.toc = toc
         self._title = title
-        self._stamp_desc = stamp_desc
+        self._stamp_descs = stamp_descs
         self.page_footers = {}
         self.page_to_section = {}
         current_tracks = None
@@ -160,8 +160,8 @@ class StubContents(PdfContents):
         return self.image_file_paths
 
     @property
-    def stamp_desc(self):
-        return self._stamp_desc
+    def stamp_descs(self):
+        return self._stamp_descs
 
     @property
     def title(self):
@@ -193,7 +193,11 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
         page_to_footers = pdf_contents.get_page_footers()
         page_to_section = pdf_contents.get_sections()
         has_toc = len(page_to_section) > 0
-        latex_file.write(r'\documentclass{article}' + '\n')
+        latex_file.write(r'\documentclass[a4paper]{article}' + '\n')
+
+
+        # latex_file.write(r'\usepackage[showframe, paperwidth=3.25in,paperheight=2.5in,margin=.5pt ]{geometry}' + '\n')
+        # latex_file.write(r'\usepackage[showframe]{geometry}' + '\n')
 
         latex_file.write(r'% tikz package is used to use scanned images as background' + '\n')
         latex_file.write(r'\usepackage{tikz}' + '\n')
@@ -250,10 +254,10 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
             assert scanned_image_file_path is not None
             latex_file.write(r'\PageBackground{%s}' % scanned_image_file_path + '\n')
 
-            if pdf_contents.stamp_desc:
-                stamp_desc = pdf_contents.stamp_desc
-                latex_file.write(r'\begin{tikzpicture}[overlay]' + '\n')
+            for stamp_desc in pdf_contents.stamp_descs:
                 assert stamp_desc.file_path is not None
+                # shift=(current page.south west) sets the origin at the bottom left of the page
+                latex_file.write(r'\begin{tikzpicture}[remember picture, overlay, shift=(current page.south west)]' + '\n')
                 latex_file.write(r'\node at (%f,%f) {\includegraphics[scale=%f]{%s}};' % (stamp_desc.tx, stamp_desc.ty, stamp_desc.scale, stamp_desc.file_path) + '\n')
                 latex_file.write(r'\end{tikzpicture}' + '\n')
 
@@ -300,7 +304,7 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
         check_pdf(dst_pdf_file_path)
 
 
-def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_desc=None):
+def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_descs=[]):
     """
     creates musical score stub from a musical score raw scan :
     - adds a table of contents
@@ -341,7 +345,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
             scanned_image_file_paths.append(image_file_path)
             # break
 
-    images_to_pdf(StubContents(image_file_paths=scanned_image_file_paths, toc=toc, title=title, stamp_desc=stamp_desc), dst_stub_pdf_file_path)
+    images_to_pdf(StubContents(image_file_paths=scanned_image_file_paths, toc=toc, title=title, stamp_descs=stamp_descs), dst_stub_pdf_file_path)
 
 
 def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orchestra):

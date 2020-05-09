@@ -37,7 +37,26 @@ def toc_to_dict(toc):
     return toc_as_dict
 
 
-def dict_to_piece(piece_as_dict, orchestra):
+def dict_to_stamp_desc(stamp_desc_as_dict, piece_desc_file_path):
+    """
+    """
+    abs_stamp_file_path = None
+    stamp_file_path = Path(stamp_desc_as_dict['stamp_image_path'])
+    allowed_image_suffixes = [ '.pdf', '.png' ]
+    if stamp_file_path.is_absolute():
+        abs_stamp_file_path = stamp_file_path
+    else:
+        abs_stamp_file_path = piece_desc_file_path.parent.resolve() / stamp_file_path
+    if not abs_stamp_file_path.exists():
+        raise Exception("The stamp file '%s' is missing (file not found)." % (abs_stamp_file_path) )
+    if abs_stamp_file_path.suffix not in allowed_image_suffixes:
+        raise Exception("Unsupported image format for stamp '%s' (allowed formats : %s) " % (abs_stamp_file_path, str(allowed_image_suffixes)) )
+    return StampDesc(file_path=abs_stamp_file_path,
+        scale=stamp_desc_as_dict['scale'],
+        tx=stamp_desc_as_dict['tx'],
+        ty=stamp_desc_as_dict['ty'])
+
+def dict_to_piece(piece_as_dict, orchestra, piece_desc_file_path):
     """
     Parameters
     ----------
@@ -49,11 +68,12 @@ def dict_to_piece(piece_as_dict, orchestra):
     title = piece_as_dict['title']
     scan_toc = dict_to_toc(piece_as_dict['scan_toc'], orchestra)
     missing_tracks = piece_as_dict['missing_tracks']
-    stamp_file_path = None
-    if 'stamp_path' in piece_as_dict.keys():
-        stamp_file_path = piece_as_dict['stamp_path']
+    stamp_descs = []
+    if 'stamp_descs' in piece_as_dict.keys():
+        for stamp_desc_as_dict in piece_as_dict['stamp_descs']:
+            stamp_descs.append(dict_to_stamp_desc(stamp_desc_as_dict, piece_desc_file_path))
 
-    piece = Piece(uid=uid, title=title, orchestra=orchestra, scan_toc=scan_toc, missing_tracks=missing_tracks, stamp_file_path=stamp_file_path)
+    piece = Piece(uid=uid, title=title, orchestra=orchestra, scan_toc=scan_toc, missing_tracks=missing_tracks, stamp_descs=stamp_descs)
     return piece
 
 
@@ -87,7 +107,7 @@ def load_piece_description(piece_desc_file_path, orchestra):
     -------
     scan_description : Piece
     """
-    return dict_to_piece(load_commented_json(piece_desc_file_path), orchestra)
+    return dict_to_piece(load_commented_json(piece_desc_file_path), orchestra, piece_desc_file_path)
 
 def save_piece_description(piece, piece_desc_file_path):
     """
@@ -112,7 +132,7 @@ class Vector2(object):
 
 class Piece(object):
 
-    def __init__(self, uid, title, orchestra, scan_toc, missing_tracks={}, stamp_file_path=None):
+    def __init__(self, uid, title, orchestra, scan_toc, missing_tracks={}, stamp_descs=[]):
         """
         Parameters
         ----------
@@ -121,6 +141,7 @@ class Piece(object):
 
         :param pymusco.Orchestra orchestra: the inventory of musical instruments
         :param dict(str, str): for each missing track, the reason why it's missing
+        :param list(StampDesc): stamp_descs
         """
         assert len(scan_toc.tracks) > 0
         self.uid = uid  # match.group('uid')
@@ -128,9 +149,9 @@ class Piece(object):
         self.orchestra = orchestra
         self.scan_toc = scan_toc
         self.missing_tracks = missing_tracks
-        self.stamp_file_path = stamp_file_path
-        self.stamp_scale = 0.5
-        self.stamp_pos = Vector2(14.0, 4.0)
+        self.stamp_descs = stamp_descs
+        # self.stamp_scale = 0.5
+        # self.stamp_pos = Vector2(14.0, 4.0)
     @property
     def label(self):
         return '%03d-%s' % (self.uid, self.title.replace(' ', '-'))
