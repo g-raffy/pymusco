@@ -2,6 +2,14 @@
     "format": "pymusco.piece_description.v1",
     "uid": 7,
     "title": "captain future galaxy drift 1",
+    "stamp_descs": [
+        {
+            "stamp_image_path": "../../logo.pdf",
+            "scale": 0.5,
+            "tx": 19.5,  // position of the center of the stamp in cm from left of page
+            "ty": 28.2   // position of the center of the stampin cm from bottom of page
+        }
+    ],
     "scan_toc" : {
         "format": "pymusco.toc.v1",
         "track_id_to_page": {
