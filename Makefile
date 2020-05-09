@@ -13,10 +13,10 @@ samples/scans/007-captain-future-galaxy-drift-1.pdf: samples/origpdf/007-captain
 
 .PHONY: clean
 clean:
-	rm $(SCANS)
-	rm samples/stubs/007-captain-future-galaxy-drift-1.pdf
-	rm samples/prints/007-captain-future-galaxy-drift-1.pdf
-	rm samples/prints/007-captain-future-galaxy-drift-1-saxo-soprano.pdf
+	rm -f $(SCANS)
+	rm -f samples/stubs/007-captain-future-galaxy-drift-1.pdf
+	rm -f samples/prints/007-captain-future-galaxy-drift-1.pdf
+	rm -f samples/prints/007-captain-future-galaxy-drift-1-saxo-soprano.pdf
 
 samples/stubs/007-captain-future-galaxy-drift-1.pdf: samples/harmony.orchestra samples/scans/007-captain-future-galaxy-drift-1.pdf samples/scans/007-captain-future-galaxy-drift-1.desc  
 	PYTHONPATH=./src ./src/pymusco.py --orchestra-file-path $(word 1,$^) build-stub --scan-file-path $(word 2,$^) --scan-desc-file-path $(word 3,$^) --stub-file-path $@
