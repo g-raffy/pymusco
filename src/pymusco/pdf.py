@@ -259,12 +259,15 @@ def pdf_page_to_png(pdf_page, resolution=72):
     """
     dst_pdf = PyPDF2.PdfFileWriter()
     dst_pdf.addPage(pdf_page)
- 
-    tmp_pdf_file_path = '/tmp/toto.pdf'
+    
+    tmp_dir = Path('/tmp/pymusco')
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+
+    tmp_pdf_file_path = tmp_dir / 'toto.pdf'
     with open(tmp_pdf_file_path, "wb") as tmp_pdf:
         dst_pdf.write(tmp_pdf)
 
-    tmp_png_file_path = '/tmp/toto.png'
+    tmp_png_file_path = tmp_dir / '/toto.png'
     subprocess.check_call(['/opt/local/bin/convert', '-density', '%d' % resolution, tmp_pdf_file_path, tmp_png_file_path])
     image = cv2.imread(tmp_png_file_path)
     print(type(image))

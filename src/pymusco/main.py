@@ -187,7 +187,8 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
     :param str or None stamp_file_path: the image to overlay on each page
     """
     assert isinstance(dst_pdf_file_path, Path)
-    tmp_dir = Path(os.getcwd()) / '/tmp'
+    tmp_dir = Path('/tmp/pymusco')
+    tmp_dir.mkdir(parents=True, exist_ok=True)
 
     latex_file_path = tmp_dir / 'stub.tex'
     with open(latex_file_path, 'w') as latex_file:
@@ -332,7 +333,8 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
             raise Exception("Failed to identify track id '%s'. Either its syntax is incorrect or the related instrument in not yet registered in the orchestra." % (track_id))
 
     # tmp_dir = tempfile.mkdtemp()
-    tmp_dir = os.getcwd() + '/tmp'
+    tmp_dir = Path('/tmp/pymusco')
+    tmp_dir.mkdir(parents=True, exist_ok=True)
 
     scanned_image_file_paths = []
     with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
@@ -436,7 +438,8 @@ def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, spl
     """
     :param list(float) split_pos: where to split the pages (ratio of the width of the double page). If this list contains more than one element, the positions are used sequencially and in a cyclic way
     """
-    tmp_dir = os.getcwd() + '/tmp'
+    tmp_dir = Path('/tmp/pymusco')
+    tmp_dir.mkdir(parents=True, exist_ok=True)
     scanned_image_file_paths = []
     with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
         pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
@@ -484,7 +487,8 @@ def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, spl
 
 
 def crop_pdf(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, x_scale, y_scale):
-    tmp_dir = os.getcwd() + '/tmp'
+    tmp_dir = Path('/tmp/pymusco')
+    tmp_dir.mkdir(parents=True, exist_ok=True)
     scanned_image_file_paths = []
     with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
         pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
