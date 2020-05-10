@@ -35,7 +35,7 @@ function scanify()
     local fOffset='0.0'
     local strContrastParams="-function Polynomial $fSlope,$fOffset"
     local iWantedDpi=150
-    local iOverSample=4  # to blur black and white into greyscale
+    local iOverSample=2  # to blur black and white into greyscale
 
     # digitize vector images into raster images
     local iSamplingDpi=$(echo | awk "{print($iWantedDpi*$iOverSample)}")
