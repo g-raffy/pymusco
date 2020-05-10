@@ -25,9 +25,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Allow imagemagick to generate sample pdf files
+    - name: fix imagemagick's policy to allow to generate sample pdf files
       run: |
+        identify -list policy
         sudo sed -i 's#<policy domain="coder" rights="none" pattern="PDF" />#<policy domain="coder" rights="read|write" pattern="PDF" />#g' /etc/ImageMagick-6/policy.xml
+        sudo sed -i -E 's#<policy domain="resource" name="memory" value="[0-9TGMKiB]+"/>#<policy domain="resource" name="memory" value="1024MiB"/>#g' /etc/ImageMagick-6/policy.xml
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
