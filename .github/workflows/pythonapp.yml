@@ -16,6 +16,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: fix imagemagick's policy to allow to generate sample pdf files
+      run: |
+        identify -version
+        sudo cat /etc/ImageMagick-6/policy.xml
+        identify -list policy || true
+        sudo sed -i 's#<policy domain="coder" rights="none" pattern="PDF" />#<policy domain="coder" rights="read|write" pattern="PDF" />#g' /etc/ImageMagick-6/policy.xml
+        sudo sed -i -E 's#<policy domain="resource" name="memory" value="[0-9TGMKiB]+"/>#<policy domain="resource" name="memory" value="1024MiB"/>#g' /etc/ImageMagick-6/policy.xml
+        identify -list policy || true
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
@@ -25,13 +33,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: fix imagemagick's policy to allow to generate sample pdf files
-      run: |
-        identify -version
-        identify -list policy || true
-        sudo sed -i 's#<policy domain="coder" rights="none" pattern="PDF" />#<policy domain="coder" rights="read|write" pattern="PDF" />#g' /etc/ImageMagick-6/policy.xml
-        sudo sed -i -E 's#<policy domain="resource" name="memory" value="[0-9TGMKiB]+"/>#<policy domain="resource" name="memory" value="1024MiB"/>#g' /etc/ImageMagick-6/policy.xml
-        identify -list policy || true
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
