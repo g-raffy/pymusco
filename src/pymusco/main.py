@@ -355,8 +355,8 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
 
 def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orchestra):
     """
-    :param str src_stub_file_path:
-    :param str dst_print_file_path:
+    :param Path src_stub_file_path:
+    :param Path dst_print_file_path:
     :param ITrackSelector track_selector: the mechanism that computes the number of copies to do for each track
     :param Orchestra orchestra:
     :param dict(str, int) musician_count: gets the number of musicians for each musical intrument family
@@ -367,6 +367,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
 
     track_to_print_count = track_selector.get_track_to_copy(stub_toc.get_track_ids())
     print(track_to_print_count)
+    dst_print_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(dst_print_file_path, 'wb') as print_file, open(dst_print_file_path.with_suffix('.log'), 'wt') as log_file:
         print_pdf = PyPDF2.PdfFileWriter()
