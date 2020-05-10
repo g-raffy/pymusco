@@ -26,11 +26,21 @@ jobs:
         sudo sed -E -i 's#<policy domain="resource" name="disk" value="[0-9TGMKiB]+"/>#<policy domain="resource" name="disk" value="10GiB"/>#g' /etc/ImageMagick-6/policy.xml
         sudo cat /etc/ImageMagick-6/policy.xml
         identify -list policy || true
+    - name: Install dependencies
+      # texlive-latex-base : pdflatex, hyperref
+      # texlive-latex-recommended : setspace
+      # texlive-latex-extra : textpos
+      # texlive-pictures : tikz
+      run: |
+        sudo apt install texlive-latex-base  
+        sudo apt install texlive-latex-recommended  
+        sudo apt install texlive-latex-extra  
+        sudo apt install texlive-pictures  
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
-    - name: Install dependencies
+    - name: Install python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install flake8 pytest
