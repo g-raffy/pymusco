@@ -1,0 +1,22 @@
+{
+    "format": "pymusco.orchestra.v1",
+    "instruments" : [
+        { "uid": "bb soprano saxophone", "player": "saxophonist", "order": 5.000 },
+        { "uid": "eb alto saxophone", "player": "saxophonist", "order": 5.001 },
+        { "uid": "bb tenor saxophone", "player": "saxophonist", "order": 5.002 },
+        { "uid": "eb baritone saxophone", "player": "saxophonist", "order": 5.003 },
+
+        { "uid": "f horn", "player": "hornist", "order": 7.000, "is_rare": true },
+
+        { "uid": "drum set", "player": "percussionist", "order": 11.001 },
+        { "uid": "clash cymbals", "player": "percussionist", "order": 11.002 },  // aka concert cymbals, cymbales frappees : https://en.wikipedia.org/wiki/Clash_cymbals
+        { "uid": "snare drum", "player": "percussionist", "order": 11.007 },
+
+        { "uid": "bass guitar", "player": "bassist", "order": 12.001 },  // other names : Bass, electric bass guitar, electric bass
+
+        { "uid": "electric guitar", "player": "guitarist", "order": 12.002 },
+        { "uid": "c acoustic guitar", "player": "guitarist", "order": 12.003 },
+
+        { "uid": "c violin", "player": "violinist", "order": 15.010}
+    ]
+}

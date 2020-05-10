@@ -49,7 +49,7 @@ class AutoTrackSelector(ITrackSelector):
                             print("info: 2 copies for solo track %s" % track.get_id())
                             track_to_print_count[track.get_id()] = 2
 
-                    if track.instrument.is_single:
+                    if track.instrument.is_single():
                         if track.get_id() not in track_to_print_count:
                             # force adding single instrument tracks such as harp or piano even if there's no player in the orchestra because these parts are often played by external musicians
                             print("info: 2 copies for single instrument %s" % track.get_id())
@@ -71,7 +71,7 @@ class AutoTrackSelector(ITrackSelector):
             if len(playable_tracks) == 0:
                 print("warning: no playable tracks found for player type %s" % musician_type_id)
             else:
-                num_musicians_per_track = num_musicians / len(playable_tracks) + 1
+                num_musicians_per_track = num_musicians // len(playable_tracks) + 1
                 for track in playable_tracks:
                     print("info: %d copies of %s" % (num_musicians_per_track, track.get_id()))
                     track_to_print_count[track.get_id()] = num_musicians_per_track
