@@ -7,6 +7,7 @@ import os
 import shutil
 import sys
 import traceback
+from pathlib import Path
 from .core import rotate_image
 
 """
@@ -182,7 +183,7 @@ def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
         try:
             saved_image_file_path = extract_pdf_stream_image(pdf_stream=pdf_stream, image_dir=image_dir, image_name=image_name)
         except NotImplementedError as e:
-            print("warning : NotImplementedError(%s). Maybe pypdf2 is unable to decode this stream. Falling back to a resampling method." % e.message)
+            print("warning : NotImplementedError(%s). Maybe pypdf2 is unable to decode this stream. Falling back to a resampling method." % str(e))
             image = pdf_page_to_png(pdf_page, resolution=300)
             saved_image_file_path = "%s/%s.png" % (image_dir, image_name)
             cv2.imwrite(saved_image_file_path, image)
