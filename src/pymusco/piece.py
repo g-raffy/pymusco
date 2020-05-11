@@ -67,7 +67,9 @@ def dict_to_piece(piece_as_dict, orchestra, piece_desc_file_path):
     uid = piece_as_dict['uid']
     title = piece_as_dict['title']
     scan_toc = dict_to_toc(piece_as_dict['scan_toc'], orchestra)
-    missing_tracks = piece_as_dict['missing_tracks']
+    missing_tracks = None
+    if 'missing_tracks' in piece_as_dict:
+        missing_tracks = piece_as_dict['missing_tracks']
     stamp_descs = []
     if 'stamp_descs' in piece_as_dict.keys():
         for stamp_desc_as_dict in piece_as_dict['stamp_descs']:
