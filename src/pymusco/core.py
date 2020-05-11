@@ -16,6 +16,16 @@ import re
 
 # from enum import Enum
 
+def dict_raise_on_duplicates(ordered_pairs):
+    """Reject duplicate keys."""
+    d = {}
+    for k, v in ordered_pairs:
+        if k in d:
+           raise ValueError("duplicate key: %r" % (k,))
+        else:
+           d[k] = v
+    return d
+
 def load_commented_json(commented_json_file_path):
     uncommented_json_contents = ''
     with open(commented_json_file_path, 'rt') as file:
@@ -27,7 +37,7 @@ def load_commented_json(commented_json_file_path):
             uncommented_json_contents += uncommented_line
             # exit()
     # print(uncommented_json_contents)
-    json_as_dict = json.loads(uncommented_json_contents)
+    json_as_dict = json.loads(uncommented_json_contents, object_pairs_hook=dict_raise_on_duplicates)
     return json_as_dict
 
 class InstrumentNotFound(Exception):
