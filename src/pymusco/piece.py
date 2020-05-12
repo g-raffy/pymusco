@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 import re
 import json
 from .main import StampDesc
@@ -172,11 +173,96 @@ class Piece(object):
     #     stub_toc.shift_page_indices(num_toc_pages)
     #     return stub_toc
 
+class CatalogPiece(object):
 
-class Pieces(object):
+    def __init__(self, piece, catalog):
+        self.piece = piece
+        self.catalog = catalog
 
-    def __init__(self):
+    @property
+    def uid(self):
+        return self.piece.uid
+
+    def build_stub(self):
+
+        scan_to_stub(
+            src_scanned_pdf_file_path=(self.catalog.scans_dir / self.piece.label).with_suffix('.pdf'),
+            dst_stub_pdf_file_path=(self.catalog.stubs_dir / self.piece.label).with_suffix('.pdf'),
+            toc=self.piece.scan_toc,
+            title=self.piece.label,
+            orchestra=self.catalog.orchestra,
+            stamp_descs=self.piece.stamp_descs
+        )
+
+    # def get_stub_toc(self):
+    #     """
+    #     :return pymusco.TableOfContents:
+    #     """
+    #     stub_toc = copy.deepcopy(self.scan_toc)
+    #     num_toc_pages = 1  # TODO: remove hardcoded value
+    #     stub_toc.shift_page_indices(num_toc_pages)
+    #     return stub_toc
+
+    def build_print(self, track_selector, prints_dir=None):
+        if prints_dir is None:
+            prints_dir = self.catalog.prints_dir
+
+        stub_to_print(
+            src_stub_file_path=self.catalog.stubs_dir / (self.piece.label + '.pdf'),
+            dst_print_file_path=prints_dir / (self.piece.label + '.pdf'),
+            track_selector=track_selector,
+            orchestra=self.catalog.orchestra)
+
+    def extract_single_track(self, track_id, output_dir=None):
+        """
+        :param str track_id: eg 'bb trumpet 3'
+        """
+        track_selector = SingleTrackSelector(track_id, self.catalog.orchestra)
+        if output_dir is None:
+            dst_dir = self.catalog.prints_dir
+        else:
+            dst_dir = output_dir
+        stub_to_print(
+            src_stub_file_path=self.catalog.stubs_dir / (self.piece.label + '.pdf'),
+            dst_print_file_path=dst_dir / (self.piece.label + '.' + track_id + '.pdf'),
+            track_selector=track_selector,
+            orchestra=self.catalog.orchestra)
+
+    def build_all(self, musician_count):
+        self.build_stub()
+        self.build_print(musician_count)
+
+class Catalog(object):
+    """ a collection of pieces that share the same locations, same orchestra, etc...
+    """
+    def __init__(self, piece_desc_dir, scans_dir, stubs_dir, prints_dir, orchestra):
+        """
+        Parammeters
+        -----------
+        piece_desc_dir : Path
+            the directory that contains the piece description files
+        scans_dir : Path
+            the directory that contains the scan pdf files
+        stubs_dir : Path
+            the directory that contains the stub pdf files
+        prints_dir : Path
+            the directory that contains the prints pdf files
+        orchestra : Orchestra
+            the instruments database that this catalog uses
+        """
+        self.piece_desc_dir = piece_desc_dir
+        self.scans_dir = scans_dir
+        self.stubs_dir = stubs_dir
+        self.prints_dir = prints_dir
+        self.orchestra = orchestra
+
         self.pieces = {}
+        for file in os.listdir(self.piece_desc_dir):
+            if file.endswith(".desc"):
+                desc_file_path = self.piece_desc_dir / file
+                piece = load_piece_description(desc_file_path, orchestra)
+                self.add(CatalogPiece(piece, self))
+
 
     def add(self, piece):
         self.pieces[piece.uid] = piece
