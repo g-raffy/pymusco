@@ -7,7 +7,7 @@
             "stamp_image_path": "../../logo.pdf",
             "scale": 0.5,
             "tx": 19.5,  // position of the center of the stamp in cm from left of page
-            "ty": 28.2   // position of the center of the stampin cm from bottom of page
+            "ty": 28.2   // position of the center of the stamp in cm from bottom of page
         }
     ],
     "page_info_line_y_pos" : 1.0,  // from bottom of the page, in cm
