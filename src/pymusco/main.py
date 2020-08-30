@@ -515,4 +515,20 @@ def crop_pdf(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, x_scale, y_sc
 
     images_to_pdf(SimplePdfDescription(image_file_paths=scanned_image_file_paths), dst_scanned_pdf_file_path)
 
+def merge_pdf(dst_pdf_path, src_pdf_paths):
+    """
+
+    """
+    dst_pdf_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(dst_pdf_path, 'wb') as dst_pdf_file:
+        dst_pdf = PyPDF2.PdfFileWriter()
+        for src_pdf_path in src_pdf_paths:
+            with open(src_pdf_path, 'rb') as src_pdf_file:
+                src_pdf = PyPDF2.PdfFileReader(src_pdf_file)
+                for page_index in range(src_pdf.getNumPages()):
+                    src_page = src_pdf.getPage(page_index)
+                    dst_pdf.addPage(src_page)
+                dst_pdf.write(dst_pdf_file)
+
 
