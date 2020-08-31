@@ -515,6 +515,21 @@ def crop_pdf(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, x_scale, y_sc
 
     images_to_pdf(SimplePdfDescription(image_file_paths=scanned_image_file_paths), dst_scanned_pdf_file_path)
 
+def pdf_is_readable_by_pypdf2(src_pdf_path):
+    with open(src_pdf_path, 'rb') as src_pdf_file:
+        try:
+            src_pdf = PyPDF2.PdfFileReader(src_pdf_file)
+            num_pages = src_pdf.getNumPages()
+            return True
+        except NotImplementedError as error:
+            if error.message == "only algorithm code 1 and 2 are supported":
+                return False
+            else:
+                raise error
+        except PyPDF2.utils.PdfReadError as error:
+            return False
+
+
 def merge_pdf(dst_pdf_path, src_pdf_paths):
     """
 
@@ -524,6 +539,12 @@ def merge_pdf(dst_pdf_path, src_pdf_paths):
     with open(dst_pdf_path, 'wb') as dst_pdf_file:
         dst_pdf = PyPDF2.PdfFileWriter()
         for src_pdf_path in src_pdf_paths:
+            print(src_pdf_path)
+            if not pdf_is_readable_by_pypdf2(src_pdf_path):
+                print('warning : %s is not readable by pypdf2... converting it' % src_pdf_path)
+                fixed_pdf_path = '/tmp/readable-by-pypdf2.pdf'
+                remove_unneeded_pdf_password(src_pdf_path, fixed_pdf_path)
+                src_pdf_path = fixed_pdf_path
             with open(src_pdf_path, 'rb') as src_pdf_file:
                 src_pdf = PyPDF2.PdfFileReader(src_pdf_file)
                 for page_index in range(src_pdf.getNumPages()):
@@ -531,4 +552,32 @@ def merge_pdf(dst_pdf_path, src_pdf_paths):
                     dst_pdf.addPage(src_page)
                 dst_pdf.write(dst_pdf_file)
 
+def pdftk_is_available():
+    completed_process = subprocess.run(['pdftk'], stdout=subprocess.PIPE)
+    return completed_process.returncode == 0
 
+def remove_unneeded_pdf_password(src_pdf_path, dst_pdf_path):
+    """
+        Some pdfs have an owner password that is not required to view the file. For example :
+            graffy@graffy-ws2:~/private/melting-notes/partitions/scans$ pdftk ./215-avengers-age-of-ultron/avengers-the-age-of-ultron-main-theme---piccolo.pdf dump_data 
+            WARNING: The creator of the input PDF:
+               ./215-avengers-age-of-ultron/avengers-the-age-of-ultron-main-theme---piccolo.pdf
+               has set an owner password (which is not required to handle this PDF).
+               You did not supply this password. Please respect any copyright.
+
+        This causes pypdf2 to fail retreiving the number of pages :
+            File "/usr/lib/python3/dist-packages/PyPDF2/pdf.py", line 1147, in getNumPages
+                self.decrypt('')
+            File "/usr/lib/python3/dist-packages/PyPDF2/pdf.py", line 1987, in decrypt
+                return self._decrypt(password)
+            File "/usr/lib/python3/dist-packages/PyPDF2/pdf.py", line 1996, in _decrypt
+                raise NotImplementedError("only algorithm code 1 and 2 are supported")
+
+        So, this function intends to simplify this pdf file so that pypdf2 can handle it.
+    """
+    assert pdftk_is_available(), 'the pdftk command is missing. Please install it as it is required.'
+
+    command = ['pdftk', src_pdf_path, 'input_pw', '', 'output', dst_pdf_path]
+    completed_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert completed_process.returncode == 0, "command failed : %s" % command
+    # pdftk ./215-avengers-age-of-ultron/avengers-the-age-of-ultron-main-theme---piccolo.pdf input_pw '' output ~/toto/unsecured.pdf

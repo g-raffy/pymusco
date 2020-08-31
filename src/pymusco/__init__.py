@@ -10,6 +10,7 @@ from .main import stub_to_print
 from .main import split_double_pages
 from .main import crop_pdf
 from .main import merge_pdf
+from .main import remove_unneeded_pdf_password
 from .main import StampDesc
 #from .tesseract import extract_pdf_text
 from .tsauto import load_musician_count
