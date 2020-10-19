@@ -145,10 +145,11 @@ class StubContents(PdfContents):
         for page_index in range(1, len(self.image_file_paths) + 1):
 
             if self.toc:
-                current_tracks = self.toc.get_tracks_for_page(page_index)
-                if len(current_tracks) > 0:
+                page_tracks = self.toc.get_tracks_for_page(page_index)
+                if len(page_tracks) > 0:
                     toc = self.toc
-                    print('current tracks :', [track.id for track in current_tracks])
+                    current_tracks = page_tracks
+                    # print('current tracks :', [track.id for track in current_tracks])
                     current_track_page_number = 1
                     current_track_num_pages = toc.get_tracks_last_page_index(current_tracks, len(self.image_file_paths)) - toc.get_tracks_first_page_index(current_tracks) + 1
                     self.page_to_section[page_index] = '/'.join([track.id for track in current_tracks])
