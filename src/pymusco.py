@@ -50,8 +50,8 @@ if __name__ == '__main__':
         orchestra = load_orchestra(Path(namespace.orchestra_file_path))
     except Exception as e:
         print(RED, str(e), RESET)
-        sys.exit(1)
-        #raise
+        #sys.exit(1)
+        raise
 
     if namespace.command == 'build-stub':
 
@@ -70,8 +70,8 @@ if __name__ == '__main__':
                 page_info_line_y_pos=piece.page_info_line_y_pos)
         except Exception as e:
             print(RED, "failed to process %s (%s)" % (scan_desc_file_path, str(e)), RESET)
-            sys.exit(1)
-            #raise
+            #sys.exit(1)
+            raise
 
     if namespace.command == 'build-print':
 
@@ -89,6 +89,6 @@ if __name__ == '__main__':
                 orchestra=orchestra)
         except Exception as e:
             print(RED, str(e), RESET)
-            sys.exit(1)
-            #raise
+            #sys.exit(1)
+            raise
 
