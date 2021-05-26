@@ -21,6 +21,7 @@ jobs:
         identify -version
         sudo cat /etc/ImageMagick-6/policy.xml
         identify -list policy || true
+        gs --version || true
         sudo sed -E -i 's#<policy domain="coder" rights="none" pattern="PDF" />#<policy domain="coder" rights="read|write" pattern="PDF" />#g' /etc/ImageMagick-6/policy.xml
         sudo sed -E -i 's#<policy domain="resource" name="memory" value="[0-9TGMKiB]+"/>#<policy domain="resource" name="memory" value="2048MiB"/>#g' /etc/ImageMagick-6/policy.xml
         sudo sed -E -i 's#<policy domain="resource" name="disk" value="[0-9TGMKiB]+"/>#<policy domain="resource" name="disk" value="10GiB"/>#g' /etc/ImageMagick-6/policy.xml
