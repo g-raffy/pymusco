@@ -33,6 +33,7 @@ jobs:
       # texlive-latex-extra : textpos
       # texlive-pictures : tikz
       run: |
+        sudo apt install ghostscript
         sudo apt install texlive-latex-base  
         sudo apt install texlive-latex-recommended  
         sudo apt install texlive-latex-extra  
