@@ -100,8 +100,8 @@ class PdfContents(object):
         return None
 
     @property
-    def stamp_desc(self):
-        return None
+    def stamp_descs(self):
+        return []
 
     def get_page_footers(self):
         return {}
