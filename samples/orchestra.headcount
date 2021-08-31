@@ -1,14 +1,17 @@
 {
     "flutist": 10,
-    "clarinetist": 18,  // 11 clar + 2 basse
+    "clarinetist": 11,
+    "bassclarinetist": 2,
     "hornist": 2,
     "oboeist": 2,
     "bassoonist": 1,
-    "saxophonist": 12,  // 6 alto + 4 tenor + 2 baryton
+    "altosaxophonist": 6,
+    "tenorsaxophonist": 4,
+    "baritonesaxophonist": 2,
     "trombonist": 4,
     "trumpetist": 8,
     "euphonist": 3,
     "tubist": 1,
-    "bbtubist": 1,  // david
+    "bbtubist": 1,
     "percussionist": 3
 }

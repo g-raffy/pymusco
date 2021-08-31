@@ -1,8 +1,7 @@
 {
     "format": "pymusco.orchestra.v1",
     "instruments" : [
-        { "uid": "c piccolo", "player": "flutist", "order": 1.000 },
-        { "uid": "c piccolo", "player": "flutist", "order": 1.000 },
+        { "uid": "c piccolo", "player": "piccoloflutist", "order": 1.000 },
         { "uid": "c flute", "player": "flutist", "order": 1.001 },
         { "uid": "g alto flute", "player": "flutist", "order": 1.002, "is_rare": true },
         { "uid": "oboe", "player": "oboeist", "order": 2.000 },
@@ -11,14 +10,14 @@
         { "uid": "eb clarinet", "player": "clarinetist", "order": 4.000 },  // aka Eb sopranino clarinet
         { "uid": "eb alto clarinet", "player": "clarinetist", "order": 4.001, "is_rare": true },
         { "uid": "bb clarinet", "player": "clarinetist", "order": 4.002 },  // aka Bb soprano clarinet, most common clarinet
-        { "uid": "bb bass clarinet", "player": "clarinetist", "order": 4.003 },
+        { "uid": "bb bass clarinet", "player": "bassclarinetist", "order": 4.003 },
         { "uid": "bb contrabass clarinet", "player": "clarinetist", "order": 4.004, "is_rare": true },
         { "uid": "eb contrabass clarinet", "player": "clarinetist", "order": 4.005, "is_rare": true },
 
         { "uid": "bb soprano saxophone", "player": "saxophonist", "order": 5.000 },
-        { "uid": "eb alto saxophone", "player": "saxophonist", "order": 5.001 },
-        { "uid": "bb tenor saxophone", "player": "saxophonist", "order": 5.002 },
-        { "uid": "eb baritone saxophone", "player": "saxophonist", "order": 5.003 },
+        { "uid": "eb alto saxophone", "player": "altosaxophonist", "order": 5.001 },
+        { "uid": "bb tenor saxophone", "player": "tenorsaxophonist", "order": 5.002 },
+        { "uid": "eb baritone saxophone", "player": "baritonesaxophonist", "order": 5.003 },
         { "uid": "bb bass saxophone", "player": "saxophonist", "order": 5.004, "is_rare": true },
 
         { "uid": "bb trumpet", "player": "trumpetist", "order": 6.000 },
@@ -96,6 +95,8 @@
         { "uid": "goblet drum", "player": "percussionist", "order": 11.050 },  // aka dumbek  https://en.wikipedia.org/wiki/Goblet_drum
         { "uid": "egg shaker", "player": "percussionist", "order": 11.051 },
         { "uid": "tenor drum", "player": "percussionist", "order": 11.052 },
+        { "uid": "sandpaper blocks", "player": "percussionist", "order": 11.053 },
+        { "uid": "suspended cymbal with coin scrape", "player": "percussionist", "order": 11.054 },  // It is a real coin. It is used to scratch across the cymbal grooves to produce a bell - tree effect. Source: Hauer Music, Ohio. 
 
         { "uid": "bells", "player": "percussionist", "order": 11.100 },  // mallet percussion
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
@@ -122,8 +123,9 @@
         { "uid": "timpani", "player": "percussionist", "order": 11.300 },  // timbales
 
         { "uid": "slide whistle", "player": "percussionist", "order": 11.400 },
-        { "uid": "train whistle", "player": "percussionist", "order": 11.401 },
+        { "uid": "train whistle", "player": "percussionist", "order": 11.401 },  // aka "train pipe"
         { "uid": "acme siren whistle", "player": "percussionist", "order": 11.402 },
+        { "uid": "guard's whistle", "player": "percussionist", "order": 11.403 },
 
             // not set to rare because david the tuba player can use them, so we want one in the print
         { "uid": "double bass", "player": "bassist", "order": 12.000 },  // other names : Bass, upright bass, string bass, acoustic bass, acoustic string bass, contrabass, contrabass viol, bass viol, standup bass, bull fiddle, doghouse bass and bass fiddle, contrebasse

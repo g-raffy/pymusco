@@ -1,10 +1,10 @@
 {
     "format": "pymusco.orchestra.v1",
     "instruments" : [
-        { "uid": "bb soprano saxophone", "player": "saxophonist", "order": 5.000 },
-        { "uid": "eb alto saxophone", "player": "saxophonist", "order": 5.001 },
-        { "uid": "bb tenor saxophone", "player": "saxophonist", "order": 5.002 },
-        { "uid": "eb baritone saxophone", "player": "saxophonist", "order": 5.003 },
+        { "uid": "bb soprano saxophone", "player": "sopranosaxophonist", "order": 5.000 },
+        { "uid": "eb alto saxophone", "player": "altosaxophonist", "order": 5.001 },
+        { "uid": "bb tenor saxophone", "player": "tenorsaxophonist", "order": 5.002 },
+        { "uid": "eb baritone saxophone", "player": "baritonesaxophonist", "order": 5.003 },
 
         { "uid": "f horn", "player": "hornist", "order": 7.000, "is_rare": true },
 
