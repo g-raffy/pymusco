@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.8
 from PIL import Image
 import struct
 import cv2
@@ -70,7 +71,7 @@ def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
         data = pdf_stream._data  # sorry, getData() does not work for CCITTFaxDecode
         img_size = len(data)
         tiff_header = tiff_header_for_CCITT(width, height, img_size, CCITT_group)
-        saved_image_file_path = image_dir + '/' + image_name + '.tiff'
+        saved_image_file_path = (image_dir / image_name).with_suffix('.tiff')
         with open(saved_image_file_path, 'wb') as img_file:
             img_file.write(tiff_header + data)
     else:

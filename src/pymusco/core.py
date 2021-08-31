@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.8
 """
 
 https://automatetheboringstuff.com/chapter13/
@@ -484,7 +485,7 @@ def rotate_image(image_path, degrees_to_rotate, saved_location):
     """
     image_obj = Image.open(image_path)
     rotated_image = image_obj.rotate(degrees_to_rotate, expand=True)
-    rotated_image.save(saved_location)
+    rotated_image.save(str(saved_location))
     # rotated_image.show()
 
 
