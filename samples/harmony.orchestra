@@ -97,6 +97,12 @@
         { "uid": "tenor drum", "player": "percussionist", "order": 11.052 },
         { "uid": "sandpaper blocks", "player": "percussionist", "order": 11.053 },
         { "uid": "suspended cymbal with coin scrape", "player": "percussionist", "order": 11.054 },  // It is a real coin. It is used to scratch across the cymbal grooves to produce a bell - tree effect. Source: Hauer Music, Ohio. 
+        { "uid": "ride cymbal", "player": "percussionist", "order": 11.055 },  // Some drummers use a china cymbal, a sizzle cymbal or a specialized tone such as a swish or pang cymbal as a ride cymbal. When playing extremely softly, when using brushes, and when recording, even a thin crash may serve well as a ride cymbal.
+        { "uid": "surdo", "player": "percussionist", "order": 11.056 },
+        { "uid": "waterphone", "player": "percussionist", "order": 11.057 },  // aka ocean harp or aquasonic waterphone
+        { "uid": "china cymbals", "player": "percussionist", "order": 11.058 },  // aka trash cymbal. A distinct type of crash cymbals
+        { "uid": "low tom", "player": "percussionist", "order": 11.059 },  // aka floor tom
+
 
         { "uid": "bells", "player": "percussionist", "order": 11.100 },  // mallet percussion
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
@@ -111,6 +117,7 @@
         { "uid": "mark tree", "player": "percussionist", "order": 11.110 },  // aka chime tree or bar chimes, https://en.wikipedia.org/wiki/Mark_tree
         { "uid": "bike horn", "player": "percussionist", "order": 11.111 },
         { "uid": "glass chimes", "player": "percussionist", "order": 11.112 },
+        { "uid": "klaxon", "player": "percussionist", "order": 11.113 },
 
         { "uid": "mallet percussion", "player": "percussionist", "order": 11.200 },
         { "uid": "xylophone", "player": "percussionist", "order": 11.201 },
