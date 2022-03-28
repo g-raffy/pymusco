@@ -24,6 +24,7 @@
         { "uid": "bb cornet", "player": "trumpetist", "order": 6.001 },
         { "uid": "bb flugelhorn", "player": "trumpetist", "order": 6.002 },
         { "uid": "c trumpet", "player": "trumpetist", "order": 6.003, "is_rare": true },
+        { "uid": "eb cornet", "player": "trumpetist", "order": 6.004, "is_rare": true },
 
         { "uid": "f horn", "player": "hornist", "order": 7.000 },
         { "uid": "eb horn", "player": "hornist", "order": 7.001, "is_rare": true },
