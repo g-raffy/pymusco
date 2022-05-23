@@ -103,7 +103,10 @@
         { "uid": "waterphone", "player": "percussionist", "order": 11.057 },  // aka ocean harp or aquasonic waterphone
         { "uid": "china cymbals", "player": "percussionist", "order": 11.058 },  // aka trash cymbal. A distinct type of crash cymbals
         { "uid": "low tom", "player": "percussionist", "order": 11.059 },  // aka floor tom
+        { "uid": "roto toms", "player": "percussionist", "order": 11.060 },  // 
+        // What Is The Difference Between a Roto tom and a Concert Tom?
 
+        // Roto toms are drums without shells that can be tuned by rotating them. Concert toms are single headed toms with shells and they have quite a different sound, because the wooden shell gives concert toms quite a different tone and resonance.
 
         { "uid": "bells", "player": "percussionist", "order": 11.100 },  // mallet percussion
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
