@@ -11,8 +11,8 @@
         { "uid": "eb alto clarinet", "player": "clarinetist", "order": 4.001, "is_rare": true },
         { "uid": "bb clarinet", "player": "clarinetist", "order": 4.002 },  // aka Bb soprano clarinet, most common clarinet
         { "uid": "bb bass clarinet", "player": "bassclarinetist", "order": 4.003 },
-        { "uid": "bb contrabass clarinet", "player": "clarinetist", "order": 4.004, "is_rare": true },
-        { "uid": "eb contrabass clarinet", "player": "clarinetist", "order": 4.005, "is_rare": true },
+        { "uid": "eb contra-alto clarinet", "player": "clarinetist", "order": 4.004, "is_rare": true },  // aka eb contrabass clarinet (https://en.wikipedia.org/wiki/Contra-alto_clarinet : As it is pitched between the bass clarinet and the B♭ contrabass clarinet, the contra-alto clarinet is the great bass member of the clarinet family)
+        { "uid": "bb contrabass clarinet", "player": "clarinetist", "order": 4.005, "is_rare": true },
 
         { "uid": "bb soprano saxophone", "player": "saxophonist", "order": 5.000 },
         { "uid": "eb alto saxophone", "player": "altosaxophonist", "order": 5.001 },
@@ -107,6 +107,7 @@
         // What Is The Difference Between a Roto tom and a Concert Tom?
 
         // Roto toms are drums without shells that can be tuned by rotating them. Concert toms are single headed toms with shells and they have quite a different sound, because the wooden shell gives concert toms quite a different tone and resonance.
+        { "uid": "bass drum", "player": "percussionist", "order": 11.061 },
 
         { "uid": "bells", "player": "percussionist", "order": 11.100 },  // mallet percussion
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
