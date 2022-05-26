@@ -191,7 +191,8 @@ class CatalogPiece(object):
             toc=self.piece.scan_toc,
             title=self.piece.label,
             orchestra=self.catalog.orchestra,
-            stamp_descs=self.piece.stamp_descs
+            stamp_descs=self.piece.stamp_descs,
+            page_info_line_y_pos=self.piece.page_info_line_y_pos
         )
 
     # def get_stub_toc(self):
