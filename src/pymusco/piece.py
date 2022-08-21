@@ -1,6 +1,5 @@
 from pathlib import Path
 import os
-import re
 import json
 from .main import StampDesc
 from .main import scan_to_stub
@@ -8,6 +7,7 @@ from .main import stub_to_print
 from .core import TableOfContents
 from .core import load_commented_json
 from .tssingle import SingleTrackSelector
+
 
 def dict_to_toc(toc_as_dict, orchestra):
     """
@@ -17,6 +17,11 @@ def dict_to_toc(toc_as_dict, orchestra):
         the instruments database
     """
     assert toc_as_dict['format'] == 'pymusco.toc.v1'
+    # check that the keys used in this dictionary are known
+    for key in toc_as_dict.keys():
+        if key not in ['format', 'track_id_to_page']:
+            raise KeyError('unexpected key in toc dictionary : %s' % (key))
+
     toc = TableOfContents(orchestra=orchestra, track_id_to_page=None)
     for track_id, page_index in toc_as_dict['track_id_to_page'].items():
         toc.add_toc_item(track_id, page_index)
@@ -43,19 +48,20 @@ def dict_to_stamp_desc(stamp_desc_as_dict, piece_desc_file_path):
     """
     abs_stamp_file_path = None
     stamp_file_path = Path(stamp_desc_as_dict['stamp_image_path'])
-    allowed_image_suffixes = [ '.pdf', '.png' ]
+    allowed_image_suffixes = ['.pdf', '.png']
     if stamp_file_path.is_absolute():
         abs_stamp_file_path = stamp_file_path
     else:
         abs_stamp_file_path = piece_desc_file_path.parent.resolve() / stamp_file_path
     if not abs_stamp_file_path.exists():
-        raise Exception("The stamp file '%s' is missing (file not found)." % (abs_stamp_file_path) )
+        raise Exception("The stamp file '%s' is missing (file not found)." % (abs_stamp_file_path))
     if abs_stamp_file_path.suffix not in allowed_image_suffixes:
-        raise Exception("Unsupported image format for stamp '%s' (allowed formats : %s) " % (abs_stamp_file_path, str(allowed_image_suffixes)) )
+        raise Exception("Unsupported image format for stamp '%s' (allowed formats : %s) " % (abs_stamp_file_path, str(allowed_image_suffixes)))
     return StampDesc(file_path=abs_stamp_file_path,
-        scale=stamp_desc_as_dict['scale'],
-        tx=stamp_desc_as_dict['tx'],
-        ty=stamp_desc_as_dict['ty'])
+                     scale=stamp_desc_as_dict['scale'],
+                     tx=stamp_desc_as_dict['tx'],
+                     ty=stamp_desc_as_dict['ty'])
+
 
 def dict_to_piece(piece_as_dict, orchestra, piece_desc_file_path):
     """
@@ -99,7 +105,7 @@ def piece_to_dict(piece):
     if piece.stamp_file_path:
         piece_as_dict['stamp_path'] = piece.stamp_file_path
     return piece_as_dict
-    
+
 
 def load_piece_description(piece_desc_file_path, orchestra):
     """
@@ -115,18 +121,20 @@ def load_piece_description(piece_desc_file_path, orchestra):
     """
     return dict_to_piece(load_commented_json(piece_desc_file_path), orchestra, piece_desc_file_path)
 
+
 def save_piece_description(piece, piece_desc_file_path):
     """
     Parameters
     ----------
     piece : Piece
-        the pice description to save 
+        the pice description to save
     piece_desc_file_path : Path
         the path to the file describing the scanned pdf sheet music
     """
     piece_as_dict = piece_to_dict(piece)
     with open(piece_desc_file_path, 'w') as file:
         json.dump(piece_as_dict, file)
+
 
 class Vector2(object):
 
@@ -136,9 +144,10 @@ class Vector2(object):
         self.x = x
         self.y = y
 
+
 class Piece(object):
 
-    def __init__(self, uid, title, orchestra, scan_toc, missing_tracks={}, stamp_descs=[], page_info_line_y_pos = 1.0):
+    def __init__(self, uid, title, orchestra, scan_toc, missing_tracks={}, stamp_descs=[], page_info_line_y_pos=1.0):
         """
         Parameters
         ----------
@@ -160,6 +169,7 @@ class Piece(object):
         self.page_info_line_y_pos = page_info_line_y_pos
         # self.stamp_scale = 0.5
         # self.stamp_pos = Vector2(14.0, 4.0)
+
     @property
     def label(self):
         return '%03d-%s' % (self.uid, self.title.replace(' ', '-'))
@@ -172,6 +182,7 @@ class Piece(object):
     #     num_toc_pages = 1  # TODO: remove hardcoded value
     #     stub_toc.shift_page_indices(num_toc_pages)
     #     return stub_toc
+
 
 class CatalogPiece(object):
 
@@ -232,6 +243,7 @@ class CatalogPiece(object):
         self.build_stub()
         self.build_print(musician_count)
 
+
 class Catalog(object):
     """ a collection of pieces that share the same locations, same orchestra, etc...
     """
@@ -263,10 +275,8 @@ class Catalog(object):
                 piece = load_piece_description(desc_file_path, orchestra)
                 self.add(CatalogPiece(piece, self))
 
-
     def add(self, piece):
         self.pieces[piece.uid] = piece
 
     def get(self, uid):
         return self.pieces[uid]
-
