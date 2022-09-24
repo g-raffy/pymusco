@@ -4,9 +4,9 @@
         { "uid": "c piccolo", "player": "piccoloflutist", "order": 1.000 },
         { "uid": "c flute", "player": "flutist", "order": 1.001 },
         { "uid": "g alto flute", "player": "flutist", "order": 1.002, "is_rare": true },
-        { "uid": "oboe", "player": "oboeist", "order": 2.000 },
-        { "uid": "english horn", "player": "oboeist", "order": 2.001 },  // F english horn
-        { "uid": "bassoon", "player": "bassoonist", "order": 3.000 },
+        { "uid": "c oboe", "player": "oboeist", "order": 2.000 },
+        { "uid": "f english horn", "player": "oboeist", "order": 2.001 },  // F english horn
+        { "uid": "c bassoon", "player": "bassoonist", "order": 3.000 },
         { "uid": "eb clarinet", "player": "clarinetist", "order": 4.000 },  // aka Eb sopranino clarinet or eb piccolo clarniet (https://en.wikipedia.org/wiki/E-flat_clarinet)
         { "uid": "eb alto clarinet", "player": "clarinetist", "order": 4.001, "is_rare": true },
         { "uid": "bb clarinet", "player": "clarinetist", "order": 4.002 },  // aka Bb soprano clarinet, most common clarinet
@@ -140,8 +140,9 @@
         { "uid": "train whistle", "player": "percussionist", "order": 11.401 },  // aka "train pipe"
         { "uid": "acme siren whistle", "player": "percussionist", "order": 11.402 },
         { "uid": "guard's whistle", "player": "percussionist", "order": 11.403 },
+        { "uid": "traffic lights", "player": "percussionist", "order": 11.500, "is_rare": true },
 
-            // not set to rare because david the tuba player can use them, so we want one in the print
+        // not set to rare because david the tuba player can use them, so we want one in the print
         { "uid": "double bass", "player": "bassist", "order": 12.000 },  // other names : Bass, upright bass, string bass, acoustic bass, acoustic string bass, contrabass, contrabass viol, bass viol, standup bass, bull fiddle, doghouse bass and bass fiddle, contrebasse
         { "uid": "bass guitar", "player": "bassist", "order": 12.001 },  // other names : Bass, electric bass guitar, electric bass
 

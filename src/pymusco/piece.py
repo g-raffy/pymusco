@@ -63,6 +63,7 @@ def dict_to_stamp_desc(stamp_desc_as_dict, piece_desc_file_path):
                      ty=stamp_desc_as_dict['ty'])
 
 
+
 def dict_to_piece(piece_as_dict, orchestra, piece_desc_file_path):
     """
     Parameters
@@ -202,7 +203,8 @@ class CatalogPiece(object):
             toc=self.piece.scan_toc,
             title=self.piece.label,
             orchestra=self.catalog.orchestra,
-            stamp_descs=self.piece.stamp_descs
+            stamp_descs=self.piece.stamp_descs,
+            page_info_line_y_pos=self.piece.page_info_line_y_pos
         )
 
     # def get_stub_toc(self):
