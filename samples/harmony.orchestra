@@ -7,6 +7,7 @@
         { "uid": "c oboe", "player": "oboeist", "order": 2.000 },
         { "uid": "f english horn", "player": "oboeist", "order": 2.001 },  // F english horn
         { "uid": "c bassoon", "player": "bassoonist", "order": 3.000 },
+        { "uid": "c contrabassoon", "player": "bassoonist", "order": 3.000 },  // aka double bassoon
         { "uid": "eb clarinet", "player": "clarinetist", "order": 4.000 },  // aka Eb sopranino clarinet or eb piccolo clarniet (https://en.wikipedia.org/wiki/E-flat_clarinet)
         { "uid": "eb alto clarinet", "player": "clarinetist", "order": 4.001, "is_rare": true },
         { "uid": "bb clarinet", "player": "clarinetist", "order": 4.002 },  // aka Bb soprano clarinet, most common clarinet
