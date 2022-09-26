@@ -190,7 +190,7 @@ def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
             cv2.imwrite(saved_image_file_path, image)
             print("resampled image saved to %s" % saved_image_file_path)
                     
-        if pdf_page['/Rotate'] != 0:
+        if '/Rotate' in pdf_page.keys() and pdf_page['/Rotate'] != 0:
             # some extracted images are not in portrait mode as we would expect, so rotate them
             
             # non rotated page contents

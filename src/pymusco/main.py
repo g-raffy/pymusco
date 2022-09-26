@@ -20,6 +20,7 @@ from .pdf import check_pdf
 import cv2   # sudo apt-get install python3-opencv
 import abc
 
+
 def md5(fname):
     hash_md5 = hashlib.md5()
     with open(fname, "rb") as f:
@@ -66,13 +67,13 @@ def wait_for_files(filepaths):
         # If the file doesn't exist, wait wait_time seconds and try again
         # until it's found.
         while not os.path.exists(filepath):
-            print("%s hasn't arrived. Waiting %s seconds." % \
+            print("%s hasn't arrived. Waiting %s seconds." %
                   (filepath, wait_time))
             time.sleep(wait_time)
         # If the file exists but locked, wait wait_time seconds and check
         # again until it's no longer locked by another process.
         while is_locked(filepath):
-            print("%s is currently in use. Waiting %s seconds." % \
+            print("%s is currently in use. Waiting %s seconds." %
                   (filepath, wait_time))
             time.sleep(wait_time)
 
@@ -197,7 +198,6 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
         has_toc = len(page_to_section) > 0
         latex_file.write(r'\documentclass[a4paper]{article}' + '\n')
 
-
         # latex_file.write(r'\usepackage[showframe, paperwidth=3.25in,paperheight=2.5in,margin=.5pt ]{geometry}' + '\n')
         # latex_file.write(r'\usepackage[showframe]{geometry}' + '\n')
 
@@ -269,7 +269,7 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
                 latex_file.write(r'\null' + '\n')
 
             if page_index in page_to_footers:
-                text_block_pos_y = 29.7-pdf_contents.page_info_line_y_pos
+                text_block_pos_y = 29.7 - pdf_contents.page_info_line_y_pos
                 latex_file.write(r'\begin{textblock*}{20cm}(0.2cm,%f cm) %% {block width} (coords)' % text_block_pos_y + '\n')
                 latex_file.write(page_to_footers[page_index] + '\n')
                 latex_file.write(r'\end{textblock*}' + '\n')
@@ -298,7 +298,7 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
 
     dst_pdf_file_path.parent.mkdir(parents=True, exist_ok=True)
     # os.rename(tmp_dir / 'stub.pdf', dst_pdf_file_path)
-    #(tmp_dir / 'stub.pdf').replace(dst_pdf_file_path)
+    # (tmp_dir / 'stub.pdf').replace(dst_pdf_file_path)
     shutil.move(tmp_dir / 'stub.pdf', dst_pdf_file_path)
     if bug1_is_alive:
         stub_hash_after_move = md5(dst_pdf_file_path)
@@ -328,8 +328,8 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     # check that the track_ids in the toc are known
     for track_id in toc.get_track_ids():
         try:
-            track = Track(track_id, orchestra)  # @UnusedVariable  pylint: disable=unused-variable
-        except KeyError as e:  # pylint: disable=unused-variable
+            track = Track(track_id, orchestra)  # noqa:F841 @UnusedVariable  pylint: disable=unused-variable
+        except KeyError as e:  # noqa:F841 pylint: disable=unused-variable
             raise Exception("Failed to identify track id '%s'. Either its syntax is incorrect or the related instrument in not yet registered in the orchestra." % (track_id))
 
     # tmp_dir = tempfile.mkdtemp()
@@ -452,7 +452,7 @@ def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, spl
             double_png_file_path = "%s.png" % double_image_file_path
             # convert to png because opencv doesn't handle 1-bit tiff images
             subprocess.Popen(['convert', double_image_file_path, double_png_file_path]).communicate()
-            # this command can fail with 
+            # this command can fail with
             # graffy@graffy-ws2:~/private/pymusco$ convert /home/graffy/private/pymusco/tmp/page000.tiff /home/graffy/private/pymusco/tmp/page000.png
             # convert-im6.q16: DistributedPixelCache '127.0.0.1' @ error/distribute-cache.c/ConnectPixelCacheServer/244.
             # convert-im6.q16: cache resources exhausted `/home/graffy/private/pymusco/tmp/page000.png' @ error/cache.c/OpenPixelCache/3984.
@@ -515,18 +515,19 @@ def crop_pdf(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, x_scale, y_sc
 
     images_to_pdf(SimplePdfDescription(image_file_paths=scanned_image_file_paths), dst_scanned_pdf_file_path)
 
+
 def pdf_is_readable_by_pypdf2(src_pdf_path):
     with open(src_pdf_path, 'rb') as src_pdf_file:
         try:
             src_pdf = PyPDF2.PdfFileReader(src_pdf_file)
-            num_pages = src_pdf.getNumPages()
+            num_pages = src_pdf.getNumPages()  # noqa:F841
             return True
         except NotImplementedError as error:
             if error.message == "only algorithm code 1 and 2 are supported":
                 return False
             else:
                 raise error
-        except PyPDF2.utils.PdfReadError as error:
+        except PyPDF2.utils.PdfReadError as error:  # noqa:F841
             return False
 
 
@@ -552,14 +553,16 @@ def merge_pdf(dst_pdf_path, src_pdf_paths):
                     dst_pdf.addPage(src_page)
                 dst_pdf.write(dst_pdf_file)
 
+
 def pdftk_is_available():
     completed_process = subprocess.run(['pdftk'], stdout=subprocess.PIPE)
     return completed_process.returncode == 0
 
+
 def remove_unneeded_pdf_password(src_pdf_path, dst_pdf_path):
     """
         Some pdfs have an owner password that is not required to view the file. For example :
-            graffy@graffy-ws2:~/private/melting-notes/partitions/scans$ pdftk ./215-avengers-age-of-ultron/avengers-the-age-of-ultron-main-theme---piccolo.pdf dump_data 
+            graffy@graffy-ws2:~/private/melting-notes/partitions/scans$ pdftk ./215-avengers-age-of-ultron/avengers-the-age-of-ultron-main-theme---piccolo.pdf dump_data
             WARNING: The creator of the input PDF:
                ./215-avengers-age-of-ultron/avengers-the-age-of-ultron-main-theme---piccolo.pdf
                has set an owner password (which is not required to handle this PDF).
