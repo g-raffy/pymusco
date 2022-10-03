@@ -107,8 +107,8 @@
         { "uid": "low tom", "player": "percussionist", "order": 11.059 },  // aka floor tom
         { "uid": "roto toms", "player": "percussionist", "order": 11.060 },  // 
         // What Is The Difference Between a Roto tom and a Concert Tom?
-
         // Roto toms are drums without shells that can be tuned by rotating them. Concert toms are single headed toms with shells and they have quite a different sound, because the wooden shell gives concert toms quite a different tone and resonance.
+
         { "uid": "bass drum", "player": "percussionist", "order": 11.061 },
         { "uid": "military drum", "player": "percussionist", "order": 11.062 },  // aka tamburo militaro
 
@@ -126,6 +126,10 @@
         { "uid": "bike horn", "player": "percussionist", "order": 11.111 },
         { "uid": "glass chimes", "player": "percussionist", "order": 11.112 },
         { "uid": "klaxon", "player": "percussionist", "order": 11.113 },
+        { "uid": "brake drum", "player": "percussionist", "order": 11.114, "is_rare": true },
+        { "uid": "wind gong", "player": "percussionist", "order": 11.120},
+        { "uid": "dowel stick bundle", "player": "percussionist", "order": 11.121},
+        { "uid": "pitched drum", "player": "percussionist", "order": 11.122},
 
         { "uid": "mallet percussion", "player": "percussionist", "order": 11.200 },
         { "uid": "xylophone", "player": "percussionist", "order": 11.201 },
