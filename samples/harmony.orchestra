@@ -111,6 +111,8 @@
 
         { "uid": "bass drum", "player": "percussionist", "order": 11.061 },
         { "uid": "military drum", "player": "percussionist", "order": 11.062 },  // aka tamburo militaro
+        { "uid": "taiko drums", "player": "percussionist", "order": 11.063 },
+        { "uid": "chanchiki", "player": "percussionist", "order": 11.063 }, // aka Atarigane, Surigane, Yosuke
 
         { "uid": "bells", "player": "percussionist", "order": 11.100 },  // mallet percussion
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
