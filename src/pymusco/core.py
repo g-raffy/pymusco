@@ -22,10 +22,11 @@ def dict_raise_on_duplicates(ordered_pairs):
     d = {}
     for k, v in ordered_pairs:
         if k in d:
-           raise ValueError("duplicate key: %r" % (k,))
+            raise ValueError("duplicate key: %r" % (k,))
         else:
-           d[k] = v
+            d[k] = v
     return d
+
 
 def load_commented_json(commented_json_file_path):
     uncommented_json_contents = ''
@@ -41,6 +42,7 @@ def load_commented_json(commented_json_file_path):
     json_as_dict = json.loads(uncommented_json_contents, object_pairs_hook=dict_raise_on_duplicates)
     return json_as_dict
 
+
 class InstrumentNotFound(Exception):
     """This exception means that the given instrument id is not known (it hasn't been registered in the instruments list)
     """
@@ -55,6 +57,7 @@ class InstrumentNotFound(Exception):
     def __str__(self):
         return "unknown instrument ('%s'). Make sure this instrument has been registered in the instruments catalog." % self.instrument_id
 
+
 def dict_to_instrument(instrument_as_dict):
     """
     Returns
@@ -68,6 +71,7 @@ def dict_to_instrument(instrument_as_dict):
         is_rare = instrument_as_dict['is_rare']
     instrument = Instrument(uid=instrument_as_dict['uid'], player=instrument_as_dict['player'], order=instrument_as_dict['order'], is_rare=is_rare)
     return instrument
+
 
 def instrument_to_dict(instrument):
     """
@@ -98,7 +102,7 @@ class Instrument(object):
             unique identifier of a musical instrument, eg 'eb alto clarinet'
         player : str
             unique identifier of a musical instrument player, eg 'bassoonist'
-        order : float        
+        order : float
             value that is used to order instruments
         is_rare : bool
             defines if the instrument is rare (so rare its sheet music are never included in the prints)
@@ -106,7 +110,7 @@ class Instrument(object):
         assert isinstance(uid, str)
         assert isinstance(player, str)
         assert isinstance(order, float)
-        
+
         self.uid = uid
         self.player = player
         self.order = order
@@ -153,6 +157,7 @@ def dict_to_orchestra(orchestra_as_dict):
     orchestra = Orchestra(instruments=instruments)
     return orchestra
 
+
 def orchestra_to_dict(orchestra):
     """
     Parameters
@@ -167,6 +172,7 @@ def orchestra_to_dict(orchestra):
     for instrument in orchestra.instruments:
         instruments_list.append(instrument_to_dict(instrument))
     return orchestra_as_dict
+
 
 class Orchestra(object):
     """ Set of known instruments
@@ -196,10 +202,17 @@ class Orchestra(object):
             InstrumentNotFound
         """
         assert isinstance(instrument_id, str)
+        if instrument_id == 'oboe':
+            instrument_id = 'c oboe'
+        if instrument_id == 'bassoon':
+            instrument_id = 'c bassoon'
+        if instrument_id == 'english horn':
+            instrument_id = 'c english horn'
         for instrument in self.instruments:
             if instrument.get_id() == instrument_id:
                 return instrument
         raise InstrumentNotFound(instrument_id)
+
 
 def load_orchestra(orchestra_file_path):
     """
@@ -224,7 +237,7 @@ class Clef(Enum):
 
 
 class Track(object):
-    
+
     def __init__(self, track_id, orchestra):
         """
         :param str track_id: the identifier of a track in the form "bb trombone 2 bc"
@@ -288,7 +301,6 @@ class Track(object):
         """
         return hash(self.get_id()) == hash(other.get_id())
 
-
     def get_id(self):
         """
         :return str: the identifier of this track in the form "bb trombone 2 tc"
@@ -340,7 +352,7 @@ class Track(object):
 
 
 class TableOfContents(object):
-    
+
     def __init__(self, orchestra, track_id_to_page=None):
         """ Constructor
 
@@ -379,17 +391,17 @@ class TableOfContents(object):
         assert isinstance(track_id, str)
         track = Track(track_id, self.orchestra)
         self.track_to_page[track] = page_index
-    
+
     def get_track_ids(self):
-        return [ track.id for track in self.track_to_page.keys() ]
-    
+        return [track.id for track in self.track_to_page.keys()]
+
     def get_tracks_for_page(self, page_index):
         tracks = []
         for track, page in self.track_to_page.items():
             if page == page_index:
                 tracks.append(track)
         return tracks
-    
+
     def get_tracks_first_page_index(self, tracks):
         """
         Parameters
@@ -413,7 +425,7 @@ class TableOfContents(object):
             assert isinstance(track, Track)
             assert self.track_to_page[track] == first_track_page_index
         return first_track_page_index
-    
+
     def get_tracks_last_page_index(self, tracks, num_pages):
         """
         Parameters
@@ -432,18 +444,18 @@ class TableOfContents(object):
             assert isinstance(track, Track)
 
         first_page_index = self.get_tracks_first_page_index(tracks)
-        
+
         next_section_first_page_index = num_pages + 1
         for page_index in self.track_to_page.values():
             if page_index > first_page_index:
                 next_section_first_page_index = min(next_section_first_page_index, page_index)
         # assert next_section_first_page_index <= num_pages, 'next_section_first_page_index = %d, num_pages=%d' % (next_section_first_page_index, num_pages)
         return next_section_first_page_index - 1
-    
+
     def shift_page_indices(self, offset):
         """
         shifts the page numbers by a fixed value
-        
+
         useful to adjust page numbers when a page is inserted or deleted
         """
         for track in self.track_to_page.keys():
@@ -457,7 +469,7 @@ class TableOfContents(object):
 class ITrackSelector(object):
     """
     abstract class for the mechanism of track selection, which can vary.
-    
+
     its main purpose is to compute for each track in the stub how many copies are wanted in the print
     """
     __metaclass__ = abc.ABCMeta
@@ -466,7 +478,7 @@ class ITrackSelector(object):
     def get_track_to_copy(self, stub_tracks):
         """
         computes for each stub_track the number of prints to do
-        
+
         :param list(str) stub_tracks:
         :return dict(str, int): the number of prints to do for each stub_track
         """
@@ -582,4 +594,4 @@ def get_stub_tracks(src_stub_file_path, orchestra):
                 assert isinstance(track_id, str), "unexpected type for track_id (%s)" % type(track_id)
                 stub_tracks.add_toc_item(track_id, track_page_number)
         assert len(stub_tracks.tracks) > 0, 'no track found in %s' % src_stub_file_path
-        return(stub_tracks)
+        return (stub_tracks)

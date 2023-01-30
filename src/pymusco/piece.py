@@ -63,7 +63,6 @@ def dict_to_stamp_desc(stamp_desc_as_dict, piece_desc_file_path):
                      ty=stamp_desc_as_dict['ty'])
 
 
-
 def dict_to_piece(piece_as_dict, orchestra, piece_desc_file_path):
     """
     Parameters
