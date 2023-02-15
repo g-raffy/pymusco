@@ -115,7 +115,7 @@
         { "uid": "taiko drums", "player": "percussionist", "order": 11.063 },
         { "uid": "chanchiki", "player": "percussionist", "order": 11.063 }, // aka Atarigane, Surigane, Yosuke
 
-        { "uid": "bells", "player": "percussionist", "order": 11.100 },  // mallet percussion
+        { "uid": "bells", "player": "percussionist", "order": 11.100 },
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
         { "uid": "chimes", "player": "percussionist", "order": 11.102 },
         { "uid": "wind chimes", "player": "percussionist", "order": 11.103 },
@@ -130,6 +130,7 @@
         { "uid": "glass chimes", "player": "percussionist", "order": 11.112 },
         { "uid": "klaxon", "player": "percussionist", "order": 11.113 },
         { "uid": "brake drum", "player": "percussionist", "order": 11.114, "is_rare": true },
+        { "uid": "agogo", "player": "percussionist", "order": 11.115 },  // aka agogô, gongué, gan gan (smaller version)  https://en.wikipedia.org/wiki/Agog%C3%B4
         { "uid": "wind gong", "player": "percussionist", "order": 11.120},
         { "uid": "dowel stick bundle", "player": "percussionist", "order": 11.121},
         { "uid": "pitched drum", "player": "percussionist", "order": 11.122},
@@ -148,6 +149,7 @@
         { "uid": "train whistle", "player": "percussionist", "order": 11.401 },  // aka "train pipe"
         { "uid": "acme siren whistle", "player": "percussionist", "order": 11.402 },
         { "uid": "guard's whistle", "player": "percussionist", "order": 11.403 },
+        { "uid": "whistle", "player": "percussionist", "order": 11.404 },
         { "uid": "traffic lights", "player": "percussionist", "order": 11.500, "is_rare": true },
 
         // not set to rare because david the tuba player can use them, so we want one in the print
