@@ -152,6 +152,7 @@
         { "uid": "acme siren whistle", "player": "percussionist", "order": 11.402 },
         { "uid": "guard's whistle", "player": "percussionist", "order": 11.403 },
         { "uid": "whistle", "player": "percussionist", "order": 11.404 },
+        { "uid": "african hand drum", "player": "percussionist", "order": 11.405, "is_rare": true }, //aka djembe
         { "uid": "traffic lights", "player": "percussionist", "order": 11.500, "is_rare": true },
 
         // not set to rare because david the tuba player can use them, so we want one in the print
