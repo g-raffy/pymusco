@@ -144,6 +144,7 @@
         { "uid": "glockenspiel", "player": "percussionist", "order": 11.204 },
         { "uid": "mbira", "player": "percussionist", "order": 11.205 },  // aka kalimba or finger piano https://en.wikipedia.org/wiki/Mbira
         { "uid": "celesta", "player": "percussionist", "order": 11.206 },
+        { "uid": "gun shot", "player": "percussionist", "order": 11.207 },
 
         { "uid": "timpani", "player": "percussionist", "order": 11.300 },  // timbales
 
