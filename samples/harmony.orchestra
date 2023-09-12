@@ -116,6 +116,7 @@
         { "uid": "chanchiki", "player": "percussionist", "order": 11.063 }, // aka Atarigane, Surigane, Yosuke
         { "uid": "metallic objects", "player": "percussionist", "order": 11.064 },
         { "uid": "piccolo snare drum", "player": "percussionist", "order": 11.065 },
+        { "uid": "wind machine", "player": "percussionist", "order": 11.066 }, //aka héliophone
 
         { "uid": "bells", "player": "percussionist", "order": 11.100 },
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
