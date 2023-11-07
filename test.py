@@ -156,7 +156,7 @@ scan_toc = pymusco.TableOfContents(orchestra, {
     'eb alto clarinet' : 15,
     'bb bass clarinet' : 17,
     'eb alto saxophone 1' : 19,
-    'eb alto saxophone 1' : 21,
+    'eb alto saxophone 2' : 21,
     'bb tenor saxophone' : 23,
     'eb baritone saxophone' : 25,
     'bb trumpet 1' : 27,
