@@ -8,6 +8,7 @@ from .core import ITrackSelector
 from .core import Track
 from .core import load_commented_json
 
+
 def load_musician_count(musician_count_file_path):
     return load_commented_json(musician_count_file_path)
 
@@ -17,7 +18,7 @@ class AutoTrackSelector(ITrackSelector):
     a track selector that automatically works out the number of prints to generate for each track, by looking at the number of musicians by instrument type in the orchestra.
     """
 
-    def __init__(self, musician_count, orchestra,  include_tracks_for_external_players=True, num_extra_prints=0):
+    def __init__(self, musician_count, orchestra, include_tracks_for_external_players=True, num_extra_prints=0):
         """
         :param dict(str, int) musician_count:
         :param Orchestra orchestra: the inventory of musical instruments
@@ -36,7 +37,6 @@ class AutoTrackSelector(ITrackSelector):
             if num_prints + num_extra_prints > 0:
                 new_track_to_print_count[track_id] = num_prints + num_extra_prints
         return new_track_to_print_count
-
 
     def get_track_to_copy(self, stub_tracks):
         """
@@ -101,7 +101,6 @@ class AutoTrackSelector(ITrackSelector):
                                 # force adding single instrument tracks such as harp or piano even if there's no player in the orchestra because these parts are often played by external musicians
                                 print("info: 2 copies for single instrument %s" % track.get_id())
                                 track_to_print_count[track.get_id()] = 2
-
 
                         track_to_print_count[track_id] = count
         print(track_to_print_count)

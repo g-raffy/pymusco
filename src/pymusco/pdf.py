@@ -11,11 +11,9 @@ import traceback
 from pathlib import Path
 from .core import rotate_image
 
-"""
-Extract images from pdf: http://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python
-Extract images coded with CCITTFaxDecode in .net: http://stackoverflow.com/questions/2641770/extracting-image-from-pdf-with-ccittfaxdecode-filter
-TIFF format and tags: http://www.awaresystems.be/imaging/tiff/faq.html
-"""
+# Extract images from pdf: http://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python
+# Extract images coded with CCITTFaxDecode in .net: http://stackoverflow.com/questions/2641770/extracting-image-from-pdf-with-ccittfaxdecode-filter
+# TIFF format and tags: http://www.awaresystems.be/imaging/tiff/faq.html
 # https://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python/34116472#34116472
 
 
@@ -53,17 +51,16 @@ def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
         # File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/PyPDF2/filters.py", line 361, in decodeStreamData
         # raise NotImplementedError("unsupported filter %s" % filterType)
         # NotImplementedError: unsupported filter /CCITTFaxDecode
-        """
-        The  CCITTFaxDecode filter decodes image data that has been encoded using
-        either Group 3 or Group 4 CCITT facsimile (fax) encoding. CCITT encoding is
-        designed to achieve efficient compression of monochrome (1 bit per pixel) image
-        data at relatively low resolutions, and so is useful only for bitmap image data, not
-        for color images, grayscale images, or general data.
 
-        K < 0 --- Pure two-dimensional encoding (Group 4)
-        K = 0 --- Pure one-dimensional encoding (Group 3, 1-D)
-        K > 0 --- Mixed one- and two-dimensional encoding (Group 3, 2-D)
-        """
+        # The  CCITTFaxDecode filter decodes image data that has been encoded using
+        # either Group 3 or Group 4 CCITT facsimile (fax) encoding. CCITT encoding is
+        # designed to achieve efficient compression of monochrome (1 bit per pixel) image
+        # data at relatively low resolutions, and so is useful only for bitmap image data, not
+        # for color images, grayscale images, or general data.
+
+        # K < 0 --- Pure two-dimensional encoding (Group 4)
+        # K = 0 --- Pure one-dimensional encoding (Group 3, 1-D)
+        # K > 0 --- Mixed one- and two-dimensional encoding (Group 3, 2-D)
         if pdf_stream['/DecodeParms']['/K'] == -1:
             CCITT_group = 4
         else:
@@ -85,38 +82,36 @@ def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
         if pdf_stream['/BitsPerComponent'] == 1:
             mode = "1"
         else:
-            color_space, indirect_object = pdf_stream['/ColorSpace']  # @UnusedVariable
+            color_space, indirect_object = pdf_stream['/ColorSpace']  # pylint: disable=unused-variable
             print("color_space :", color_space)
             # print("indirect_object :", indirect_object)
             # :param PyPDF2.generic.IndirectObject indirect_object:
-            
+
             # print(type(indirect_object))
             # print(dir(indirect_object))
-            
+
             # ['/ICCBased', IndirectObject(13, 0)]
-            
+
             # indObj, isIndirect := obj.(*PdfIndirectObject); isIndirect {
-            """
-            // TraceToDirectObject traces a PdfObject to a direct object.  For example direct objects contained
-            // in indirect objects (can be double referenced even).
-            //
-            // Note: This function does not trace/resolve references. That needs to be done beforehand.
-            func TraceToDirectObject(obj PdfObject) PdfObject {
-                iobj, isIndirectObj := obj.(*PdfIndirectObject)
-                depth := 0
-                for isIndirectObj == true {
-                    obj = iobj.PdfObject
-                    iobj, isIndirectObj = obj.(*PdfIndirectObject)
-                    depth++
-                    if depth > TraceMaxDepth {
-                        common.Log.Error("Trace depth level beyond 20 - error!")
-                        return nil
-                    }
-                }
-                return obj
-            }
-            """
-    
+            # // TraceToDirectObject traces a PdfObject to a direct object.  For example direct objects contained
+            # // in indirect objects (can be double referenced even).
+            # //
+            # // Note: This function does not trace/resolve references. That needs to be done beforehand.
+            # func TraceToDirectObject(obj PdfObject) PdfObject {
+            #     iobj, isIndirectObj := obj.(*PdfIndirectObject)
+            #     depth := 0
+            #     for isIndirectObj == true {
+            #         obj = iobj.PdfObject
+            #         iobj, isIndirectObj = obj.(*PdfIndirectObject)
+            #         depth++
+            #         if depth > TraceMaxDepth {
+            #             common.Log.Error("Trace depth level beyond 20 - error!")
+            #             return nil
+            #         }
+            #     }
+            #     return obj
+            # }
+
             if color_space == '/DeviceRGB':
                 mode = "RGB"
             elif color_space == '/ICCBased':
@@ -130,7 +125,7 @@ def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
                 expected_packed_image_data_size = bytes_per_line * height  # packed image size supposing image is stored as 1 bit per pixel
                 if len(data) == expected_packed_image_data_size:
                     one_bit_per_pixel = True
-                
+
                 if one_bit_per_pixel:
                     mode = "1"  # (1-bit pixels, black and white, stored with one pixel per byte)
                 else:
@@ -158,7 +153,7 @@ def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
 def find_pdf_page_raster_image(pdf_page):
     """
     finds the first raster image in this page
-    
+
     :param PyPDF2.pdf.PageObject pdf_page:
     :return PyPDF2.generic.EncodedStreamObject: a pdf node which is supposed to contain an image
     """
@@ -178,7 +173,7 @@ def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
     :return str: the saved image file path with file extension
     """
     pdf_stream = find_pdf_page_raster_image(pdf_page)
-    
+
     if pdf_stream is not None:
         # this pdf page contains a raster image; we deduce from that that it has been scanned
         try:
@@ -189,10 +184,10 @@ def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
             saved_image_file_path = "%s/%s.png" % (image_dir, image_name)
             cv2.imwrite(saved_image_file_path, image)
             print("resampled image saved to %s" % saved_image_file_path)
-                    
+
         if '/Rotate' in pdf_page.keys() and pdf_page['/Rotate'] != 0:
             # some extracted images are not in portrait mode as we would expect, so rotate them
-            
+
             # non rotated page contents
             #     {
             #         '/Parent': IndirectObject(3, 0),
@@ -202,7 +197,7 @@ def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
             #         '/Rotate': 0,
             #         '/MediaBox': [0, 0, 595.32, 841.92]
             #     }
-        
+
             # rotated_page_contents:
             #     {
             #         '/Parent': IndirectObject(3, 0),
@@ -249,7 +244,7 @@ def extract_pdf_page_images(pdf_page, image_folder='/tmp'):
     for obj in xObject:
         print(type(obj))
         print(type(xObject[obj]))
-        
+
         if xObject[obj]['/Subtype'] == '/Image':
             saved_image_file_path = extract_pdf_stream_image(pdf_stream=xObject[obj], image_dir=image_folder, image_name=obj[1:])
             print('extracted image : %s' % saved_image_file_path)
@@ -261,7 +256,7 @@ def pdf_page_to_png(pdf_page, resolution=72):
     """
     dst_pdf = PyPDF2.PdfWriter()
     dst_pdf.add_page(pdf_page)
-    
+
     tmp_dir = Path('/tmp/pymusco')
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
@@ -273,7 +268,7 @@ def pdf_page_to_png(pdf_page, resolution=72):
     subprocess.check_call(['/opt/local/bin/convert', '-density', '%d' % resolution, tmp_pdf_file_path, tmp_png_file_path])
     image = cv2.imread(tmp_png_file_path)
     print(type(image))
-     
+
     return image
 
 
@@ -320,9 +315,9 @@ def add_bookmarks(pdf_in_filename, bookmarks_tree, pdf_out_filename=None):
 
 def add_stamp(src_pdf_file_path, dst_pdf_file_path, stamp_file_path, scale=1.0, tx=500.0, ty=770.0):
     """
-    
+
     warning! this function has a side effect : it removes the bookmark!
-    
+
     :param str stamp_file_path: location of the pdf file containing the stamp used
     """
     pdf_watermark_reader = PyPDF2.PdfReader(open(stamp_file_path, 'rb'))
@@ -346,12 +341,12 @@ def add_stamp(src_pdf_file_path, dst_pdf_file_path, stamp_file_path, scale=1.0, 
             # page.mergePage(watermark)
             page.mergeScaledTranslatedPage(watermark, scale=scale, tx=tx, ty=ty)
             # pdf_writer.addBookmark(title='toto %s' % page_index, pagenum=page_index, parent=None, color=None, bold=False, italic=False, fit='/Fit')
-            
+
             pdf_writer.add_page(page)
         # pdf_writer.addBookmark('Hello, World Bookmark', 0, parent=None)
         # pdf_writer.addBookmark(title='toto', pagenum=2, parent=None, color=None, bold=False, italic=False, fit='/Fit')
         # pdf_writer.setPageMode("/UseOutlines")
-        
+
         with open(tmp_dst_pdf_file_path, 'wb') as dst_pdf_file:
             pdf_writer.write(dst_pdf_file)
             dst_pdf_file.close()
@@ -363,7 +358,6 @@ def add_stamp(src_pdf_file_path, dst_pdf_file_path, stamp_file_path, scale=1.0, 
 def check_pdf(src_pdf_file_path):
     """
     the purpose of this function is to detect inconsistencies in the given pdf file
-    
     an exception is raised if the pdf is malformed
     please note that all maformations are not detected yet
     """
@@ -384,17 +378,16 @@ def check_pdf(src_pdf_file_path):
                             # File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/PyPDF2/filters.py", line 361, in decodeStreamData
                             # raise NotImplementedError("unsupported filter %s" % filterType)
                             # NotImplementedError: unsupported filter /CCITTFaxDecode
-                            """
-                            The  CCITTFaxDecode filter decodes image data that has been encoded using
-                            either Group 3 or Group 4 CCITT facsimile (fax) encoding. CCITT encoding is
-                            designed to achieve efficient compression of monochrome (1 bit per pixel) image
-                            data at relatively low resolutions, and so is useful only for bitmap image data, not
-                            for color images, grayscale images, or general data.
-                    
-                            K < 0 --- Pure two-dimensional encoding (Group 4)
-                            K = 0 --- Pure one-dimensional encoding (Group 3, 1-D)
-                            K > 0 --- Mixed one- and two-dimensional encoding (Group 3, 2-D)
-                            """
+
+                            # The  CCITTFaxDecode filter decodes image data that has been encoded using
+                            # either Group 3 or Group 4 CCITT facsimile (fax) encoding. CCITT encoding is
+                            # designed to achieve efficient compression of monochrome (1 bit per pixel) image
+                            # data at relatively low resolutions, and so is useful only for bitmap image data, not
+                            # for color images, grayscale images, or general data.
+
+                            # K < 0 --- Pure two-dimensional encoding (Group 4)
+                            # K = 0 --- Pure one-dimensional encoding (Group 3, 1-D)
+                            # K > 0 --- Mixed one- and two-dimensional encoding (Group 3, 2-D)
                             if pdf_stream['/DecodeParms']['/K'] == -1:
                                 CCITT_group = 4
                             else:
@@ -412,7 +405,7 @@ def check_pdf(src_pdf_file_path):
                                 _, _, tb = sys.exc_info()
                                 # traceback.print_tb(tb) # Fixed format
                                 tb_info = traceback.extract_tb(tb)
-                                filename, line, func, text = tb_info[-1]  # @UnusedVariable
+                                filename, line, func, text = tb_info[-1]  # pylint: disable=unused-variable
                                 # print('assert error on file {} line {} in statement {}'.format(filename, line, text))
                                 if text == 'assert len(data) % rowlength == 0':
                                     # this seems to be a zealous assert that fails even on legitimate pdf output of pdflatex, so ignore it
@@ -422,7 +415,7 @@ def check_pdf(src_pdf_file_path):
                             print('data length : %d' % len(data))
                             num_pixels = width * height
                             print(width, height, num_pixels)
-                            color_space, indirect_object = pdf_stream['/ColorSpace']  # @UnusedVariable
+                            color_space, indirect_object = pdf_stream['/ColorSpace']  # pylint: disable=unused-variable
                             print("color_space :", color_space)
                             if color_space == '/DeviceRGB':
                                 mode = "RGB"
@@ -437,7 +430,7 @@ def check_pdf(src_pdf_file_path):
                                 expected_packed_image_data_size = bytes_per_line * height  # packed image size supposing image is stored as 1 bit per pixel
                                 if len(data) == expected_packed_image_data_size:
                                     one_bit_per_pixel = True
-                                
+
                                 if one_bit_per_pixel:
                                     mode = "1"  # (1-bit pixels, black and white, stored with one pixel per byte)
                                 else:
@@ -445,7 +438,7 @@ def check_pdf(src_pdf_file_path):
                             else:
                                 mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
                             if pdf_stream['/Filter'] == '/FlateDecode':
-                                img = Image.frombytes(mode, (width, height), data)  # @UnusedVariable
+                                img = Image.frombytes(mode, (width, height), data)  # noqa:F841 pylint: disable=unused-variable
                             elif pdf_stream['/Filter'] == '/DCTDecode':
                                 pass
                             elif pdf_stream['/Filter'] == '/JPXDecode':

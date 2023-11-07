@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import sys
 from pathlib import Path
 from pymusco import Piece, load_piece_description
 from pymusco import load_orchestra
@@ -10,15 +11,14 @@ from pymusco import scan_to_stub
 from pymusco import stub_to_print
 from pymusco import StampDesc
 
-import sys
 
-RED   = "\033[1;31m"  
-BLUE  = "\033[1;34m"
-CYAN  = "\033[1;36m"
-GREEN = "\033[0;32m"
-RESET = "\033[0;0m"
-BOLD    = "\033[;1m"
-REVERSE = "\033[;7m"
+RED     = "\033[1;31m"  # noqa:E221
+BLUE    = "\033[1;34m"  # noqa:E221
+CYAN    = "\033[1;36m"  # noqa:E221
+GREEN   = "\033[0;32m"  # noqa:E221
+RESET   = "\033[0;0m"  # noqa:E221
+BOLD    = "\033[;1m"  # noqa:E221
+REVERSE = "\033[;7m"  # noqa:E221
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='python musical score sheet music processor')
@@ -50,7 +50,7 @@ if __name__ == '__main__':
         orchestra = load_orchestra(Path(namespace.orchestra_file_path))
     except Exception as e:
         print(RED, str(e), RESET)
-        #sys.exit(1)
+        # sys.exit(1)
         raise
 
     if namespace.command == 'build-stub':
@@ -70,17 +70,17 @@ if __name__ == '__main__':
                 page_info_line_y_pos=piece.page_info_line_y_pos)
         except Exception as e:
             print(RED, "failed to process %s (%s)" % (scan_desc_file_path, str(e)), RESET)
-            #sys.exit(1)
+            # sys.exit(1)
             raise
 
     if namespace.command == 'build-print':
 
         try:
             track_selector = None
-            if namespace.track_selector == 'ts-auto' :
+            if namespace.track_selector == 'ts-auto':
                 musician_count = load_musician_count(Path(namespace.headcount_file_path))
                 track_selector = AutoTrackSelector(musician_count, orchestra)
-            if namespace.track_selector == 'ts-single' :
+            if namespace.track_selector == 'ts-single':
                 track_selector = SingleTrackSelector(namespace.track_id, orchestra)
             assert track_selector is not None
             stub_to_print(src_stub_file_path=Path(namespace.stub_file_path),
@@ -89,6 +89,5 @@ if __name__ == '__main__':
                 orchestra=orchestra)
         except Exception as e:
             print(RED, str(e), RESET)
-            #sys.exit(1)
+            # sys.exit(1)
             raise
-
