@@ -1,6 +1,6 @@
 ![musco-logo](./logo.svg)
 
-![Python application](https://github.com/g-raffy/pymusco/workflows/Python%20application/badge.svg)
+[![Python application](https://github.com/g-raffy/pymusco/actions/workflows/pythonapp.yml/badge.svg)](https://github.com/g-raffy/pymusco/actions/workflows/pythonapp.yml)
 
 # pymusco
 
