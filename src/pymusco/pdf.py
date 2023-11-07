@@ -218,8 +218,8 @@ def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
         # this page doesn't contain a raster image, so we keep it in its original vectorial form
         saved_image_file_path = "%s/%s.pdf" % (image_dir, image_name)
         with open(saved_image_file_path, 'wb') as pdf_file:
-            dst_pdf = PyPDF2.PdfFileWriter()
-            dst_pdf.addPage(pdf_page)
+            dst_pdf = PyPDF2.PdfWriter()
+            dst_pdf.add_page(pdf_page)
             dst_pdf.write(pdf_file)
     return saved_image_file_path
 
@@ -233,8 +233,8 @@ def extract_pdf_page(pdf_page, image_dir, image_name):
     """
     saved_image_file_path = "%s/%s.pdf" % (image_dir, image_name)
     with open(saved_image_file_path, 'wb') as pdf_file:
-        dst_pdf = PyPDF2.PdfFileWriter()
-        dst_pdf.addPage(pdf_page)
+        dst_pdf = PyPDF2.PdfWriter()
+        dst_pdf.add_page(pdf_page)
         dst_pdf.write(pdf_file)
     return saved_image_file_path
 
@@ -259,8 +259,8 @@ def pdf_page_to_png(pdf_page, resolution=72):
     """
     :param  pdf_page:
     """
-    dst_pdf = PyPDF2.PdfFileWriter()
-    dst_pdf.addPage(pdf_page)
+    dst_pdf = PyPDF2.PdfWriter()
+    dst_pdf.add_page(pdf_page)
     
     tmp_dir = Path('/tmp/pymusco')
     tmp_dir.mkdir(parents=True, exist_ok=True)
@@ -294,7 +294,7 @@ def add_bookmarks(pdf_in_filename, bookmarks_tree, pdf_out_filename=None):
     pdf_out.append(inputStream, import_bookmarks=False)
 
     # copy/preserve existing metainfo
-    pdf_in = PyPDF2.PdfFileReader(pdf_in_filename)
+    pdf_in = PyPDF2.PdfReader(pdf_in_filename)
     metaInfo = pdf_in.getDocumentInfo()
     if metaInfo:
         pdf_out.addMetadata(metaInfo)
@@ -325,8 +325,8 @@ def add_stamp(src_pdf_file_path, dst_pdf_file_path, stamp_file_path, scale=1.0, 
     
     :param str stamp_file_path: location of the pdf file containing the stamp used
     """
-    pdf_watermark_reader = PyPDF2.PdfFileReader(open(stamp_file_path, 'rb'))
-    watermark = pdf_watermark_reader.getPage(0)
+    pdf_watermark_reader = PyPDF2.PdfReader(open(stamp_file_path, 'rb'))
+    watermark = pdf_watermark_reader.pages[0]
 
     use_tmp_output_file = False
     if dst_pdf_file_path == src_pdf_file_path:
@@ -336,18 +336,18 @@ def add_stamp(src_pdf_file_path, dst_pdf_file_path, stamp_file_path, scale=1.0, 
     else:
         tmp_dst_pdf_file_path = dst_pdf_file_path
 
-    pdf_writer = PyPDF2.PdfFileWriter()
+    pdf_writer = PyPDF2.PdfWriter()
     with open(src_pdf_file_path, 'rb') as src_pdf_file:
-        pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
+        pdf_reader = PyPDF2.PdfReader(src_pdf_file)
         # pdfReader.numPages
         # 19
         for page_index in range(pdf_reader.numPages):
-            page = pdf_reader.getPage(page_index)
+            page = pdf_reader.pages[page_index]
             # page.mergePage(watermark)
             page.mergeScaledTranslatedPage(watermark, scale=scale, tx=tx, ty=ty)
             # pdf_writer.addBookmark(title='toto %s' % page_index, pagenum=page_index, parent=None, color=None, bold=False, italic=False, fit='/Fit')
             
-            pdf_writer.addPage(page)
+            pdf_writer.add_page(page)
         # pdf_writer.addBookmark('Hello, World Bookmark', 0, parent=None)
         # pdf_writer.addBookmark(title='toto', pagenum=2, parent=None, color=None, bold=False, italic=False, fit='/Fit')
         # pdf_writer.setPageMode("/UseOutlines")
@@ -368,10 +368,10 @@ def check_pdf(src_pdf_file_path):
     please note that all maformations are not detected yet
     """
     with open(src_pdf_file_path, 'rb') as src_pdf_file:
-        pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
+        pdf_reader = PyPDF2.PdfReader(src_pdf_file)
         for page_index in range(pdf_reader.numPages):
             print('page_index = %d' % page_index)
-            pdf_page = pdf_reader.getPage(page_index)
+            pdf_page = pdf_reader.pages[page_index]
             if '/XObject' in pdf_page['/Resources']:
                 xObject = pdf_page['/Resources']['/XObject'].getObject()
                 for obj in xObject:

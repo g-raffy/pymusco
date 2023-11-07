@@ -5,7 +5,7 @@ https://github.com/RussellLuo/pdfbookmarker/blob/master/add_bookmarks.py
 """
 # sudo port install py27-pypdf2
 import PyPDF2
-from PyPDF2 import PdfFileMerger, PdfFileReader
+from PyPDF2 import PdfFileMerger, PdfReader
 
 import tesseract
 
@@ -39,7 +39,7 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
     pymusco.add_stamp(src_pdf_file_path, tmp_pdf_file_path, os.getenv('HOME')+'/data/Perso/MeltingNotes_work.git/partitions/mno-stamp.pdf')
     #https://github.com/RussellLuo/pdfbookmarker/blob/master/add_bookmarks.py
 
-    # print(reader.outlines)
+    # print(reader.outline)
     # [{'/Title': '1 Introduction', '/Left': 99.213, '/Type': '/XYZ', '/Top': 742.911, '/Zoom': ..., '/Page': IndirectObject(513, 0)},
     #  {'/Title': '2 Convolutional Neural Networks', '/Left': 99.213, '/Type': '/XYZ', '/Top': 742.911, '/Zoom': ..., '/Page': IndirectObject(554, 0)}, [{'/Title': '2.1 Linear Image Filters', '/Left': 99.213, '/Type': '/XYZ', '/Top': 486.791, '/Zoom': ..., '/Page': IndirectObject(554, 0)},
     #  {'/Title': '2.2 CNN Layer Types', '/Left': 70.866, '/Type': '/XYZ', '/Top': 316.852, '/Zoom': ..., '/Page': IndirectObject(580, 0)},
@@ -115,9 +115,9 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
 
 
 def test(src_pdf_file_path, dst_pdf_file_path):
-    output = PyPDF2.PdfFileWriter() # open output
-    input = PyPDF2.PdfFileReader(open(src_pdf_file_path, 'rb')) # open input
-    output.addPage(input.getPage(0)) # insert page
+    output = PyPDF2.PdfWriter() # open output
+    input = PyPDF2.PdfReader(open(src_pdf_file_path, 'rb')) # open input
+    output.add_page(input.pages[0]) # insert page
     output.addBookmark('Hello, World Bookmark', 0, parent=None) # add bookmark
     outputStream = open(dst_pdf_file_path,'wb') #creating result pdf JCT
     output.write(outputStream) #writing to result pdf JCT

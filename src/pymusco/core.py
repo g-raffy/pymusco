@@ -4,10 +4,11 @@
 https://automatetheboringstuff.com/chapter13/
 https://github.com/RussellLuo/pdfbookmarker/blob/master/add_bookmarks.py
 """
+from typing import Dict, Any
 import abc
 # sudo port install py27-pypdf2
 import PyPDF2
-# from PyPDF2 import PdfFileMerger, PdfFileReader
+# from PyPDF2 import PdfFileMerger, PdfReader
 from PIL import Image
 import json
 
@@ -516,16 +517,16 @@ def get_stub_tracks(src_stub_file_path, orchestra):
     table_of_contents : TableOfContents
     """
     # note: this function was implemented using trial & error. There must be cleaner and easier ways to do this.
-    def find_page_number(page_contents_id, pdf_reader):
+    def find_page_number(page_contents_id: int, pdf_reader: PyPDF2.PdfReader):
         """Finds in the input pdf the page number for the given page contents id
 
         :param int page_contents_id:
-        :param PyPDF2.PdfFileReader pdf_reader: the input pdf file
+        :param PyPDF2.PdfReader pdf_reader: the input pdf file
         """
         # print('looking for page with id %d' % page_contents_id)
         for page_index in range(len(pdf_reader.pages)):
             page_object = pdf_reader.pages[page_index]
-            assert isinstance(page_object, PyPDF2.pdf.PageObject)
+            assert isinstance(page_object, PyPDF2._page.PageObject)
             # at this point, a page_object of the table of contents (with 23 links) looks like :
             # {'/Contents': IndirectObject(196, 0), '/Parent': IndirectObject(203, 0), '/Type': '/Page', '/Resources': IndirectObject(195, 0), '/MediaBox': [0, 0, 612, 792], '/Annots': [IndirectObject(171, 0), IndirectObject(172, 0), IndirectObject(173, 0), IndirectObject(174, 0), IndirectObject(175, 0), IndirectObject(176, 0), IndirectObject(177, 0), IndirectObject(178, 0), IndirectObject(179, 0), IndirectObject(180, 0), IndirectObject(181, 0), IndirectObject(182, 0), IndirectObject(183, 0), IndirectObject(184, 0), IndirectObject(185, 0), IndirectObject(186, 0), IndirectObject(187, 0), IndirectObject(188, 0), IndirectObject(189, 0), IndirectObject(190, 0), IndirectObject(191, 0), IndirectObject(192, 0), IndirectObject(193, 0)]}
             # while a normal page_object looks like
@@ -540,7 +541,7 @@ def get_stub_tracks(src_stub_file_path, orchestra):
 
         assert False, "failed to find in the given input pdf file, a page whose contents id is %s" % page_contents_id
 
-    def get_pdf_toc_item_page(pdf_toc_item, pdf_reader):
+    def get_pdf_toc_item_page(pdf_toc_item: Dict[str, Any], pdf_reader: PyPDF2.PdfReader) -> int:
         """
         :param dict(str, object) pdf_toc_item: an item of the pdf table of contents, such as
             {
@@ -551,7 +552,7 @@ def get_stub_tracks(src_stub_file_path, orchestra):
               '/Zoom': <PyPDF2.generic.NullObject object at 0x1110b1a90>,
               '/Page': IndirectObject(228, 0)
             }
-        :param PyPDF2.PdfFileReader pdf_reader:
+        :param PyPDF2.PdfReader pdf_reader:
         :return int: the page number which is the target of the given pdf toc item.
 
         """
@@ -563,7 +564,8 @@ def get_stub_tracks(src_stub_file_path, orchestra):
 
         # at this point, linked_page_indirect_object is of type PyPDF2.generic.IndirectObject, with a value such as:
         # IndirectObject(228, 0)
-        linked_page_object = pdf_reader.resolvedObjects[(0, linked_page_indirect_object.idnum)]
+        print(dir(pdf_reader))
+        linked_page_object = pdf_reader.resolved_objects[(0, linked_page_indirect_object.idnum)]
         # at this point, linked_page_object is of type PyPDF2.generic.DictionaryObject with a value such as :
         # {
         #   '/Contents': IndirectObject(229, 0),
@@ -576,8 +578,8 @@ def get_stub_tracks(src_stub_file_path, orchestra):
         return find_page_number(linked_page_content_id, pdf_reader)
 
     with open(src_stub_file_path, 'rb') as stub_file:
-        reader = PyPDF2.PdfFileReader(stub_file)
-        pdf_toc = reader.outlines
+        reader = PyPDF2.PdfReader(stub_file)
+        pdf_toc = reader.outline
         # pdf_toc is a list of toc items like the following example :
         # [
         #     {'/Title': u'c piccolo', '/Left': 155.354, '/Type': '/XYZ', '/Top': 669.191, '/Zoom': <PyPDF2.generic.NullObject object at 0x1110b1a90>, '/Page': IndirectObject(29, 0)},

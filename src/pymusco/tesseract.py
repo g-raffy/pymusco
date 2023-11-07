@@ -63,11 +63,11 @@ def extract_pdf_text(src_pdf_file_path):
     os.environ["TESSDATA_PREFIX"] = '/opt/local/share'  # this is required otherwise tesseract complains about file permissions
 
     with open(src_pdf_file_path, 'rb') as src_pdf_file:
-        pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
+        pdf_reader = PyPDF2.PdfReader(src_pdf_file)
         # pdfReader.numPages
         # 19
         for page_index in range(pdf_reader.numPages):
-            page = pdf_reader.getPage(page_index)
+            page = pdf_reader.pages[page_index]
 
             image = pdf_page_to_png(page, resolution=72)
             # extract_pdf_page_images(page)

@@ -338,12 +338,12 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
 
     scanned_image_file_paths = []
     with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
-        pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
+        pdf_reader = PyPDF2.PdfReader(src_pdf_file)
         # pdfReader.numPages
         # 19
-        for page_index in range(pdf_reader.numPages):
+        for page_index in range(len(pdf_reader.pages)):
             print('page_index = %d' % page_index)
-            page = pdf_reader.getPage(page_index)
+            page = pdf_reader.pages[page_index]
             # image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
             image_file_path = extract_pdf_page(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
 
@@ -370,10 +370,10 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
     dst_print_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(dst_print_file_path, 'wb') as print_file, open(dst_print_file_path.with_suffix('.log'), 'wt') as log_file:
-        print_pdf = PyPDF2.PdfFileWriter()
+        print_pdf = PyPDF2.PdfWriter()
         log_file.write("contents of print file %s :\n\n" % dst_print_file_path)
         with open(src_stub_file_path, 'rb') as stub_file:
-            stub_pdf = PyPDF2.PdfFileReader(stub_file)
+            stub_pdf = PyPDF2.PdfReader(stub_file)
 
             sorted_tracks = [Track(track_id, orchestra) for track_id in track_to_print_count.keys()]
             sorted_tracks.sort()
@@ -386,10 +386,10 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
                 num_copies = track_to_print_count[track.id]
                 if num_copies > 0:
                     first_page_index = stub_toc.get_tracks_first_page_index([track])
-                    last_page_index = stub_toc.get_tracks_last_page_index([track], stub_pdf.getNumPages())
+                    last_page_index = stub_toc.get_tracks_last_page_index([track], len(stub_pdf.pages))
                     print('adding %d copies of %s (pages %d-%d)' % (num_copies, track.id, first_page_index, last_page_index))
                     assert first_page_index <= last_page_index
-                    assert last_page_index <= stub_pdf.getNumPages()
+                    assert last_page_index <= len(stub_pdf.pages)
                     page_range = (first_page_index, last_page_index)
                     if page_range in ranges:
                         # this page range has already been encountered. This can happen when multiple tracks share the same pages (eg crash cymbals are on the same pages as suspended cybal)
@@ -415,9 +415,9 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
                 # print(page_range, num_copies)
                 for copy_index in range(num_copies):  # @UnusedVariable pylint: disable=unused-variable
                     for page_index in range(first_page_index, last_page_index + 1):
-                        track_page = stub_pdf.getPage(page_index - 1)  # -1 to convert 1-based index into 0-based index
+                        track_page = stub_pdf.pages[page_index - 1]  # -1 to convert 1-based index into 0-based index
                         # print('adding page %d' % page_index)
-                        print_pdf.addPage(track_page)
+                        print_pdf.add_page(track_page)
 
             log_file.write("\nunprinted tracks :\n\n")
             for label in stub_toc.get_track_ids():
@@ -443,10 +443,10 @@ def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, spl
     tmp_dir.mkdir(parents=True, exist_ok=True)
     scanned_image_file_paths = []
     with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
-        pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
+        pdf_reader = PyPDF2.PdfReader(src_pdf_file)
         for page_index in range(pdf_reader.numPages):
             print('page_index = %d' % page_index)
-            double_page = pdf_reader.getPage(page_index)
+            double_page = pdf_reader.pages[page_index]
             image_name = ('page%03d' % page_index)
             double_image_file_path = extract_pdf_page_main_image(double_page, image_dir=tmp_dir, image_name=image_name)
             double_png_file_path = "%s.png" % double_image_file_path
@@ -492,10 +492,10 @@ def crop_pdf(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, x_scale, y_sc
     tmp_dir.mkdir(parents=True, exist_ok=True)
     scanned_image_file_paths = []
     with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
-        pdf_reader = PyPDF2.PdfFileReader(src_pdf_file)
+        pdf_reader = PyPDF2.PdfReader(src_pdf_file)
         for page_index in range(pdf_reader.numPages):
             print('page_index = %d' % page_index)
-            page = pdf_reader.getPage(page_index)
+            page = pdf_reader.pages[page_index]
             image_name = ('page%03d' % page_index)
             image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=image_name)
             png_file_path = "%s.png" % image_file_path
@@ -519,8 +519,8 @@ def crop_pdf(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, x_scale, y_sc
 def pdf_is_readable_by_pypdf2(src_pdf_path):
     with open(src_pdf_path, 'rb') as src_pdf_file:
         try:
-            src_pdf = PyPDF2.PdfFileReader(src_pdf_file)
-            num_pages = src_pdf.getNumPages()  # noqa:F841
+            src_pdf = PyPDF2.PdfReader(src_pdf_file)
+            num_pages = len(src_pdf.pages)  # noqa:F841
             return True
         except NotImplementedError as error:
             if error.message == "only algorithm code 1 and 2 are supported":
@@ -538,7 +538,7 @@ def merge_pdf(dst_pdf_path, src_pdf_paths):
     dst_pdf_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(dst_pdf_path, 'wb') as dst_pdf_file:
-        dst_pdf = PyPDF2.PdfFileWriter()
+        dst_pdf = PyPDF2.PdfWriter()
         for src_pdf_path in src_pdf_paths:
             print(src_pdf_path)
             if not pdf_is_readable_by_pypdf2(src_pdf_path):
@@ -547,10 +547,10 @@ def merge_pdf(dst_pdf_path, src_pdf_paths):
                 remove_unneeded_pdf_password(src_pdf_path, fixed_pdf_path)
                 src_pdf_path = fixed_pdf_path
             with open(src_pdf_path, 'rb') as src_pdf_file:
-                src_pdf = PyPDF2.PdfFileReader(src_pdf_file)
-                for page_index in range(src_pdf.getNumPages()):
-                    src_page = src_pdf.getPage(page_index)
-                    dst_pdf.addPage(src_page)
+                src_pdf = PyPDF2.PdfReader(src_pdf_file)
+                for page_index in range(len(src_pdf.pages)):
+                    src_page = src_pdf.pages[page_index]
+                    dst_pdf.add_page(src_page)
                 dst_pdf.write(dst_pdf_file)
 
 
@@ -569,7 +569,7 @@ def remove_unneeded_pdf_password(src_pdf_path, dst_pdf_path):
                You did not supply this password. Please respect any copyright.
 
         This causes pypdf2 to fail retreiving the number of pages :
-            File "/usr/lib/python3/dist-packages/PyPDF2/pdf.py", line 1147, in getNumPages
+            File "/usr/lib/python3/dist-packages/PyPDF2/pdf.py", line 1147, in pages
                 self.decrypt('')
             File "/usr/lib/python3/dist-packages/PyPDF2/pdf.py", line 1987, in decrypt
                 return self._decrypt(password)
