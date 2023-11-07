@@ -8,6 +8,17 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:  # so that this github workflow can be triggered manually
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
 
 jobs:
   build:
@@ -59,4 +70,7 @@ jobs:
         pytest
     - name: Test with make
       run: |
+        echo "Log level: $LOGLEVEL (this environment variable is unused yet)"
         make clean; make test
+      env:
+        LOGLEVEL: ${{ inputs.logLevel }}
