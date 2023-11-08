@@ -36,7 +36,7 @@ Digitizing original sheet music can be illegal depending on countries and editor
 
 The following command builds the [stub-pdf](#stub-pdf) `$PYMUSCO_WORKSPACE_ROOT/stubs/007-captain-future-galaxy-drift-1.pdf` from the [scan-pdf](#scan-pdf) `$PYMUSCO_WORKSPACE_ROOT/scans/007-captain-future-galaxy-drift-1.pdf` and the [piece description file](#piece-description-file) `$PYMUSCO_WORKSPACE_ROOT/scans/007-captain-future-galaxy-drift-1.desc`:
 ```bash
-PYTHONPATH=./src ./src/pymusco.py \
+PYTHONPATH=./src ./src/apps/pymusco \
    --orchestra-file-path samples/jazz.orchestra \
    build-stub \
    --scan-file-path samples/scans/007-captain-future-galaxy-drift-1.pdf \
@@ -48,7 +48,7 @@ PYTHONPATH=./src ./src/pymusco.py \
 The following command builds the [print-pdf](#print-pdf) `$PYMUSCO_WORKSPACE_ROOT/prints/007-captain-future-galaxy-drift-1.pdf` from the [stub-pdf](#stub-pdf) `$PYMUSCO_WORKSPACE_ROOT/stubs/007-captain-future-galaxy-drift-1.pdf` and the [headcount file](#ts-auto) `$PYMUSCO_WORKSPACE_ROOT/samples/jazz.headcount`:
 
 ```bash
-PYTHONPATH=./src ./src/pymusco.py \
+PYTHONPATH=./src ./src/apps/pymusco \
     --orchestra-file-path samples/jazz.orchestra \
     build-print \
     --stub-file-path samples/stubs/007-captain-future-galaxy-drift-1.pdf \
