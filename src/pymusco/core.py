@@ -8,7 +8,6 @@ from typing import Dict, Any
 import abc
 # sudo port install py27-pypdf2
 import PyPDF2
-# from PyPDF2 import PdfFileMerger, PdfReader
 from PIL import Image
 import json
 
