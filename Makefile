@@ -19,13 +19,13 @@ clean:
 	rm -f samples/prints/007-captain-future-galaxy-drift-1-saxo-soprano.pdf
 
 samples/stubs/007-captain-future-galaxy-drift-1.pdf: samples/jazz.orchestra samples/scans/007-captain-future-galaxy-drift-1.pdf samples/scans/007-captain-future-galaxy-drift-1.desc  
-	PYTHONPATH=./src ./src/pymusco.py --orchestra-file-path $(word 1,$^) build-stub --scan-file-path $(word 2,$^) --scan-desc-file-path $(word 3,$^) --stub-file-path $@
+	PYTHONPATH=./src ./src/apps/pymusco --orchestra-file-path $(word 1,$^) build-stub --scan-file-path $(word 2,$^) --scan-desc-file-path $(word 3,$^) --stub-file-path $@
 
 samples/prints/007-captain-future-galaxy-drift-1.pdf: samples/jazz.orchestra samples/stubs/007-captain-future-galaxy-drift-1.pdf samples/jazz.headcount 
-	PYTHONPATH=./src ./src/pymusco.py --orchestra-file-path $(word 1,$^) build-print --stub-file-path $(word 2,$^) --print-file-path $@ ts-auto --headcount-file-path $(word 3,$^)
+	PYTHONPATH=./src ./src/apps/pymusco --orchestra-file-path $(word 1,$^) build-print --stub-file-path $(word 2,$^) --print-file-path $@ ts-auto --headcount-file-path $(word 3,$^)
 
 samples/prints/007-captain-future-galaxy-drift-1-saxo-soprano.pdf: samples/jazz.orchestra samples/stubs/007-captain-future-galaxy-drift-1.pdf 
-	PYTHONPATH=./src ./src/pymusco.py --orchestra-file-path $(word 1,$^) build-print --stub-file-path $(word 2,$^) --print-file-path $@ ts-single 'bb soprano saxophone'
+	PYTHONPATH=./src ./src/apps/pymusco --orchestra-file-path $(word 1,$^) build-print --stub-file-path $(word 2,$^) --print-file-path $@ ts-single 'bb soprano saxophone'
 
 
 .PHONY: test
