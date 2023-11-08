@@ -1,0 +1,9 @@
+{
+	"python.defaultInterpreterPath": "pymusco.venv/bin/python",
+	"pylint.args": [
+		"--disable=C0301",
+		"--disable=C0115",
+		"--disable=C0116",
+		"--generated-members=cv2.*"
+	]
+}
