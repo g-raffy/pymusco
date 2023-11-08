@@ -9,16 +9,15 @@ import subprocess
 import hashlib
 import time
 import shutil
-import PyPDF2  # sudo apt-get install python3-pypdf2
+import abc
 from pathlib import Path
+import PyPDF2  # sudo apt-get install python3-pypdf2
+import cv2   # sudo apt-get install python3-opencv
 from .core import Track
 from .pdf import extract_pdf_page_main_image
 from .pdf import extract_pdf_page
 from .core import get_stub_tracks
 from .pdf import check_pdf
-
-import cv2   # sudo apt-get install python3-opencv
-import abc
 
 
 def md5(fname):
@@ -37,22 +36,22 @@ def is_locked(filepath):
     file_object = None
     if os.path.exists(filepath):
         try:
-            print("Trying to open %s." % filepath)
+            print(f"Trying to open {filepath}.")
             buffer_size = 8
             # Opening file in append mode and read the first 8 characters.
             file_object = open(filepath, 'a', buffer_size)  # pylint: disable=unspecified-encoding
             if file_object:
-                print("%s is not locked." % filepath)
+                print(f"{filepath} is not locked.")
                 locked = False
         except IOError as e:
-            print("File is locked (unable to open in append mode). %s." % e.strerror)
+            print(f"File is locked (unable to open in append mode). {e.strerror}.")
             locked = True
         finally:
             if file_object:
                 file_object.close()
-                print("%s closed." % filepath)
+                print(f"{filepath} closed.")
     else:
-        print("%s not found." % filepath)
+        print(f"{filepath} not found.")
     return locked
 
 
@@ -67,14 +66,12 @@ def wait_for_files(filepaths):
         # If the file doesn't exist, wait wait_time seconds and try again
         # until it's found.
         while not os.path.exists(filepath):
-            print("%s hasn't arrived. Waiting %s seconds." %
-                  (filepath, wait_time))
+            print(f"{filepath} hasn't arrived. Waiting {wait_time} seconds.")
             time.sleep(wait_time)
         # If the file exists but locked, wait wait_time seconds and check
         # again until it's no longer locked by another process.
         while is_locked(filepath):
-            print("%s is currently in use. Waiting %s seconds." %
-                  (filepath, wait_time))
+            print(f"{filepath} is currently in use. Waiting {wait_time} seconds.")
             time.sleep(wait_time)
 
 
@@ -143,7 +140,8 @@ class StubContents(PdfContents):
         current_track_page_number = 0
         current_track_num_pages = 0
         date_as_string = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
-        for page_index in range(1, len(self.image_file_paths) + 1):
+        num_pages = len(self.image_file_paths)
+        for page_index in range(1, num_pages + 1):
             if self.toc:
                 page_tracks = self.toc.get_tracks_for_page(page_index)
                 if len(page_tracks) > 0:
@@ -151,10 +149,10 @@ class StubContents(PdfContents):
                     current_tracks = page_tracks
                     # print('current tracks :', [track.id for track in current_tracks])
                     current_track_page_number = 1
-                    current_track_num_pages = toc.get_tracks_last_page_index(current_tracks, len(self.image_file_paths)) - toc.get_tracks_first_page_index(current_tracks) + 1
+                    current_track_num_pages = toc.get_tracks_last_page_index(current_tracks, num_pages) - toc.get_tracks_first_page_index(current_tracks) + 1
                     self.page_to_section[page_index] = '/'.join([track.id for track in current_tracks])
-
-                self.page_footers[page_index] = r'%s on %s - page %d/%d : %s - page %d/%d' % (self.title, date_as_string, page_index, len(self.image_file_paths), '/'.join([track.id for track in current_tracks]), current_track_page_number, current_track_num_pages)
+                tracks_as_str = '/'.join([track.id for track in current_tracks])
+                self.page_footers[page_index] = f'{self.title} on {date_as_string} - page {page_index}/{num_pages} : {tracks_as_str} - page {current_track_page_number}/{current_track_num_pages}'
 
             current_track_page_number += 1
 
@@ -285,7 +283,7 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
         command = ["pdflatex", "-halt-on-error", "./stub.tex"]
         p = subprocess.Popen(command, cwd=tmp_dir)
         return_code = p.wait()
-        assert return_code == 0, "pass %d the command '%s' failed with return code %d" % (pass_index, str(command), return_code)
+        assert return_code == 0, f"pass {pass_index} the command '{str(command)}' failed with return code {return_code}"
         if bug1_is_alive:
             assert not is_locked(tmp_dir + '/stub.pdf')
             time.sleep(10)  # this seems to prevent the file corruption
@@ -293,7 +291,7 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
     stub_hash = 0
     if bug1_is_alive:
         stub_hash = md5(tmp_dir / 'stub.pdf')
-        print("stub hash of %s : %s" % (tmp_dir + '/stub.pdf', str(stub_hash)))
+        print(f"stub hash of {tmp_dir + '/stub.pdf'} : {str(stub_hash)}")
         check_pdf(tmp_dir + '/stub.pdf')
 
     dst_pdf_file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -302,7 +300,7 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
     shutil.move(tmp_dir / 'stub.pdf', dst_pdf_file_path)
     if bug1_is_alive:
         stub_hash_after_move = md5(dst_pdf_file_path)
-        print("stub hash of %s : %s" % (dst_pdf_file_path, str(stub_hash_after_move)))
+        print(f"stub hash of {dst_pdf_file_path} : {str(stub_hash_after_move)}")
         assert stub_hash == stub_hash_after_move
         check_pdf(dst_pdf_file_path)
 
@@ -330,7 +328,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         try:
             track = Track(track_id, orchestra)  # noqa:F841 @UnusedVariable  pylint: disable=unused-variable
         except KeyError as e:  # noqa:F841 pylint: disable=unused-variable
-            raise KeyError("Failed to identify track id '%s'. Either its syntax is incorrect or the related instrument in not yet registered in the orchestra." % (track_id)) from e
+            raise KeyError(f"Failed to identify track id '{track_id}'. Either its syntax is incorrect or the related instrument in not yet registered in the orchestra.") from e
 
     # tmp_dir = tempfile.mkdtemp()
     tmp_dir = Path('/tmp/pymusco')
@@ -341,13 +339,14 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         pdf_reader = PyPDF2.PdfReader(src_pdf_file)
         # pdfReader.numPages
         # 19
-        for page_index in range(len(pdf_reader.pages)):
-            print('page_index = %d' % page_index)
-            page = pdf_reader.pages[page_index]
+        page_index = 0
+        for page in pdf_reader.pages:
+            print(f'page_index = {page_index}')
             # image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
-            image_file_path = extract_pdf_page(page, image_dir=tmp_dir, image_name='page%03d' % page_index)
+            image_file_path = extract_pdf_page(page, image_dir=tmp_dir, image_name=f'page{page_index:03d}')
 
             scanned_image_file_paths.append(image_file_path)
+            page_index += 1
             # break
     stamp_descs = stamp_descs if stamp_descs is not None else []
     images_to_pdf(StubContents(image_file_paths=scanned_image_file_paths, toc=toc, title=title, stamp_descs=stamp_descs, page_info_line_y_pos=page_info_line_y_pos), dst_stub_pdf_file_path)
@@ -371,7 +370,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
 
     with open(dst_print_file_path, 'wb') as print_file, open(dst_print_file_path.with_suffix('.log'), 'wt', encoding='utf-8') as log_file:
         print_pdf = PyPDF2.PdfWriter()
-        log_file.write("contents of print file %s :\n\n" % dst_print_file_path)
+        log_file.write(f"contents of print file {dst_print_file_path} :\n\n")
         with open(src_stub_file_path, 'rb') as stub_file:
             stub_pdf = PyPDF2.PdfReader(stub_file)
 
@@ -387,7 +386,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
                 if num_copies > 0:
                     first_page_index = stub_toc.get_tracks_first_page_index([track])
                     last_page_index = stub_toc.get_tracks_last_page_index([track], len(stub_pdf.pages))
-                    print('adding %d copies of %s (pages %d-%d)' % (num_copies, track.id, first_page_index, last_page_index))
+                    print(f'adding {num_copies} copies of {track.id} (pages {first_page_index}-{last_page_index})')
                     assert first_page_index <= last_page_index
                     assert last_page_index <= len(stub_pdf.pages)
                     page_range = (first_page_index, last_page_index)
@@ -411,7 +410,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
             for page_range in ranges:
                 (first_page_index, last_page_index) = page_range
                 num_copies = range_to_num_copies[page_range]
-                log_file.write("%d copies of %s\n" % (num_copies, '/'.join(range_to_tracks[page_range])))
+                log_file.write(f"{num_copies} copies of {'/'.join(range_to_tracks[page_range])}\n")
                 # print(page_range, num_copies)
                 for copy_index in range(num_copies):  # @UnusedVariable pylint: disable=unused-variable
                     for page_index in range(first_page_index, last_page_index + 1):
@@ -431,7 +430,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
                     if label_is_printed:
                         break
                 if not label_is_printed:
-                    log_file.write("no copies of %s\n" % label)
+                    log_file.write(f"no copies of {label}\n")
             print_pdf.write(print_file)
 
 
@@ -445,11 +444,11 @@ def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, spl
     with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
         pdf_reader = PyPDF2.PdfReader(src_pdf_file)
         for page_index in range(pdf_reader.numPages):
-            print('page_index = %d' % page_index)
+            print(f'page_index = {page_index}')
             double_page = pdf_reader.pages[page_index]
-            image_name = ('page%03d' % page_index)
+            image_name = f'page{page_index:03d}'
             double_image_file_path = extract_pdf_page_main_image(double_page, image_dir=tmp_dir, image_name=image_name)
-            double_png_file_path = "%s.png" % double_image_file_path
+            double_png_file_path = f"{double_image_file_path}.png"
             # convert to png because opencv doesn't handle 1-bit tiff images
             subprocess.Popen(['convert', double_image_file_path, double_png_file_path]).communicate()
             # this command can fail with
@@ -476,11 +475,11 @@ def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, spl
             assert double_page is not None
             x_split_pos = int(double_page.shape[1] * split_pos[page_index % len(split_pos)])
 
-            single_image_file_path = '%s/%s_left.png' % (tmp_dir, image_name)
+            single_image_file_path = f'{tmp_dir}/{image_name}_left.png'
             cv2.imwrite(single_image_file_path, double_page[:, :x_split_pos])
             scanned_image_file_paths.append(single_image_file_path)
 
-            single_image_file_path = '%s/%s_right.png' % (tmp_dir, image_name)
+            single_image_file_path = f'{tmp_dir}/{image_name}_right.png'
             cv2.imwrite(single_image_file_path, double_page[:, x_split_pos:])
             scanned_image_file_paths.append(single_image_file_path)
 
@@ -494,11 +493,11 @@ def crop_pdf(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, x_scale, y_sc
     with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
         pdf_reader = PyPDF2.PdfReader(src_pdf_file)
         for page_index in range(pdf_reader.numPages):
-            print('page_index = %d' % page_index)
+            print(f'page_index = {page_index}')
             page = pdf_reader.pages[page_index]
-            image_name = ('page%03d' % page_index)
+            image_name = f'page{page_index:03d}'
             image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=image_name)
-            png_file_path = "%s.png" % image_file_path
+            png_file_path = f"{image_file_path}.png"
             # convert to png because opencv doesn't handle 1-bit tiff images
             subprocess.Popen(['convert', image_file_path, png_file_path]).communicate()
             # double_image_file_path='/Users/graffy/data/Perso/pymusco/tmp/page177.png'
@@ -509,7 +508,7 @@ def crop_pdf(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, x_scale, y_sc
             x_size = int(x_scale * image.shape[1])
             y_size = int(y_scale * image.shape[0])
 
-            cropped_image_file_path = '%s/%s_cropped.png' % (tmp_dir, image_name)
+            cropped_image_file_path = f'{tmp_dir}/{image_name}_cropped.png'
             cv2.imwrite(cropped_image_file_path, image[:y_size, :x_size])
             scanned_image_file_paths.append(cropped_image_file_path)
 
@@ -532,9 +531,6 @@ def pdf_is_readable_by_pypdf2(src_pdf_path):
 
 
 def merge_pdf(dst_pdf_path, src_pdf_paths):
-    """
-
-    """
     dst_pdf_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(dst_pdf_path, 'wb') as dst_pdf_file:
@@ -542,14 +538,13 @@ def merge_pdf(dst_pdf_path, src_pdf_paths):
         for src_pdf_path in src_pdf_paths:
             print(src_pdf_path)
             if not pdf_is_readable_by_pypdf2(src_pdf_path):
-                print('warning : %s is not readable by pypdf2... converting it' % src_pdf_path)
+                print(f'warning : {src_pdf_path} is not readable by pypdf2... converting it')
                 fixed_pdf_path = '/tmp/readable-by-pypdf2.pdf'
                 remove_unneeded_pdf_password(src_pdf_path, fixed_pdf_path)
                 src_pdf_path = fixed_pdf_path
             with open(src_pdf_path, 'rb') as src_pdf_file:
                 src_pdf = PyPDF2.PdfReader(src_pdf_file)
-                for page_index in range(len(src_pdf.pages)):
-                    src_page = src_pdf.pages[page_index]
+                for src_page in range(src_pdf.pages):
                     dst_pdf.add_page(src_page)
                 dst_pdf.write(dst_pdf_file)
 
