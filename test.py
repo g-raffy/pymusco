@@ -3,41 +3,25 @@
 https://automatetheboringstuff.com/chapter13/
 https://github.com/RussellLuo/pdfbookmarker/blob/master/add_bookmarks.py
 """
+import os
+import copy
 # sudo port install py27-pypdf2
 import PyPDF2
-from PyPDF2 import PdfFileMerger, PdfReader
 
-import tesseract
-
-#from wand.image import Image
-import io
-import os
-import cv2
-from PIL import Image
-import struct
-import subprocess
 import pymusco
-import sys
-import copy
 
 # https://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python/34116472#34116472
 
-"""
-Extract images from pdf: http://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python
-Extract images coded with CCITTFaxDecode in .net: http://stackoverflow.com/questions/2641770/extracting-image-from-pdf-with-ccittfaxdecode-filter
-TIFF format and tags: http://www.awaresystems.be/imaging/tiff/faq.html
-"""
+# Extract images from pdf: http://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python
+# Extract images coded with CCITTFaxDecode in .net: http://stackoverflow.com/questions/2641770/extracting-image-from-pdf-with-ccittfaxdecode-filter
+# TIFF format and tags: http://www.awaresystems.be/imaging/tiff/faq.html
 
-
-#sys.path.append('/opt/local/bin')  # make sure /opt/local/bin/tesseract is found
-#actually, this has no effect on subprocess.Popen(['/opt/local/bin/tesseract']) https://stackoverflow.com/questions/5658622/python-subprocess-popen-environment-path
-#
 
 def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
 
-    tmp_pdf_file_path='/tmp/tmp1.pdf'
-    pymusco.add_stamp(src_pdf_file_path, tmp_pdf_file_path, os.getenv('HOME')+'/data/Perso/MeltingNotes_work.git/partitions/mno-stamp.pdf')
-    #https://github.com/RussellLuo/pdfbookmarker/blob/master/add_bookmarks.py
+    tmp_pdf_file_path = '/tmp/tmp1.pdf'
+    pymusco.add_stamp(src_pdf_file_path, tmp_pdf_file_path, os.getenv('HOME') + '/data/Perso/MeltingNotes_work.git/partitions/mno-stamp.pdf')
+    # https://github.com/RussellLuo/pdfbookmarker/blob/master/add_bookmarks.py
 
     # print(reader.outline)
     # [{'/Title': '1 Introduction', '/Left': 99.213, '/Type': '/XYZ', '/Top': 742.911, '/Zoom': ..., '/Page': IndirectObject(513, 0)},
@@ -77,7 +61,7 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
         'bb trombone 1 bc'
         'bb trombone 2 tc'
         'bb trombone 2 bc'
-        'c baritone horn bc' # aka 'baritone'
+        'c baritone horn bc'  # aka 'baritone'
         'c baritone horn tc'
         'bb baritone horn bc'
         'c tuba'
@@ -93,12 +77,12 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
         'shaker'
         'mallet percussion'
         'timpani'  # timbales
-        
+
     ]
     bookmarks_tree = []
     page_index = 0
     for label in pages_labels:
-        bookmarks_tree.append( (label, page_index, []) )
+        bookmarks_tree.append((label, page_index, []))
         page_index += 1
     #     bookmarks_tree = [
     #         (u'Piccolo', 0, []),
@@ -113,15 +97,14 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
     pymusco.addBookmarks(tmp_pdf_file_path, bookmarks_tree, dst_pdf_file_path)
 
 
-
 def test(src_pdf_file_path, dst_pdf_file_path):
-    output = PyPDF2.PdfWriter() # open output
-    input = PyPDF2.PdfReader(open(src_pdf_file_path, 'rb')) # open input
-    output.add_page(input.pages[0]) # insert page
-    output.addBookmark('Hello, World Bookmark', 0, parent=None) # add bookmark
-    outputStream = open(dst_pdf_file_path,'wb') #creating result pdf JCT
-    output.write(outputStream) #writing to result pdf JCT
-    outputStream.close() #closing result JCT
+    writer = PyPDF2.PdfWriter()  # open output
+    reader = PyPDF2.PdfReader(open(src_pdf_file_path, 'rb'))  # open input
+    writer.add_page(reader.pages[0])  # insert page
+    writer.addBookmark('Hello, World Bookmark', 0, parent=None)  # add bookmark
+    outputStream = open(dst_pdf_file_path, 'wb')  # creating result pdf JCT
+    writer.write(outputStream)  # writing to result pdf JCT
+    outputStream.close()  # closing result JCT
 
 
 # test(os.getenv('HOME')+'/Google Drive/partitions/talons/neonlight serenade.pdf', os.getenv('HOME')+'/toto/serenade.pdf')
@@ -139,7 +122,7 @@ musician_count = {
     'euphonist': 3,
     'tubist': 1,
     'percussionist': 3
-    }
+}
 
 orchestra = pymusco.Harmony()
 
@@ -149,46 +132,46 @@ scan_toc = pymusco.TableOfContents(orchestra, {
     'c piccolo': 1,
     'c flute': 3,
     'oboe': 5,
-    'bassoon' : 7,
-    'bb clarinet 1' : 9,
-    'bb clarinet 2' : 11,
-    'bb clarinet 3' : 13,
-    'eb alto clarinet' : 15,
-    'bb bass clarinet' : 17,
-    'eb alto saxophone 1' : 19,
-    'eb alto saxophone 2' : 21,
-    'bb tenor saxophone' : 23,
-    'eb baritone saxophone' : 25,
-    'bb trumpet 1' : 27,
-    'bb trumpet 2' : 29,
-    'bb trumpet 3' : 31,
-    'f horn 1' : 33,
-    'f horn 2' : 35,
-    'c trombone 1' : 37,
-    'c trombone 2' : 39,
-    'c baritone horn bc' : 41,
-    'c baritone horn tc' : 43,
-    'bb baritone horn bc' : 45,
-    'c tuba' : 47,
-    'drum set' : 49,
-    'clash cymbals' : 51,
-    'concert bass drum' : 51,
-    'suspended cymbal' : 51,
-    'bongos' : 51,
-    'shaker' : 51,
-    'bells' : 52,
-    'xylophone' : 52,
-    'timpani' : 53,
-    'eb horn 1' : 54,
-    'eb horn 2' : 56,
-    'bb trombone 1 tc' : 58,
-    'bb trombone 1 bc' : 60,
-    'bb trombone 2 tc' : 62,
-    'bb trombone 2 bc' : 64,
-    'bb bass tc' : 66,
-    'bb bass bc' : 68,
-    'eb bass tc' : 70,
-    'eb bass bc' : 72,
+    'bassoon': 7,
+    'bb clarinet 1': 9,
+    'bb clarinet 2': 11,
+    'bb clarinet 3': 13,
+    'eb alto clarinet': 15,
+    'bb bass clarinet': 17,
+    'eb alto saxophone 1': 19,
+    'eb alto saxophone 2': 21,
+    'bb tenor saxophone': 23,
+    'eb baritone saxophone': 25,
+    'bb trumpet 1': 27,
+    'bb trumpet 2': 29,
+    'bb trumpet 3': 31,
+    'f horn 1': 33,
+    'f horn 2': 35,
+    'c trombone 1': 37,
+    'c trombone 2': 39,
+    'c baritone horn bc': 41,
+    'c baritone horn tc': 43,
+    'bb baritone horn bc': 45,
+    'c tuba': 47,
+    'drum set': 49,
+    'clash cymbals': 51,
+    'concert bass drum': 51,
+    'suspended cymbal': 51,
+    'bongos': 51,
+    'shaker': 51,
+    'bells': 52,
+    'xylophone': 52,
+    'timpani': 53,
+    'eb horn 1': 54,
+    'eb horn 2': 56,
+    'bb trombone 1 tc': 58,
+    'bb trombone 1 bc': 60,
+    'bb trombone 2 tc': 62,
+    'bb trombone 2 bc': 64,
+    'bb bass tc': 66,
+    'bb bass bc': 68,
+    'eb bass tc': 70,
+    'eb bass bc': 72,
     })
 
 
@@ -204,8 +187,8 @@ pymusco.scan_to_stub(os.getcwd() + '/samples/666-japanese-tango.pdf', './results
 
 
 stub_toc = copy.deepcopy(scan_toc)
-num_toc_pages = 2
-stub_toc.shift_page_indices(num_toc_pages) 
+NUM_TOC_PAGES = 2
+stub_toc.shift_page_indices(NUM_TOC_PAGES)
 
 pymusco.stub_to_print(os.getcwd() + '/results/stubs/666-japanese-tango.pdf', os.getcwd() + '/results/prints/666-japanese-tango.pdf', track_selector, orchestra, stub_toc=stub_toc)
 
