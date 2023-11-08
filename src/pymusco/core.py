@@ -521,8 +521,8 @@ def get_stub_tracks(src_stub_file_path, orchestra):
         :param PyPDF2.PdfReader pdf_reader: the input pdf file
         """
         # print('looking for page with id %d' % page_contents_id)
-        for page_index in range(len(pdf_reader.pages)):
-            page_object = pdf_reader.pages[page_index]
+        page_index = 0
+        for page_object in pdf_reader.pages:
             assert isinstance(page_object, PyPDF2._page.PageObject)  # pylint: disable=protected-access
             # at this point, a page_object of the table of contents (with 23 links) looks like :
             # {'/Contents': IndirectObject(196, 0), '/Parent': IndirectObject(203, 0), '/Type': '/Page', '/Resources': IndirectObject(195, 0), '/MediaBox': [0, 0, 612, 792], '/Annots': [IndirectObject(171, 0), IndirectObject(172, 0), IndirectObject(173, 0), IndirectObject(174, 0), IndirectObject(175, 0), IndirectObject(176, 0), IndirectObject(177, 0), IndirectObject(178, 0), IndirectObject(179, 0), IndirectObject(180, 0), IndirectObject(181, 0), IndirectObject(182, 0), IndirectObject(183, 0), IndirectObject(184, 0), IndirectObject(185, 0), IndirectObject(186, 0), IndirectObject(187, 0), IndirectObject(188, 0), IndirectObject(189, 0), IndirectObject(190, 0), IndirectObject(191, 0), IndirectObject(192, 0), IndirectObject(193, 0)]}
@@ -535,6 +535,7 @@ def get_stub_tracks(src_stub_file_path, orchestra):
 
             if page_contents_indirect_obj.idnum == page_contents_id:
                 return page_index + 1  # converts 0 based index to 1-based index
+            page_index += 1
 
         assert False, "failed to find in the given input pdf file, a page whose contents id is %s" % page_contents_id
 

@@ -47,7 +47,7 @@ class AutoTrackSelector(ITrackSelector):
         """
         track_to_print_count = {}
         for musician_type_id, num_musicians in self.musician_count.items():
-            print('musician_type_id = %s' % musician_type_id)
+            print(f'musician_type_id = {musician_type_id}')
             # collect the tracks than can be played by these musicians
             playable_tracks = []
             dispatch_tracks_between_musicians = True
@@ -59,7 +59,7 @@ class AutoTrackSelector(ITrackSelector):
                     # print('processing enabled track %s' % track.get_id())
 
                     if track.instrument.get_player() == musician_type_id:
-                        print('this is a track for %s' % musician_type_id)
+                        print(f'this is a track for {musician_type_id}')
                         print('track.instrument', track.instrument.get_id())
                         if not track.is_rare:
                             if musician_type_id == 'percussionist':
@@ -68,25 +68,25 @@ class AutoTrackSelector(ITrackSelector):
                                 track_to_print_count[track.get_id()] = num_musicians + 1
                             elif track.is_solo:
                                 # solos are always wanted even if the orchestra doesn't have its player
-                                print("info: 2 copies for solo track %s" % track.get_id())
+                                print(f"info: 2 copies for solo track {track.get_id()}")
                                 track_to_print_count[track.get_id()] = 2
                             elif track.instrument.is_single():
                                 # only print twice for tracks such as 'bb bass clarinet' or 'c piccolo', as they're not supposed to be more than one in an orchestra (one fore the player + 1 extra)
-                                print("info: 2 copies for single instrument %s" % track.get_id())
+                                print(f"info: 2 copies for single instrument {track.get_id()}")
                                 track_to_print_count[track.get_id()] = 2
                             else:
                                 playable_tracks.append(track)
             if dispatch_tracks_between_musicians:
                 if len(playable_tracks) == 0:
-                    print("warning: no playable tracks found to dispatch for player type %s" % musician_type_id)
+                    print(f"warning: no playable tracks found to dispatch for player type {musician_type_id}")
                 else:
                     num_musicians_per_track = num_musicians // len(playable_tracks) + 1
                     for track in playable_tracks:
-                        print("info: %d copies of %s" % (num_musicians_per_track, track.get_id()))
+                        print(f"info: {num_musicians_per_track} copies of {track.get_id()}")
                         track_to_print_count[track.get_id()] = num_musicians_per_track
         if self.include_tracks_for_external_players:
             for track_id in stub_tracks:
-                if track_id not in track_to_print_count.keys():
+                if track_id not in track_to_print_count.keys():  # pylint: disable=consider-iterating-dictionary
                     track = Track(track_id, self.orchestra)
                     if not track.is_disabled:
                         count = 0
@@ -99,7 +99,7 @@ class AutoTrackSelector(ITrackSelector):
                         if track.instrument.is_single():
                             if track.get_id() not in track_to_print_count:
                                 # force adding single instrument tracks such as harp or piano even if there's no player in the orchestra because these parts are often played by external musicians
-                                print("info: 2 copies for single instrument %s" % track.get_id())
+                                print(f"info: 2 copies for single instrument {track.get_id()}")
                                 track_to_print_count[track.get_id()] = 2
 
                         track_to_print_count[track_id] = count

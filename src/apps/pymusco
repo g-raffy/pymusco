@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 import argparse
-import sys
 from pathlib import Path
-from pymusco import Piece, load_piece_description
+from pymusco import load_piece_description
 from pymusco import load_orchestra
 from pymusco import load_musician_count
 from pymusco import AutoTrackSelector
 from pymusco import SingleTrackSelector
 from pymusco import scan_to_stub
 from pymusco import stub_to_print
-from pymusco import StampDesc
 
 
 RED     = "\033[1;31m"  # noqa:E221
@@ -20,7 +18,7 @@ RESET   = "\033[0;0m"  # noqa:E221
 BOLD    = "\033[;1m"  # noqa:E221
 REVERSE = "\033[;7m"  # noqa:E221
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description='python musical score sheet music processor')
     subparsers = parser.add_subparsers()
     subparsers.required = True
@@ -69,7 +67,7 @@ if __name__ == '__main__':
                 stamp_descs=piece.stamp_descs,
                 page_info_line_y_pos=piece.page_info_line_y_pos)
         except Exception as e:
-            print(RED, "failed to process %s (%s)" % (scan_desc_file_path, str(e)), RESET)
+            print(RED, f"failed to process {scan_desc_file_path} ({str(e)})", RESET)
             # sys.exit(1)
             raise
 
@@ -91,3 +89,6 @@ if __name__ == '__main__':
             print(RED, str(e), RESET)
             # sys.exit(1)
             raise
+
+if __name__ == '__main__':
+    main()

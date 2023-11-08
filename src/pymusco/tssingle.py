@@ -22,6 +22,6 @@ class SingleTrackSelector(ITrackSelector):
         self.orchestra = orchestra
 
     def get_track_to_copy(self, stub_tracks):
-        assert self.selected_track.get_id() in stub_tracks, "how can I select a track that is not in the stub : %s" % self.selected_track.get_id()
+        assert self.selected_track.get_id() in stub_tracks, f"how can I select a track that is not in the stub : {self.selected_track.get_id()}"
         track_to_print_count = {self.selected_track.get_id(): 1}
         return track_to_print_count

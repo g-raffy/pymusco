@@ -5,9 +5,10 @@
 		"--disable=C0114",
 		"--disable=C0115",
 		"--disable=C0116",
-		"--generated-members=cv2.*"
+		"--disable=W0406",  // false positive when importing pymusco module from pymusco app
+		"--generated-members=cv2.*",
 	],
 	"flake8.args": [
-		"--per-file-ignores=\"__init__.py:F401\""
+		"--per-file-ignores=\"__init__.py:F401\"",
 	]
 }
