@@ -54,9 +54,9 @@ def dict_to_stamp_desc(stamp_desc_as_dict, piece_desc_file_path):
     else:
         abs_stamp_file_path = piece_desc_file_path.parent.resolve() / stamp_file_path
     if not abs_stamp_file_path.exists():
-        raise Exception("The stamp file '%s' is missing (file not found)." % (abs_stamp_file_path))
+        raise FileNotFoundError("The stamp file '%s' is missing (file not found)." % (abs_stamp_file_path))
     if abs_stamp_file_path.suffix not in allowed_image_suffixes:
-        raise Exception("Unsupported image format for stamp '%s' (allowed formats : %s) " % (abs_stamp_file_path, str(allowed_image_suffixes)))
+        raise TypeError("Unsupported image format for stamp '%s' (allowed formats : %s) " % (abs_stamp_file_path, str(allowed_image_suffixes)))
     return StampDesc(file_path=abs_stamp_file_path,
                      scale=stamp_desc_as_dict['scale'],
                      tx=stamp_desc_as_dict['tx'],
@@ -132,7 +132,7 @@ def save_piece_description(piece, piece_desc_file_path):
         the path to the file describing the scanned pdf sheet music
     """
     piece_as_dict = piece_to_dict(piece)
-    with open(piece_desc_file_path, 'w') as file:
+    with open(piece_desc_file_path, 'w', encoding='utf-8') as file:
         json.dump(piece_as_dict, file)
 
 
@@ -147,7 +147,7 @@ class Vector2(object):
 
 class Piece(object):
 
-    def __init__(self, uid, title, orchestra, scan_toc, missing_tracks={}, stamp_descs=[], page_info_line_y_pos=1.0):
+    def __init__(self, uid, title, orchestra, scan_toc, missing_tracks=None, stamp_descs=None, page_info_line_y_pos=1.0):
         """
         Parameters
         ----------
@@ -164,8 +164,8 @@ class Piece(object):
         self.title = title  # match.group('title')
         self.orchestra = orchestra
         self.scan_toc = scan_toc
-        self.missing_tracks = missing_tracks
-        self.stamp_descs = stamp_descs
+        self.missing_tracks = missing_tracks if missing_tracks is not None else {}
+        self.stamp_descs = stamp_descs if stamp_descs is not None else []
         self.page_info_line_y_pos = page_info_line_y_pos
         # self.stamp_scale = 0.5
         # self.stamp_pos = Vector2(14.0, 4.0)

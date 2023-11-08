@@ -40,7 +40,7 @@ def is_locked(filepath):
             print("Trying to open %s." % filepath)
             buffer_size = 8
             # Opening file in append mode and read the first 8 characters.
-            file_object = open(filepath, 'a', buffer_size)
+            file_object = open(filepath, 'a', buffer_size)  # pylint: disable=unspecified-encoding
             if file_object:
                 print("%s is not locked." % filepath)
                 locked = False
@@ -123,7 +123,7 @@ class SimplePdfDescription(PdfContents):
 
 
 class StubContents(PdfContents):
-    def __init__(self, image_file_paths, toc, title, stamp_descs=[], page_info_line_y_pos=2.7):
+    def __init__(self, image_file_paths, toc, title, stamp_descs=None, page_info_line_y_pos=2.7):
         """
         creates a pdf file from a set of pages (either)
 
@@ -135,7 +135,7 @@ class StubContents(PdfContents):
         self.image_file_paths = image_file_paths
         self.toc = toc
         self._title = title
-        self._stamp_descs = stamp_descs
+        self._stamp_descs = stamp_descs if stamp_descs is not None else []
         self.page_footers = {}
         self.page_to_section = {}
         self.page_info_line_y_pos = page_info_line_y_pos
@@ -192,7 +192,7 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
     latex_file_path = tmp_dir / 'stub.tex'
-    with open(latex_file_path, 'w') as latex_file:
+    with open(latex_file_path, 'w', encoding='utf-8') as latex_file:
         page_to_footers = pdf_contents.get_page_footers()
         page_to_section = pdf_contents.get_sections()
         has_toc = len(page_to_section) > 0
@@ -307,7 +307,7 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
         check_pdf(dst_pdf_file_path)
 
 
-def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_descs=[], page_info_line_y_pos=1.0):
+def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_descs=None, page_info_line_y_pos=1.0):
     """
     creates musical score stub from a musical score raw scan :
     - adds a table of contents
@@ -330,7 +330,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
         try:
             track = Track(track_id, orchestra)  # noqa:F841 @UnusedVariable  pylint: disable=unused-variable
         except KeyError as e:  # noqa:F841 pylint: disable=unused-variable
-            raise Exception("Failed to identify track id '%s'. Either its syntax is incorrect or the related instrument in not yet registered in the orchestra." % (track_id))
+            raise KeyError("Failed to identify track id '%s'. Either its syntax is incorrect or the related instrument in not yet registered in the orchestra." % (track_id)) from e
 
     # tmp_dir = tempfile.mkdtemp()
     tmp_dir = Path('/tmp/pymusco')
@@ -345,11 +345,11 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
             print('page_index = %d' % page_index)
             page = pdf_reader.pages[page_index]
             # image_file_path = extract_pdf_page_main_image(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
-            image_file_path = extract_pdf_page(page, image_dir=tmp_dir, image_name=('page%03d' % page_index))
+            image_file_path = extract_pdf_page(page, image_dir=tmp_dir, image_name='page%03d' % page_index)
 
             scanned_image_file_paths.append(image_file_path)
             # break
-
+    stamp_descs = stamp_descs if stamp_descs is not None else []
     images_to_pdf(StubContents(image_file_paths=scanned_image_file_paths, toc=toc, title=title, stamp_descs=stamp_descs, page_info_line_y_pos=page_info_line_y_pos), dst_stub_pdf_file_path)
 
 
@@ -369,7 +369,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
     print(track_to_print_count)
     dst_print_file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(dst_print_file_path, 'wb') as print_file, open(dst_print_file_path.with_suffix('.log'), 'wt') as log_file:
+    with open(dst_print_file_path, 'wb') as print_file, open(dst_print_file_path.with_suffix('.log'), 'wt', encoding='utf-8') as log_file:
         print_pdf = PyPDF2.PdfWriter()
         log_file.write("contents of print file %s :\n\n" % dst_print_file_path)
         with open(src_stub_file_path, 'rb') as stub_file:
@@ -435,7 +435,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
             print_pdf.write(print_file)
 
 
-def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, split_pos=[0.5]):
+def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, split_pos=[0.5]):  # pylint: disable=dangerous-default-value
     """
     :param list(float) split_pos: where to split the pages (ratio of the width of the double page). If this list contains more than one element, the positions are used sequencially and in a cyclic way
     """
@@ -520,14 +520,14 @@ def pdf_is_readable_by_pypdf2(src_pdf_path):
     with open(src_pdf_path, 'rb') as src_pdf_file:
         try:
             src_pdf = PyPDF2.PdfReader(src_pdf_file)
-            num_pages = len(src_pdf.pages)  # noqa:F841
+            num_pages = len(src_pdf.pages)  # noqa:F841 pylint: disable=unused-variable
             return True
         except NotImplementedError as error:
-            if error.message == "only algorithm code 1 and 2 are supported":
+            if str(error) == "only algorithm code 1 and 2 are supported":
                 return False
             else:
                 raise error
-        except PyPDF2.utils.PdfReadError as error:  # noqa:F841
+        except PyPDF2.errors.PdfReadError as error:  # noqa:F841 pylint: disable=unused-variable
             return False
 
 
@@ -555,7 +555,7 @@ def merge_pdf(dst_pdf_path, src_pdf_paths):
 
 
 def pdftk_is_available():
-    completed_process = subprocess.run(['pdftk'], stdout=subprocess.PIPE)
+    completed_process = subprocess.run(['pdftk'], stdout=subprocess.PIPE, check=False)
     return completed_process.returncode == 0
 
 
@@ -581,6 +581,6 @@ def remove_unneeded_pdf_password(src_pdf_path, dst_pdf_path):
     assert pdftk_is_available(), 'the pdftk command is missing. Please install it as it is required.'
 
     command = ['pdftk', src_pdf_path, 'input_pw', '', 'output', dst_pdf_path]
-    completed_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    completed_process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
     assert completed_process.returncode == 0, "command failed : %s" % command
     # pdftk ./215-avengers-age-of-ultron/avengers-the-age-of-ultron-main-theme---piccolo.pdf input_pw '' output ~/toto/unsecured.pdf

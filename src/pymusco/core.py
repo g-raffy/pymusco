@@ -30,7 +30,7 @@ def dict_raise_on_duplicates(ordered_pairs):
 
 def load_commented_json(commented_json_file_path):
     uncommented_json_contents = ''
-    with open(commented_json_file_path, 'rt') as file:
+    with open(commented_json_file_path, 'rt', encoding='utf-8') as file:
 
         for line in file.readlines():
             uncommented_line = re.sub('//.*$', '', line)
@@ -229,11 +229,9 @@ def load_orchestra(orchestra_file_path):
     return dict_to_orchestra(load_commented_json(orchestra_file_path))
 
 
-"""
-class Clef(Enum):
-    TREBLE = 1
-    BASS = 2
-"""
+# class Clef(Enum):
+#     TREBLE = 1
+#     BASS = 2
 
 
 class Track(object):
@@ -525,7 +523,7 @@ def get_stub_tracks(src_stub_file_path, orchestra):
         # print('looking for page with id %d' % page_contents_id)
         for page_index in range(len(pdf_reader.pages)):
             page_object = pdf_reader.pages[page_index]
-            assert isinstance(page_object, PyPDF2._page.PageObject)
+            assert isinstance(page_object, PyPDF2._page.PageObject)  # pylint: disable=protected-access
             # at this point, a page_object of the table of contents (with 23 links) looks like :
             # {'/Contents': IndirectObject(196, 0), '/Parent': IndirectObject(203, 0), '/Type': '/Page', '/Resources': IndirectObject(195, 0), '/MediaBox': [0, 0, 612, 792], '/Annots': [IndirectObject(171, 0), IndirectObject(172, 0), IndirectObject(173, 0), IndirectObject(174, 0), IndirectObject(175, 0), IndirectObject(176, 0), IndirectObject(177, 0), IndirectObject(178, 0), IndirectObject(179, 0), IndirectObject(180, 0), IndirectObject(181, 0), IndirectObject(182, 0), IndirectObject(183, 0), IndirectObject(184, 0), IndirectObject(185, 0), IndirectObject(186, 0), IndirectObject(187, 0), IndirectObject(188, 0), IndirectObject(189, 0), IndirectObject(190, 0), IndirectObject(191, 0), IndirectObject(192, 0), IndirectObject(193, 0)]}
             # while a normal page_object looks like

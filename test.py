@@ -191,4 +191,3 @@ NUM_TOC_PAGES = 2
 stub_toc.shift_page_indices(NUM_TOC_PAGES)
 
 pymusco.stub_to_print(os.getcwd() + '/results/stubs/666-japanese-tango.pdf', os.getcwd() + '/results/prints/666-japanese-tango.pdf', track_selector, orchestra, stub_toc=stub_toc)
-

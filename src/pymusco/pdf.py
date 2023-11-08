@@ -65,7 +65,7 @@ def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
             CCITT_group = 4
         else:
             CCITT_group = 3
-        data = pdf_stream._data  # sorry, getData() does not work for CCITTFaxDecode
+        data = pdf_stream._data  # sorry, getData() does not work for CCITTFaxDecode pylint: disable=protected-access
         img_size = len(data)
         tiff_header = tiff_header_for_CCITT(width, height, img_size, CCITT_group)
         saved_image_file_path = (image_dir / image_name).with_suffix('.tiff')
@@ -392,14 +392,14 @@ def check_pdf(src_pdf_file_path):
                                 CCITT_group = 4
                             else:
                                 CCITT_group = 3
-                            data = pdf_stream._data  # sorry, getData() does not work for CCITTFaxDecode
+                            data = pdf_stream._data  # sorry, getData() does not work for CCITTFaxDecode  pylint: disable=protected-access
                             img_size = len(data)
-                            tiff_header = tiff_header_for_CCITT(width, height, img_size, CCITT_group)  # @UnusedVariable
+                            tiff_header = tiff_header_for_CCITT(width, height, img_size, CCITT_group)  # pylint: disable=unused-variable
                         else:
                             try:
                                 data = pdf_stream.getData()
                                 # on corrupt file, gives : raise utils.PdfReadError("Unable to find 'endstream' marker after stream at byte %s." % utils.hexStr(stream.tell()))
-                            except NotImplementedError as e:
+                            except NotImplementedError as e:  # pylint: disable=unused-variable
                                 continue
                             except AssertionError as e:
                                 _, _, tb = sys.exc_info()
