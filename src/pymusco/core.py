@@ -4,15 +4,12 @@
 https://automatetheboringstuff.com/chapter13/
 https://github.com/RussellLuo/pdfbookmarker/blob/master/add_bookmarks.py
 """
-from typing import Dict, Any
+from typing import Dict, Any, List
 import abc
-# sudo port install py27-pypdf2
-import PyPDF2
-from PIL import Image
 import json
-
-# from wand.image import Image
 import re
+import PyPDF2  # sudo port install py27-pypdf2
+from PIL import Image
 
 
 # from enum import Enum
@@ -22,7 +19,7 @@ def dict_raise_on_duplicates(ordered_pairs):
     d = {}
     for k, v in ordered_pairs:
         if k in d:
-            raise ValueError("duplicate key: %r" % (k,))
+            raise ValueError(f"duplicate key: {k:%r}")
         else:
             d[k] = v
     return d
@@ -55,7 +52,7 @@ class InstrumentNotFound(Exception):
         self.instrument_id = instrument_id
 
     def __str__(self):
-        return "unknown instrument ('%s'). Make sure this instrument has been registered in the instruments catalog." % self.instrument_id
+        return f"unknown instrument ('{self.instrument_id}'). Make sure this instrument has been registered in the instruments catalog."
 
 
 def dict_to_instrument(instrument_as_dict):
@@ -305,13 +302,13 @@ class Track(object):
         """
         uid = self.instrument.get_id()
         if self.is_solo:
-            uid = '%s solo' % uid
+            uid = f'{uid:%s} solo'
         if self.voice is not None:
-            uid = '%s %d' % (uid, self.voice)
+            uid = f'{uid:%s} {self.voice:%d}'
         if self.clef is not None:
-            uid = '%s %s' % (uid, self.clef)
+            uid = f'{uid:%s} {self.clef:%s}'
         if self.is_disabled:
-            uid = '%s disabled' % uid
+            uid = f'{uid:%s} disabled'
         return uid
 
     def __lt__(self, other):
@@ -350,6 +347,8 @@ class Track(object):
 
 
 class TableOfContents(object):
+    orchestra: Orchestra
+    track_to_page: Dict[Track, Any]
 
     def __init__(self, orchestra, track_id_to_page=None):
         """ Constructor
@@ -372,10 +371,10 @@ class TableOfContents(object):
                 self.track_to_page[track] = page
 
     def __repr__(self):
-        return "{%s}" % ', '.join(["%s: %d" % (str(key), value) for key, value in self.track_to_page.items()])
+        return "{%s}" % ', '.join([f"{str(key)}: {value:%d}" for key, value in self.track_to_page.items()])
 
     def __str__(self):
-        return "[%s]" % ', '.join(['"%s"' % str(key) for key in self.track_to_page.keys()])
+        return "[%s]" % ', '.join([f'"{str(key)}"' for key in self.track_to_page.keys()])  # pylint: disable=consider-iterating-dictionary, consider-using-f-string
 
     @property
     def tracks(self):
@@ -391,7 +390,7 @@ class TableOfContents(object):
         self.track_to_page[track] = page_index
 
     def get_track_ids(self):
-        return [track.id for track in self.track_to_page.keys()]
+        return [track.id for track in self.track_to_page.keys()]  # pylint: disable=consider-iterating-dictionary
 
     def get_tracks_for_page(self, page_index):
         tracks = []
@@ -400,7 +399,7 @@ class TableOfContents(object):
                 tracks.append(track)
         return tracks
 
-    def get_tracks_first_page_index(self, tracks):
+    def get_tracks_first_page_index(self, tracks: List[Track]):
         """
         Parameters
         ----------
@@ -417,7 +416,7 @@ class TableOfContents(object):
         assert len(tracks) > 0
         assert isinstance(tracks[0], Track)
         first_track = tracks[0]
-        assert first_track in self.track_to_page.keys(), "key '%s' not found in track_to_page dict %s" % (str(first_track), str(self))
+        assert first_track in self.track_to_page.keys(), f"key '{str(first_track)}' not found in track_to_page dict {str(self)}"  # pylint: disable=consider-iterating-dictionary
         first_track_page_index = self.track_to_page[first_track]
         for track in tracks:
             assert isinstance(track, Track)
@@ -456,7 +455,7 @@ class TableOfContents(object):
 
         useful to adjust page numbers when a page is inserted or deleted
         """
-        for track in self.track_to_page.keys():
+        for track in self.track_to_page.keys():  # pylint: disable=consider-iterating-dictionary
             self.track_to_page[track] += offset
 
     # def copy(self, page_number_offset=0 ):
@@ -537,7 +536,7 @@ def get_stub_tracks(src_stub_file_path, orchestra):
                 return page_index + 1  # converts 0 based index to 1-based index
             page_index += 1
 
-        assert False, "failed to find in the given input pdf file, a page whose contents id is %s" % page_contents_id
+        assert False, f"failed to find in the given input pdf file, a page whose contents id is {page_contents_id}"
 
     def get_pdf_toc_item_page(pdf_toc_item: Dict[str, Any], pdf_reader: PyPDF2.PdfReader) -> int:
         """
@@ -591,7 +590,7 @@ def get_stub_tracks(src_stub_file_path, orchestra):
             # assert False, 'the implementation of this function is not finished yet'
             track_ids = pdf_toc_item['/Title'].split('/')
             for track_id in track_ids:
-                assert isinstance(track_id, str), "unexpected type for track_id (%s)" % type(track_id)
+                assert isinstance(track_id, str), f"unexpected type for track_id ({type(track_id)})"
                 stub_tracks.add_toc_item(track_id, track_page_number)
-        assert len(stub_tracks.tracks) > 0, 'no track found in %s' % src_stub_file_path
-        return (stub_tracks)
+        assert len(stub_tracks.tracks) > 0, f'no track found in {src_stub_file_path}'
+        return stub_tracks
