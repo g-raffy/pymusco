@@ -12,7 +12,6 @@ from pathlib import Path
 import PyPDF2  # sudo port install py27-pypdf2
 from PIL import Image
 
-
 # from enum import Enum
 
 def dict_raise_on_duplicates(ordered_pairs):
@@ -26,7 +25,7 @@ def dict_raise_on_duplicates(ordered_pairs):
     return d
 
 
-def load_commented_json(commented_json_file_path: Path):
+def load_commented_json(commented_json_file_path: Path) -> Dict[Any, Any]:
     uncommented_json_contents = ''
     with open(commented_json_file_path, 'rt', encoding='utf-8') as file:
 
@@ -56,42 +55,13 @@ class InstrumentNotFound(Exception):
         return f"unknown instrument ('{self.instrument_id}'). Make sure this instrument has been registered in the instruments catalog."
 
 
-def dict_to_instrument(instrument_as_dict):
-    """
-    Returns
-    -------
-    instrument : Instrument
-        a musical instrument
-    """
-    # assert instrument_as_dict['format'] == 'pymusco.instrument.v1'
-    is_rare = False
-    if 'is_rare' in instrument_as_dict:
-        is_rare = instrument_as_dict['is_rare']
-    instrument = Instrument(uid=instrument_as_dict['uid'], player=instrument_as_dict['player'], order=instrument_as_dict['order'], is_rare=is_rare)
-    return instrument
-
-
-def instrument_to_dict(instrument):
-    """
-    Parameters
-    ----------
-    instrument : Instrument
-        the instrument
-    """
-    instrument_as_dict = {}
-    # instrument_as_dict['format'] = 'pymusco.instrument.v1'
-    instrument_as_dict['uid'] = instrument.get_id()
-    instrument_as_dict['player'] = instrument.player
-    instrument_as_dict['order'] = instrument.order
-    if instrument.is_rare:
-        instrument_as_dict['is_rare'] = True
-
-    return instrument_as_dict
-
-
 class Instrument(object):
+    uid: str
+    player: str
+    order: float
+    is_rare: bool
 
-    def __init__(self, uid, player, order, is_rare=False):
+    def __init__(self, uid: str, player: str, order: str, is_rare: bool = False):
         """ Constructor
 
         Parameters
@@ -115,16 +85,16 @@ class Instrument(object):
         self.is_rare = is_rare
         self.tone = None
 
-    def get_id(self):
+    def get_id(self) -> str:
         return self.uid
 
-    def get_player(self):
+    def get_player(self) -> str:
         """
         :return str: the type of musician that can play this instrument
         """
         return self.player
 
-    def is_single(self):
+    def is_single(self) -> bool:
         single_instruments = ['c piccolo',
                               'english horn',
                               'bb bass clarinet',
@@ -140,42 +110,44 @@ class Instrument(object):
         return self.uid in single_instruments
 
 
-def dict_to_orchestra(orchestra_as_dict):
+def dict_to_instrument(instrument_as_dict: Dict[Any, Any]) -> Instrument:
     """
     Returns
     -------
-    orchestra : Orchestra
-        an instruments database
+    instrument : Instrument
+        a musical instrument
     """
-    assert orchestra_as_dict['format'] == 'pymusco.orchestra.v1'
-    instruments_list = orchestra_as_dict['instruments']
-    instruments = []
-    for instrument_dict in instruments_list:
-        instruments.append(dict_to_instrument(instrument_dict))
-    orchestra = Orchestra(instruments=instruments)
-    return orchestra
+    # assert instrument_as_dict['format'] == 'pymusco.instrument.v1'
+    is_rare = False
+    if 'is_rare' in instrument_as_dict:
+        is_rare = instrument_as_dict['is_rare']
+    instrument = Instrument(uid=instrument_as_dict['uid'], player=instrument_as_dict['player'], order=instrument_as_dict['order'], is_rare=is_rare)
+    return instrument
 
 
-def orchestra_to_dict(orchestra):
+def instrument_to_dict(instrument: Instrument) -> Dict[Any, Any]:
     """
     Parameters
     ----------
-    orchestra : Orchestra
-        the instruments database
+    instrument : Instrument
+        the instrument
     """
-    orchestra_as_dict = {}
-    orchestra_as_dict['format'] = 'pymusco.orchestra.v1'
-    instruments_list = []
-    orchestra_as_dict['instruments'] = instruments_list
-    for instrument in orchestra.instruments:
-        instruments_list.append(instrument_to_dict(instrument))
-    return orchestra_as_dict
+    instrument_as_dict = {}
+    # instrument_as_dict['format'] = 'pymusco.instrument.v1'
+    instrument_as_dict['uid'] = instrument.get_id()
+    instrument_as_dict['player'] = instrument.player
+    instrument_as_dict['order'] = instrument.order
+    if instrument.is_rare:
+        instrument_as_dict['is_rare'] = True
+
+    return instrument_as_dict
 
 
 class Orchestra(object):
     """ Set of known instruments
     """
-    def __init__(self, instruments):
+    instruments: List[Instrument]
+    def __init__(self, instruments: List[Instrument]):
         """ Constructor
 
         Parameters
@@ -188,7 +160,7 @@ class Orchestra(object):
             assert isinstance(instrument, Instrument)
         self.instruments = instruments
 
-    def get_instrument(self, instrument_id):
+    def get_instrument(self, instrument_id: str) -> Instrument:
         """
         Parameters
         ----------
@@ -212,7 +184,39 @@ class Orchestra(object):
         raise InstrumentNotFound(instrument_id)
 
 
-def load_orchestra(orchestra_file_path: Path):
+def dict_to_orchestra(orchestra_as_dict: Dict[Any, Any]) -> Orchestra:
+    """
+    Returns
+    -------
+    orchestra : Orchestra
+        an instruments database
+    """
+    assert orchestra_as_dict['format'] == 'pymusco.orchestra.v1'
+    instruments_list = orchestra_as_dict['instruments']
+    instruments = []
+    for instrument_dict in instruments_list:
+        instruments.append(dict_to_instrument(instrument_dict))
+    orchestra = Orchestra(instruments=instruments)
+    return orchestra
+
+
+def orchestra_to_dict(orchestra: Orchestra) -> Dict[Any, Any]:
+    """
+    Parameters
+    ----------
+    orchestra : Orchestra
+        the instruments database
+    """
+    orchestra_as_dict = {}
+    orchestra_as_dict['format'] = 'pymusco.orchestra.v1'
+    instruments_list = []
+    orchestra_as_dict['instruments'] = instruments_list
+    for instrument in orchestra.instruments:
+        instruments_list.append(instrument_to_dict(instrument))
+    return orchestra_as_dict
+
+
+def load_orchestra(orchestra_file_path: Path) -> Orchestra:
     """
 
     Parameters
@@ -227,14 +231,18 @@ def load_orchestra(orchestra_file_path: Path):
     return dict_to_orchestra(load_commented_json(orchestra_file_path))
 
 
+
+
 # class Clef(Enum):
 #     TREBLE = 1
 #     BASS = 2
 
 
 class Track(object):
+    track_id: str  # the identifier of a track in the form "bb trombone 2 bc"
+    orchestra: Orchestra  # the catalog of available instruments to use (the track is expected to use one of them)
 
-    def __init__(self, track_id, orchestra):
+    def __init__(self, track_id: str, orchestra):
         """
         :param str track_id: the identifier of a track in the form "bb trombone 2 bc"
         :param Orchestra orchestra:
@@ -335,7 +343,7 @@ class Track(object):
             return self.instrument.order < other.instrument.order
 
     @property
-    def is_rare(self):
+    def is_rare(self) -> bool:
         if self.instrument.is_rare:
             return True
         else:
@@ -349,9 +357,9 @@ class Track(object):
 
 class TableOfContents(object):
     orchestra: Orchestra
-    track_to_page: Dict[Track, Any]
+    track_to_page: Dict[Track, int]
 
-    def __init__(self, orchestra, track_id_to_page=None):
+    def __init__(self, orchestra: Orchestra, track_id_to_page: Dict[str, int] = None):
         """ Constructor
 
         Args
@@ -378,10 +386,10 @@ class TableOfContents(object):
         return "[%s]" % ', '.join([f'"{str(key)}"' for key in self.track_to_page.keys()])  # pylint: disable=consider-iterating-dictionary, consider-using-f-string
 
     @property
-    def tracks(self):
+    def tracks(self) -> List[Track]:
         return self.track_to_page.keys()
 
-    def add_toc_item(self, track_id, page_index):
+    def add_toc_item(self, track_id: str, page_index: int):
         """
         :param str track_id:
         :param int page_index:
@@ -390,17 +398,17 @@ class TableOfContents(object):
         track = Track(track_id, self.orchestra)
         self.track_to_page[track] = page_index
 
-    def get_track_ids(self):
+    def get_track_ids(self) -> List[str]:
         return [track.id for track in self.track_to_page.keys()]  # pylint: disable=consider-iterating-dictionary
 
-    def get_tracks_for_page(self, page_index):
+    def get_tracks_for_page(self, page_index: int) -> List[Track]:
         tracks = []
         for track, page in self.track_to_page.items():
             if page == page_index:
                 tracks.append(track)
         return tracks
 
-    def get_tracks_first_page_index(self, tracks: List[Track]):
+    def get_tracks_first_page_index(self, tracks: List[Track]) -> int:
         """
         Parameters
         ----------
@@ -424,7 +432,7 @@ class TableOfContents(object):
             assert self.track_to_page[track] == first_track_page_index
         return first_track_page_index
 
-    def get_tracks_last_page_index(self, tracks, num_pages):
+    def get_tracks_last_page_index(self, tracks: List[Track], num_pages: int) -> int:
         """
         Parameters
         ----------
@@ -450,7 +458,7 @@ class TableOfContents(object):
         # assert next_section_first_page_index <= num_pages, 'next_section_first_page_index = %d, num_pages=%d' % (next_section_first_page_index, num_pages)
         return next_section_first_page_index - 1
 
-    def shift_page_indices(self, offset):
+    def shift_page_indices(self, offset: int):
         """
         shifts the page numbers by a fixed value
 
@@ -483,7 +491,7 @@ class ITrackSelector(object):
         raise NotImplementedError('this classe is incomplete (missing get_track_to_copy method)')
 
 
-def rotate_image(image_path, degrees_to_rotate, saved_location):
+def rotate_image(image_path: Path, degrees_to_rotate, saved_location: Path):
     """
 
     Rotate the given photo the amount of given degreesk, show it and save it
@@ -499,7 +507,7 @@ def rotate_image(image_path, degrees_to_rotate, saved_location):
     # rotated_image.show()
 
 
-def get_stub_tracks(src_stub_file_path, orchestra):
+def get_stub_tracks(src_stub_file_path: Track, orchestra: Orchestra):
     """reads and returns the table of contents of the given stub pdf file.
 
     Parameters
