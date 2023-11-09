@@ -6,8 +6,8 @@ from .main import scan_to_stub
 from .main import stub_to_print
 from .core import TableOfContents
 from .core import load_commented_json
+from .core import Orchestra
 from .tssingle import SingleTrackSelector
-
 
 def dict_to_toc(toc_as_dict, orchestra):
     """
@@ -20,7 +20,7 @@ def dict_to_toc(toc_as_dict, orchestra):
     # check that the keys used in this dictionary are known
     for key in toc_as_dict.keys():
         if key not in ['format', 'track_id_to_page']:
-            raise KeyError('unexpected key in toc dictionary : %s' % (key))
+            raise KeyError(f'unexpected key in toc dictionary : {key:s}')
 
     toc = TableOfContents(orchestra=orchestra, track_id_to_page=None)
     for track_id, page_index in toc_as_dict['track_id_to_page'].items():
@@ -44,8 +44,6 @@ def toc_to_dict(toc):
 
 
 def dict_to_stamp_desc(stamp_desc_as_dict, piece_desc_file_path):
-    """
-    """
     abs_stamp_file_path = None
     stamp_file_path = Path(stamp_desc_as_dict['stamp_image_path'])
     allowed_image_suffixes = ['.pdf', '.png']
@@ -54,9 +52,9 @@ def dict_to_stamp_desc(stamp_desc_as_dict, piece_desc_file_path):
     else:
         abs_stamp_file_path = piece_desc_file_path.parent.resolve() / stamp_file_path
     if not abs_stamp_file_path.exists():
-        raise FileNotFoundError("The stamp file '%s' is missing (file not found)." % (abs_stamp_file_path))
+        raise FileNotFoundError(f"The stamp file '{abs_stamp_file_path:s}' is missing (file not found).")
     if abs_stamp_file_path.suffix not in allowed_image_suffixes:
-        raise TypeError("Unsupported image format for stamp '%s' (allowed formats : %s) " % (abs_stamp_file_path, str(allowed_image_suffixes)))
+        raise TypeError(f"Unsupported image format for stamp '{abs_stamp_file_path}' (allowed formats : {str(allowed_image_suffixes)}) ")
     return StampDesc(file_path=abs_stamp_file_path,
                      scale=stamp_desc_as_dict['scale'],
                      tx=stamp_desc_as_dict['tx'],
@@ -107,7 +105,7 @@ def piece_to_dict(piece):
     return piece_as_dict
 
 
-def load_piece_description(piece_desc_file_path, orchestra):
+def load_piece_description(piece_desc_file_path: Path, orchestra):
     """
 
     Parameters
@@ -172,7 +170,7 @@ class Piece(object):
 
     @property
     def label(self):
-        return '%03d-%s' % (self.uid, self.title.replace(' ', '-'))
+        return f"{self.uid:03d}-{self.title.replace(' ', '-')}"
 
     # def get_stub_toc(self):
     #     """
@@ -248,7 +246,13 @@ class CatalogPiece(object):
 class Catalog(object):
     """ a collection of pieces that share the same locations, same orchestra, etc...
     """
-    def __init__(self, piece_desc_dir, scans_dir, stubs_dir, prints_dir, orchestra):
+    piece_desc_dir: Path
+    scans_dir: Path
+    stubs_dir: Path
+    prints_dir: Path
+    orchestra: Orchestra
+
+    def __init__(self, piece_desc_dir: Path, scans_dir: Path, stubs_dir: Path, prints_dir: Path, orchestra: Orchestra):
         """
         Parammeters
         -----------

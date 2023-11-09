@@ -4,12 +4,13 @@ Created on Sep 9, 2018
 @author: graffy
 '''
 
+from pathlib import Path
 from .core import ITrackSelector
 from .core import Track
 from .core import load_commented_json
 
 
-def load_musician_count(musician_count_file_path):
+def load_musician_count(musician_count_file_path: Path):
     return load_commented_json(musician_count_file_path)
 
 

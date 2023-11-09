@@ -8,6 +8,7 @@ from typing import Dict, Any, List
 import abc
 import json
 import re
+from pathlib import Path
 import PyPDF2  # sudo port install py27-pypdf2
 from PIL import Image
 
@@ -19,13 +20,13 @@ def dict_raise_on_duplicates(ordered_pairs):
     d = {}
     for k, v in ordered_pairs:
         if k in d:
-            raise ValueError(f"duplicate key: {k:%r}")
+            raise ValueError(f"duplicate key: {k!r}")
         else:
             d[k] = v
     return d
 
 
-def load_commented_json(commented_json_file_path):
+def load_commented_json(commented_json_file_path: Path):
     uncommented_json_contents = ''
     with open(commented_json_file_path, 'rt', encoding='utf-8') as file:
 
@@ -211,7 +212,7 @@ class Orchestra(object):
         raise InstrumentNotFound(instrument_id)
 
 
-def load_orchestra(orchestra_file_path):
+def load_orchestra(orchestra_file_path: Path):
     """
 
     Parameters
@@ -302,13 +303,13 @@ class Track(object):
         """
         uid = self.instrument.get_id()
         if self.is_solo:
-            uid = f'{uid:%s} solo'
+            uid = f'{uid:s} solo'
         if self.voice is not None:
-            uid = f'{uid:%s} {self.voice:%d}'
+            uid = f'{uid:s} {self.voice:d}'
         if self.clef is not None:
-            uid = f'{uid:%s} {self.clef:%s}'
+            uid = f'{uid:s} {self.clef:s}'
         if self.is_disabled:
-            uid = f'{uid:%s} disabled'
+            uid = f'{uid:s} disabled'
         return uid
 
     def __lt__(self, other):
@@ -371,7 +372,7 @@ class TableOfContents(object):
                 self.track_to_page[track] = page
 
     def __repr__(self):
-        return "{%s}" % ', '.join([f"{str(key)}: {value:%d}" for key, value in self.track_to_page.items()])
+        return "{%s}" % ', '.join([f"{str(key)}: {value:d}" for key, value in self.track_to_page.items()])
 
     def __str__(self):
         return "[%s]" % ', '.join([f'"{str(key)}"' for key in self.track_to_page.keys()])  # pylint: disable=consider-iterating-dictionary, consider-using-f-string
