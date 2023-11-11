@@ -507,7 +507,7 @@ def rotate_image(image_path: Path, degrees_to_rotate, saved_location: Path):
     # rotated_image.show()
 
 
-def get_stub_tracks(src_stub_file_path: Track, orchestra: Orchestra):
+def get_stub_tracks(src_stub_file_path: Track, orchestra: Orchestra) -> TableOfContents:
     """reads and returns the table of contents of the given stub pdf file.
 
     Parameters

@@ -10,10 +10,11 @@ import hashlib
 import time
 import shutil
 import abc
+from typing import List, Dict
 from pathlib import Path
 import PyPDF2  # sudo apt-get install python3-pypdf2
 import cv2   # sudo apt-get install python3-opencv
-from .core import Track
+from .core import Track, ITrackSelector, Orchestra, TableOfContents
 from .pdf import extract_pdf_page_main_image
 from .pdf import extract_pdf_page
 from .core import get_stub_tracks
@@ -28,7 +29,7 @@ def md5(fname):
     return hash_md5.hexdigest()
 
 
-def is_locked(filepath):
+def is_locked(filepath: Path):
     """Checks if a file is locked by opening it in append mode.
     If no exception thrown, then the file is not locked.
     """
@@ -77,7 +78,7 @@ def wait_for_files(filepaths):
 
 class StampDesc(object):
 
-    def __init__(self, file_path, scale=1.0, tx=500.0, ty=770.0):
+    def __init__(self, file_path: Path, scale: float = 1.0, tx: float = 500.0, ty: float = 770.0):
         self.file_path = file_path
         self.scale = scale
         self.tx = tx
@@ -109,18 +110,28 @@ class PdfContents(object):
 
 
 class SimplePdfDescription(PdfContents):
-    def __init__(self, image_file_paths):
+    image_file_paths: List[Path]
+
+    def __init__(self, image_file_paths: List[Path]):
         """
-        :param list(str) image_file_paths: the file path for each image
+        :param list(Path) image_file_paths: the file path for each image
         """
         self.image_file_paths = image_file_paths
 
-    def get_image_file_paths(self):
+    def get_image_file_paths(self) -> List[Path]:
         return self.image_file_paths
 
 
 class StubContents(PdfContents):
-    def __init__(self, image_file_paths, toc, title, stamp_descs=None, page_info_line_y_pos=2.7):
+    image_file_paths: List[Path]
+    toc: TableOfContents
+    _title: str
+    _stamp_descs: List[StampDesc]
+    page_footers: Dict[int, str]  # the footer text for each page
+    page_to_section: Dict[int, str]  # the tracks description for each page
+    page_info_line_y_pos : float
+
+    def __init__(self, image_file_paths: List[Path], toc: TableOfContents, title: str, stamp_descs: List[StampDesc] = None, page_info_line_y_pos: float = 2.7):
         """
         creates a pdf file from a set of pages (either)
 
@@ -160,21 +171,21 @@ class StubContents(PdfContents):
         return self.image_file_paths
 
     @property
-    def stamp_descs(self):
+    def stamp_descs(self) -> List[StampDesc]:
         return self._stamp_descs
 
     @property
-    def title(self):
+    def title(self) -> str:
         return self._title
 
-    def get_page_footers(self):
+    def get_page_footers(self) -> Dict[int, str]:
         return self.page_footers
 
-    def get_sections(self):
+    def get_sections(self) -> Dict[int, str]:
         return self.page_to_section
 
 
-def images_to_pdf(pdf_contents, dst_pdf_file_path):
+def images_to_pdf(pdf_contents: PdfContents, dst_pdf_file_path: Path):
     """
     creates a pdf file from a set of pages (either)
 
@@ -305,7 +316,7 @@ def images_to_pdf(pdf_contents, dst_pdf_file_path):
         check_pdf(dst_pdf_file_path)
 
 
-def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, orchestra, stamp_descs=None, page_info_line_y_pos=1.0):
+def scan_to_stub(src_scanned_pdf_file_path: Path, dst_stub_pdf_file_path: Path, toc: TableOfContents, title: str, orchestra: Orchestra, stamp_descs: List[StampDesc] = None, page_info_line_y_pos: float = 1.0):
     """
     creates musical score stub from a musical score raw scan :
     - adds a table of contents
@@ -352,7 +363,7 @@ def scan_to_stub(src_scanned_pdf_file_path, dst_stub_pdf_file_path, toc, title, 
     images_to_pdf(StubContents(image_file_paths=scanned_image_file_paths, toc=toc, title=title, stamp_descs=stamp_descs, page_info_line_y_pos=page_info_line_y_pos), dst_stub_pdf_file_path)
 
 
-def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orchestra):
+def stub_to_print(src_stub_file_path: Path, dst_print_file_path: Path, track_selector: ITrackSelector, orchestra: Orchestra):
     """
     :param Path src_stub_file_path:
     :param Path dst_print_file_path:
@@ -434,7 +445,7 @@ def stub_to_print(src_stub_file_path, dst_print_file_path, track_selector, orche
             print_pdf.write(print_file)
 
 
-def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, split_pos=[0.5]):  # pylint: disable=dangerous-default-value
+def split_double_pages(src_scanned_pdf_file_path: Path, dst_scanned_pdf_file_path: Path, split_pos: List[float] = [0.5]):  # pylint: disable=dangerous-default-value
     """
     :param list(float) split_pos: where to split the pages (ratio of the width of the double page). If this list contains more than one element, the positions are used sequencially and in a cyclic way
     """
@@ -486,7 +497,7 @@ def split_double_pages(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, spl
     images_to_pdf(SimplePdfDescription(image_file_paths=scanned_image_file_paths), dst_scanned_pdf_file_path)
 
 
-def crop_pdf(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, x_scale, y_scale):
+def crop_pdf(src_scanned_pdf_file_path: Path, dst_scanned_pdf_file_path: Path, x_scale: float, y_scale: float):
     tmp_dir = Path('/tmp/pymusco')
     tmp_dir.mkdir(parents=True, exist_ok=True)
     scanned_image_file_paths = []
@@ -515,7 +526,7 @@ def crop_pdf(src_scanned_pdf_file_path, dst_scanned_pdf_file_path, x_scale, y_sc
     images_to_pdf(SimplePdfDescription(image_file_paths=scanned_image_file_paths), dst_scanned_pdf_file_path)
 
 
-def pdf_is_readable_by_pypdf2(src_pdf_path):
+def pdf_is_readable_by_pypdf2(src_pdf_path: Path):
     with open(src_pdf_path, 'rb') as src_pdf_file:
         try:
             src_pdf = PyPDF2.PdfReader(src_pdf_file)
@@ -530,7 +541,7 @@ def pdf_is_readable_by_pypdf2(src_pdf_path):
             return False
 
 
-def merge_pdf(dst_pdf_path, src_pdf_paths):
+def merge_pdf(dst_pdf_path: Path, src_pdf_paths: Path):
     dst_pdf_path.parent.mkdir(parents=True, exist_ok=True)
 
     with open(dst_pdf_path, 'wb') as dst_pdf_file:
@@ -549,12 +560,12 @@ def merge_pdf(dst_pdf_path, src_pdf_paths):
                 dst_pdf.write(dst_pdf_file)
 
 
-def pdftk_is_available():
+def pdftk_is_available() -> bool:
     completed_process = subprocess.run(['pdftk'], stdout=subprocess.PIPE, check=False)
     return completed_process.returncode == 0
 
 
-def remove_unneeded_pdf_password(src_pdf_path, dst_pdf_path):
+def remove_unneeded_pdf_password(src_pdf_path: Path, dst_pdf_path: Path):
     """
         Some pdfs have an owner password that is not required to view the file. For example :
             graffy@graffy-ws2:~/private/melting-notes/partitions/scans$ pdftk ./215-avengers-age-of-ultron/avengers-the-age-of-ultron-main-theme---piccolo.pdf dump_data

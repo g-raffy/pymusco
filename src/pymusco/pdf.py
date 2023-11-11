@@ -1,14 +1,14 @@
 #!/usr/bin/env python3.8
-from PIL import Image
 import struct
-import cv2
-import PyPDF2
 import subprocess
 import os
 import shutil
 import sys
 import traceback
 from pathlib import Path
+from PIL import Image
+import cv2
+import PyPDF2
 from .core import rotate_image
 
 # Extract images from pdf: http://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python
@@ -17,7 +17,7 @@ from .core import rotate_image
 # https://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python/34116472#34116472
 
 
-def tiff_header_for_CCITT(width, height, img_size, CCITT_group=4):
+def tiff_header_for_ccitt(width, height, img_size, ccitt_group=4):
     tiff_header_struct = '<' + '2s' + 'h' + 'l' + 'h' + 'hhll' * 8 + 'h'
     return struct.pack(tiff_header_struct,
                        b'II',  # Byte order indication: Little indian
@@ -27,7 +27,7 @@ def tiff_header_for_CCITT(width, height, img_size, CCITT_group=4):
                        256, 4, 1, width,  # ImageWidth, LONG, 1, width
                        257, 4, 1, height,  # ImageLength, LONG, 1, lenght
                        258, 3, 1, 1,  # BitsPerSample, SHORT, 1, 1
-                       259, 3, 1, CCITT_group,  # Compression, SHORT, 1, 4 = CCITT Group 4 fax encoding
+                       259, 3, 1, ccitt_group,  # Compression, SHORT, 1, 4 = CCITT Group 4 fax encoding
                        262, 3, 1, 0,  # Threshholding, SHORT, 1, 0 = WhiteIsZero
                        273, 4, 1, struct.calcsize(tiff_header_struct),  # StripOffsets, LONG, 1, len of header
                        278, 4, 1, height,  # RowsPerStrip, LONG, 1, lenght
@@ -46,7 +46,7 @@ def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
     assert pdf_stream['/Subtype'] == '/Image', "this function expects the subtype of this encoded_stream_object to be an image"
     saved_image_file_path = None
     (width, height) = (pdf_stream['/Width'], pdf_stream['/Height'])
-    print('filter = %s' % pdf_stream['/Filter'])
+    print(f'filter = {pdf_stream["/Filter"]}')
     if pdf_stream['/Filter'] == '/CCITTFaxDecode':
         # File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/PyPDF2/filters.py", line 361, in decodeStreamData
         # raise NotImplementedError("unsupported filter %s" % filterType)
@@ -62,18 +62,18 @@ def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
         # K = 0 --- Pure one-dimensional encoding (Group 3, 1-D)
         # K > 0 --- Mixed one- and two-dimensional encoding (Group 3, 2-D)
         if pdf_stream['/DecodeParms']['/K'] == -1:
-            CCITT_group = 4
+            ccitt_group = 4
         else:
-            CCITT_group = 3
+            ccitt_group = 3
         data = pdf_stream._data  # sorry, getData() does not work for CCITTFaxDecode pylint: disable=protected-access
         img_size = len(data)
-        tiff_header = tiff_header_for_CCITT(width, height, img_size, CCITT_group)
+        tiff_header = tiff_header_for_ccitt(width, height, img_size, ccitt_group)
         saved_image_file_path = (image_dir / image_name).with_suffix('.tiff')
         with open(saved_image_file_path, 'wb') as img_file:
             img_file.write(tiff_header + data)
     else:
         data = pdf_stream.getData()
-        print('data length : %d' % len(data))
+        print(f'data length : {len(data)}')
         num_pixels = width * height
         print(width, height, num_pixels)
         print(pdf_stream.keys())
@@ -118,7 +118,7 @@ def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
                 one_bit_per_pixel = False
                 # guess if the image is stored as one bit per pixel
                 # ICCBased decoding code written in go here : https://github.com/unidoc/unidoc/blob/master/pdf/model/colorspace.go
-                assert pdf_stream['/Filter'] == '/FlateDecode', "don't know how to guess if data is 1 bits per pixel when filter is %s" % pdf_stream['/Filter']
+                assert pdf_stream['/Filter'] == '/FlateDecode', f"don't know how to guess if data is 1 bits per pixel when filter is {pdf_stream['/Filter']}"
                 bytes_per_line = width / 8
                 if (width % 8) > 0:
                     bytes_per_line += 1
@@ -158,14 +158,14 @@ def find_pdf_page_raster_image(pdf_page):
     :return PyPDF2.generic.EncodedStreamObject: a pdf node which is supposed to contain an image
     """
     if '/XObject' in pdf_page['/Resources']:
-        xObject = pdf_page['/Resources']['/XObject'].getObject()
-        for obj in xObject:
-            if xObject[obj]['/Subtype'] == '/Image':
-                return xObject[obj]
+        x_object = pdf_page['/Resources']['/XObject'].getObject()
+        for obj in x_object:
+            if x_object[obj]['/Subtype'] == '/Image':
+                return x_object[obj]
     return None
 
 
-def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
+def extract_pdf_page_main_image(pdf_page: PyPDF2.PageObject, image_dir: Path, image_name: str):
     """
     :param PyPDF2.pdf.PageObject pdf_page:
     :param str image_dir: where to save the image of the given name_object
@@ -179,11 +179,11 @@ def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
         try:
             saved_image_file_path = extract_pdf_stream_image(pdf_stream=pdf_stream, image_dir=image_dir, image_name=image_name)
         except NotImplementedError as e:
-            print("warning : NotImplementedError(%s). Maybe pypdf2 is unable to decode this stream. Falling back to a resampling method." % str(e))
+            print(f"warning : NotImplementedError({str(e)}). Maybe pypdf2 is unable to decode this stream. Falling back to a resampling method.")
             image = pdf_page_to_png(pdf_page, resolution=300)
-            saved_image_file_path = "%s/%s.png" % (image_dir, image_name)
+            saved_image_file_path = (image_dir / image_name).with_suffix('png')
             cv2.imwrite(saved_image_file_path, image)
-            print("resampled image saved to %s" % saved_image_file_path)
+            print(f"resampled image saved to {saved_image_file_path}")
 
         if '/Rotate' in pdf_page.keys() and pdf_page['/Rotate'] != 0:
             # some extracted images are not in portrait mode as we would expect, so rotate them
@@ -207,11 +207,11 @@ def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
             #         '/Rotate': 270,
             #         '/MediaBox': [0, 0, 841.8, 595.2]
             #     }
-            print('rotating image %s by %f degrees' % (saved_image_file_path, -pdf_page['/Rotate']))
+            print(f"rotating image {saved_image_file_path} by {-pdf_page['/Rotate']:f} degrees")
             rotate_image(saved_image_file_path, -pdf_page['/Rotate'], saved_image_file_path)
     else:
         # this page doesn't contain a raster image, so we keep it in its original vectorial form
-        saved_image_file_path = "%s/%s.pdf" % (image_dir, image_name)
+        saved_image_file_path = (image_dir / image_name).with_suffix('pdf')
         with open(saved_image_file_path, 'wb') as pdf_file:
             dst_pdf = PyPDF2.PdfWriter()
             dst_pdf.add_page(pdf_page)
@@ -219,14 +219,14 @@ def extract_pdf_page_main_image(pdf_page, image_dir, image_name):
     return saved_image_file_path
 
 
-def extract_pdf_page(pdf_page, image_dir, image_name):
+def extract_pdf_page(pdf_page: PyPDF2.PageObject, image_dir: Path, image_name: str):
     """
     :param PyPDF2.pdf.PageObject pdf_page:
     :param str image_dir: where to save the image of the given name_object
     :param str image_name: the name of the saved file image, without file extension
     :return str: the saved image file path with file extension
     """
-    saved_image_file_path = "%s/%s.pdf" % (image_dir, image_name)
+    saved_image_file_path = (image_dir / image_name).with_suffix('pdf')
     with open(saved_image_file_path, 'wb') as pdf_file:
         dst_pdf = PyPDF2.PdfWriter()
         dst_pdf.add_page(pdf_page)
@@ -239,18 +239,18 @@ def extract_pdf_page_images(pdf_page, image_folder='/tmp'):
     :param PyPDF2.pdf.PageObject pdf_page:
     :param str image_folder:
     """
-    xObject = pdf_page['/Resources']['/XObject'].getObject()
+    x_object = pdf_page['/Resources']['/XObject'].getObject()
 
-    for obj in xObject:
+    for obj in x_object:
         print(type(obj))
-        print(type(xObject[obj]))
+        print(type(x_object[obj]))
 
-        if xObject[obj]['/Subtype'] == '/Image':
-            saved_image_file_path = extract_pdf_stream_image(pdf_stream=xObject[obj], image_dir=image_folder, image_name=obj[1:])
-            print('extracted image : %s' % saved_image_file_path)
+        if x_object[obj]['/Subtype'] == '/Image':
+            saved_image_file_path = extract_pdf_stream_image(pdf_stream=x_object[obj], image_dir=image_folder, image_name=obj[1:])
+            print(f'extracted image : {saved_image_file_path}')
 
 
-def pdf_page_to_png(pdf_page, resolution=72):
+def pdf_page_to_png(pdf_page: PyPDF2.PageObject, resolution=72) -> cv2.Mat:
     """
     :param  pdf_page:
     """
@@ -265,7 +265,7 @@ def pdf_page_to_png(pdf_page, resolution=72):
         dst_pdf.write(tmp_pdf)
 
     tmp_png_file_path = tmp_dir / '/toto.png'
-    subprocess.check_call(['/opt/local/bin/convert', '-density', '%d' % resolution, tmp_pdf_file_path, tmp_png_file_path])
+    subprocess.check_call(['/opt/local/bin/convert', '-density', f'{resolution:d}', tmp_pdf_file_path, tmp_png_file_path])
     image = cv2.imread(tmp_png_file_path)
     print(type(image))
 
@@ -285,14 +285,14 @@ def add_bookmarks(pdf_in_filename, bookmarks_tree, pdf_out_filename=None):
 
     # read `pdf_in` into `pdf_out`, using PyPDF2.PdfMerger()
     # with open(pdf_in_filename, 'rb') as inputStream:
-    inputStream = open(pdf_in_filename, 'rb')
-    pdf_out.append(inputStream, import_outline=False)
+    input_stream = open(pdf_in_filename, 'rb')
+    pdf_out.append(input_stream, import_outline=False)
 
     # copy/preserve existing metainfo
     pdf_in = PyPDF2.PdfReader(pdf_in_filename)
-    metaInfo = pdf_in.getDocumentInfo()
-    if metaInfo:
-        pdf_out.addMetadata(metaInfo)
+    meta_info = pdf_in.getDocumentInfo()
+    if meta_info:
+        pdf_out.addMetadata(meta_info)
 
     def crawl_tree(tree, parent):
         for title, pagenum, subtree in tree:
@@ -309,8 +309,8 @@ def add_bookmarks(pdf_in_filename, bookmarks_tree, pdf_out_filename=None):
         pdf_out_filename = name_parts[0] + '-new' + name_parts[1]
 
     # wrie `pdf_out`
-    with open(pdf_out_filename, 'wb') as outputStream:
-        pdf_out.write(outputStream)
+    with open(pdf_out_filename, 'wb') as output_stream:
+        pdf_out.write(output_stream)
 
 
 def add_stamp(src_pdf_file_path, dst_pdf_file_path, stamp_file_path, scale=1.0, tx=500.0, ty=770.0):
@@ -364,16 +364,16 @@ def check_pdf(src_pdf_file_path):
     with open(src_pdf_file_path, 'rb') as src_pdf_file:
         pdf_reader = PyPDF2.PdfReader(src_pdf_file)
         for page_index in range(pdf_reader.numPages):
-            print('page_index = %d' % page_index)
+            print(f'page_index = {page_index}')
             pdf_page = pdf_reader.pages[page_index]
             if '/XObject' in pdf_page['/Resources']:
-                xObject = pdf_page['/Resources']['/XObject'].getObject()
-                for obj in xObject:
-                    if xObject[obj]['/Subtype'] == '/Image':
-                        pdf_stream = xObject[obj]
+                x_object = pdf_page['/Resources']['/XObject'].getObject()
+                for obj in x_object:
+                    if x_object[obj]['/Subtype'] == '/Image':
+                        pdf_stream = x_object[obj]
                         assert pdf_stream['/Subtype'] == '/Image', "this function expects the subtype of this encoded_stream_object to be an image"
                         (width, height) = (pdf_stream['/Width'], pdf_stream['/Height'])
-                        print('filter = %s' % pdf_stream['/Filter'])
+                        print(f"filter = {pdf_stream['/Filter']}")
                         if pdf_stream['/Filter'] == '/CCITTFaxDecode':
                             # File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/PyPDF2/filters.py", line 361, in decodeStreamData
                             # raise NotImplementedError("unsupported filter %s" % filterType)
@@ -389,12 +389,12 @@ def check_pdf(src_pdf_file_path):
                             # K = 0 --- Pure one-dimensional encoding (Group 3, 1-D)
                             # K > 0 --- Mixed one- and two-dimensional encoding (Group 3, 2-D)
                             if pdf_stream['/DecodeParms']['/K'] == -1:
-                                CCITT_group = 4
+                                ccitt_group = 4
                             else:
-                                CCITT_group = 3
+                                ccitt_group = 3
                             data = pdf_stream._data  # sorry, getData() does not work for CCITTFaxDecode  pylint: disable=protected-access
                             img_size = len(data)
-                            tiff_header = tiff_header_for_CCITT(width, height, img_size, CCITT_group)  # pylint: disable=unused-variable
+                            tiff_header = tiff_header_for_ccitt(width, height, img_size, ccitt_group)  # pylint: disable=unused-variable
                         else:
                             try:
                                 data = pdf_stream.getData()
@@ -412,7 +412,7 @@ def check_pdf(src_pdf_file_path):
                                     continue
                                 else:
                                     raise e
-                            print('data length : %d' % len(data))
+                            print(f'data length : {len(data)}')
                             num_pixels = width * height
                             print(width, height, num_pixels)
                             color_space, indirect_object = pdf_stream['/ColorSpace']  # pylint: disable=unused-variable
@@ -423,7 +423,7 @@ def check_pdf(src_pdf_file_path):
                                 one_bit_per_pixel = False
                                 # guess if the image is stored as one bit per pixel
                                 # ICCBased decoding code written in go here : https://github.com/unidoc/unidoc/blob/master/pdf/model/colorspace.go
-                                assert pdf_stream['/Filter'] == '/FlateDecode', "don't know how to guess if data is 1 bits per pixel when filter is %s" % pdf_stream['/Filter']
+                                assert pdf_stream['/Filter'] == '/FlateDecode', f"don't know how to guess if data is 1 bits per pixel when filter is {pdf_stream['/Filter']}"
                                 bytes_per_line = width / 8
                                 if (width % 8) > 0:
                                     bytes_per_line += 1

@@ -94,7 +94,7 @@ def process_neonlight_serenade(src_pdf_file_path, dst_pdf_file_path):
     #         (u'Bb Clarinet 2', 5, []),
     #         (u'Bb Clarinet 3', 5, []),
     #         ]
-    pymusco.addBookmarks(tmp_pdf_file_path, bookmarks_tree, dst_pdf_file_path)
+    pymusco.add_bookmarks(tmp_pdf_file_path, bookmarks_tree, dst_pdf_file_path)
 
 
 def test(src_pdf_file_path, dst_pdf_file_path):
@@ -102,9 +102,9 @@ def test(src_pdf_file_path, dst_pdf_file_path):
     reader = PyPDF2.PdfReader(open(src_pdf_file_path, 'rb'))  # open input
     writer.add_page(reader.pages[0])  # insert page
     writer.addBookmark('Hello, World Bookmark', 0, parent=None)  # add bookmark
-    outputStream = open(dst_pdf_file_path, 'wb')  # creating result pdf JCT
-    writer.write(outputStream)  # writing to result pdf JCT
-    outputStream.close()  # closing result JCT
+    output_stream = open(dst_pdf_file_path, 'wb')  # creating result pdf JCT
+    writer.write(output_stream)  # writing to result pdf JCT
+    output_stream.close()  # closing result JCT
 
 
 # test(os.getenv('HOME')+'/Google Drive/partitions/talons/neonlight serenade.pdf', os.getenv('HOME')+'/toto/serenade.pdf')
@@ -124,7 +124,8 @@ musician_count = {
     'percussionist': 3
 }
 
-orchestra = pymusco.Harmony()
+
+orchestra = pymusco.load_orchestra(os.getcwd() / 'samples' / 'harmony.orchestra')
 
 track_selector = pymusco.AutoTrackSelector(musician_count, orchestra)
 
@@ -174,20 +175,17 @@ scan_toc = pymusco.TableOfContents(orchestra, {
     'eb bass bc': 72,
     })
 
+stamp_desc = pymusco.StampDesc(file_path=os.getcwd() + '/samples/stamp.pdf', scale=0.5, tx=14.0, ty=4.0)
 
 pymusco.scan_to_stub(os.getcwd() + '/samples/666-japanese-tango.pdf', './results/stubs/666-japanese-tango.pdf',
                      scan_toc,
                      title='Japanese Tango',
                      orchestra=orchestra,
-                     stamp_file_path= os.getcwd() + '/samples/stamp.pdf',
-                     scale=0.5,
-                     tx=14.0,
-                     ty=4.0,
-                     rotate_images=True)
+                     stamp_descs=[stamp_desc])
 
 
 stub_toc = copy.deepcopy(scan_toc)
 NUM_TOC_PAGES = 2
 stub_toc.shift_page_indices(NUM_TOC_PAGES)
 
-pymusco.stub_to_print(os.getcwd() + '/results/stubs/666-japanese-tango.pdf', os.getcwd() + '/results/prints/666-japanese-tango.pdf', track_selector, orchestra, stub_toc=stub_toc)
+pymusco.stub_to_print(os.getcwd() + '/results/stubs/666-japanese-tango.pdf', os.getcwd() + '/results/prints/666-japanese-tango.pdf', track_selector, orchestra)

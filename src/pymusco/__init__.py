@@ -17,5 +17,5 @@ from .tsauto import load_musician_count
 from .tsauto import AutoTrackSelector
 from .tssingle import SingleTrackSelector
 from .tsmanual import ManualTrackSelector
-from .pdf import check_pdf
+from .pdf import check_pdf, add_stamp, add_bookmarks
 from .piece import Piece, Catalog, load_piece_description
