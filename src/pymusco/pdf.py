@@ -181,7 +181,7 @@ def extract_pdf_page_main_image(pdf_page: PyPDF2.PageObject, image_dir: Path, im
         except NotImplementedError as e:
             print(f"warning : NotImplementedError({str(e)}). Maybe pypdf2 is unable to decode this stream. Falling back to a resampling method.")
             image = pdf_page_to_png(pdf_page, resolution=300)
-            saved_image_file_path = (image_dir / image_name).with_suffix('png')
+            saved_image_file_path = (image_dir / image_name).with_suffix('.png')
             cv2.imwrite(saved_image_file_path, image)
             print(f"resampled image saved to {saved_image_file_path}")
 
@@ -211,7 +211,7 @@ def extract_pdf_page_main_image(pdf_page: PyPDF2.PageObject, image_dir: Path, im
             rotate_image(saved_image_file_path, -pdf_page['/Rotate'], saved_image_file_path)
     else:
         # this page doesn't contain a raster image, so we keep it in its original vectorial form
-        saved_image_file_path = (image_dir / image_name).with_suffix('pdf')
+        saved_image_file_path = (image_dir / image_name).with_suffix('.pdf')
         with open(saved_image_file_path, 'wb') as pdf_file:
             dst_pdf = PyPDF2.PdfWriter()
             dst_pdf.add_page(pdf_page)
@@ -226,7 +226,7 @@ def extract_pdf_page(pdf_page: PyPDF2.PageObject, image_dir: Path, image_name: s
     :param str image_name: the name of the saved file image, without file extension
     :return str: the saved image file path with file extension
     """
-    saved_image_file_path = (image_dir / image_name).with_suffix('pdf')
+    saved_image_file_path = (image_dir / image_name).with_suffix('.pdf')
     with open(saved_image_file_path, 'wb') as pdf_file:
         dst_pdf = PyPDF2.PdfWriter()
         dst_pdf.add_page(pdf_page)
