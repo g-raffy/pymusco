@@ -117,6 +117,7 @@
         { "uid": "metallic objects", "player": "percussionist", "order": 11.064 },
         { "uid": "piccolo snare drum", "player": "percussionist", "order": 11.065 },
         { "uid": "wind machine", "player": "percussionist", "order": 11.066 }, //aka héliophone
+        { "uid": "wooden wind chimes", "player": "percussionist", "order": 11.067 },
 
         { "uid": "bells", "player": "percussionist", "order": 11.100 },
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
@@ -137,6 +138,7 @@
         { "uid": "wind gong", "player": "percussionist", "order": 11.120},
         { "uid": "dowel stick bundle", "player": "percussionist", "order": 11.121},
         { "uid": "pitched drum", "player": "percussionist", "order": 11.122},
+        { "uid": "water gong", "player": "percussionist", "order": 11.123, "is_rare":  true},
 
         { "uid": "mallet percussion", "player": "percussionist", "order": 11.200 },
         { "uid": "xylophone", "player": "percussionist", "order": 11.201 },
