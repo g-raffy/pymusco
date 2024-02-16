@@ -231,29 +231,35 @@ def load_orchestra(orchestra_file_path: Path) -> Orchestra:
     return dict_to_orchestra(load_commented_json(orchestra_file_path))
 
 
-
-
 # class Clef(Enum):
 #     TREBLE = 1
 #     BASS = 2
+InstrumentId = str  # the identifier of an instrument "bb trombone"
+VoiceId = int  # each instrument usually has multiple tracks (often 3), that's what we call voices
+TrackId = str  # the identifier of a track in the form "bb trombone 2 bc"
+Clef = str  # 'tc' for treble clef, 'bc' for bass clef
 
-
-class Track(object):
-    track_id: str  # the identifier of a track in the form "bb trombone 2 bc"
+class Track():
+    track_id: TrackId  # the identifier of a track in the form "bb trombone 2 bc"
     orchestra: Orchestra  # the catalog of available instruments to use (the track is expected to use one of them)
+    instrument: InstrumentId
+    voice: VoiceId
+    clef: Clef
+    is_solo: bool
+    is_disabled: bool  # for tracks that we want to ignore (eg a track that is present in a stub more than once)
 
-    def __init__(self, track_id: str, orchestra):
+    def __init__(self, track_id: TrackId, orchestra: Orchestra):
         """
         :param str track_id: the identifier of a track in the form "bb trombone 2 bc"
         :param Orchestra orchestra:
         """
-        assert isinstance(track_id, str)
+        assert isinstance(track_id, TrackId)
         self.orchestra = orchestra
         self.instrument = None
         self.voice = None
-        self.clef = None  # 'tc' for treble clef, 'bc' for bass clef
+        self.clef = None
         self.is_solo = False
-        self.is_disabled = False  # for tracks that we want to ignore (eg a track that is present in a stub more than once)
+        self.is_disabled = False
         parts = track_id.split(' ')
         instrument_first_part_index = 0
         instrument_last_part_index = len(parts) - 1
@@ -305,7 +311,7 @@ class Track(object):
         """
         return hash(self.get_id()) == hash(other.get_id())
 
-    def get_id(self):
+    def get_id(self) -> TrackId:
         """
         :return str: the identifier of this track in the form "bb trombone 2 tc"
         """
@@ -389,7 +395,7 @@ class TableOfContents(object):
     def tracks(self) -> List[Track]:
         return self.track_to_page.keys()
 
-    def add_toc_item(self, track_id: str, page_index: int):
+    def add_toc_item(self, track_id: TrackId, page_index: int):
         """
         :param str track_id:
         :param int page_index:

@@ -6,14 +6,14 @@ Created on Sep 9, 2018
 
 from .core import ITrackSelector
 from .core import Track
-
+from .core import Orchestra
 
 class SingleTrackSelector(ITrackSelector):
     """
     a track selector that extracts the given track.
     """
-
-    def __init__(self, selected_track_id, orchestra):
+    orchestra: Orchestra
+    def __init__(self, selected_track_id, orchestra: Orchestra):
         """
         :param str selected_track:
         :param Orchestra orchestra: the inventory of musical instruments

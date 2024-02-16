@@ -1,4 +1,5 @@
 #!/usr/bin/env python3.8
+from typing import List, Tuple, Any
 import struct
 import subprocess
 import os
@@ -17,7 +18,7 @@ from .core import rotate_image
 # https://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python/34116472#34116472
 
 
-def tiff_header_for_ccitt(width, height, img_size, ccitt_group=4):
+def tiff_header_for_ccitt(width: int, height: int, img_size: int, ccitt_group: int = 4):
     tiff_header_struct = '<' + '2s' + 'h' + 'l' + 'h' + 'hhll' * 8 + 'h'
     return struct.pack(tiff_header_struct,
                        b'II',  # Byte order indication: Little indian
@@ -36,7 +37,7 @@ def tiff_header_for_ccitt(width, height, img_size, ccitt_group=4):
                        )
 
 
-def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
+def extract_pdf_stream_image(pdf_stream: PyPDF2.generic.EncodedStreamObject, image_dir: Path, image_name: str):
     """
     :param PyPDF2.generic.EncodedStreamObject pdf_stream: a pdf node which is supposed to contain an image
     :param str image_dir: where to save the image of the given name_object
@@ -150,7 +151,7 @@ def extract_pdf_stream_image(pdf_stream, image_dir, image_name):
     return saved_image_file_path
 
 
-def find_pdf_page_raster_image(pdf_page):
+def find_pdf_page_raster_image(pdf_page: PyPDF2.PageObject) -> PyPDF2.generic.EncodedStreamObject:
     """
     finds the first raster image in this page
 
@@ -165,12 +166,12 @@ def find_pdf_page_raster_image(pdf_page):
     return None
 
 
-def extract_pdf_page_main_image(pdf_page: PyPDF2.PageObject, image_dir: Path, image_name: str):
+def extract_pdf_page_main_image(pdf_page: PyPDF2.PageObject, image_dir: Path, image_name: str) -> Path:
     """
     :param PyPDF2.pdf.PageObject pdf_page:
-    :param str image_dir: where to save the image of the given name_object
+    :param Path image_dir: where to save the image of the given name_object
     :param str image_name: the name of the saved file image, without file extension
-    :return str: the saved image file path with file extension
+    :return Path: the saved image file path with file extension
     """
     pdf_stream = find_pdf_page_raster_image(pdf_page)
 
@@ -219,12 +220,12 @@ def extract_pdf_page_main_image(pdf_page: PyPDF2.PageObject, image_dir: Path, im
     return saved_image_file_path
 
 
-def extract_pdf_page(pdf_page: PyPDF2.PageObject, image_dir: Path, image_name: str):
+def extract_pdf_page(pdf_page: PyPDF2.PageObject, image_dir: Path, image_name: str) -> Path:
     """
     :param PyPDF2.pdf.PageObject pdf_page:
-    :param str image_dir: where to save the image of the given name_object
+    :param Path image_dir: where to save the image of the given name_object
     :param str image_name: the name of the saved file image, without file extension
-    :return str: the saved image file path with file extension
+    :return Path: the saved image file path with file extension
     """
     saved_image_file_path = (image_dir / image_name).with_suffix('.pdf')
     with open(saved_image_file_path, 'wb') as pdf_file:
@@ -234,7 +235,7 @@ def extract_pdf_page(pdf_page: PyPDF2.PageObject, image_dir: Path, image_name: s
     return saved_image_file_path
 
 
-def extract_pdf_page_images(pdf_page, image_folder='/tmp'):
+def extract_pdf_page_images(pdf_page: PyPDF2.PageObject, image_folder='/tmp'):
     """
     :param PyPDF2.pdf.PageObject pdf_page:
     :param str image_folder:
@@ -271,8 +272,24 @@ def pdf_page_to_png(pdf_page: PyPDF2.PageObject, resolution=72) -> cv2.Mat:
 
     return image
 
-
-def add_bookmarks(pdf_in_filename, bookmarks_tree, pdf_out_filename=None):
+# example from https://python.hotexamples.com/site/file?hash=0xfd1eb9884f4c714b3c3d9173d13ed1b2d7175ca4d7ed3b64dcad71bec46326b9
+# bookmarks_tree example
+# [
+#     (u'Foreword', 0, []),
+#     (u'Chapter 1: Introduction', 1,
+#         [
+#             (u'1.1 Python', 1,
+#                 [
+#                     (u'1.1.1 Basic syntax', 1, []),
+#                     (u'1.1.2 Hello world', 2, [])
+#                 ]
+#             ),
+#             (u'1.2 Exercises', 3, [])
+#         ]
+#     ),
+#     (u'Chapter 2: Conclusion', 4, [])
+# ]
+def add_bookmarks(pdf_in_filename: Path, bookmarks_tree: List[Tuple[str, int, List[Any]]], pdf_out_filename: Path = None):
     """Add bookmarks to existing PDF files
     Home:
         https://github.com/RussellLuo/pdfbookmarker
@@ -313,7 +330,7 @@ def add_bookmarks(pdf_in_filename, bookmarks_tree, pdf_out_filename=None):
         pdf_out.write(output_stream)
 
 
-def add_stamp(src_pdf_file_path, dst_pdf_file_path, stamp_file_path, scale=1.0, tx=500.0, ty=770.0):
+def add_stamp(src_pdf_file_path: Path, dst_pdf_file_path: Path, stamp_file_path: Path, scale: float = 1.0, tx: float = 500.0, ty: float = 770.0):
     """
 
     warning! this function has a side effect : it removes the bookmark!
@@ -355,7 +372,7 @@ def add_stamp(src_pdf_file_path, dst_pdf_file_path, stamp_file_path, scale=1.0, 
             shutil.copyfile(tmp_dst_pdf_file_path, dst_pdf_file_path)
 
 
-def check_pdf(src_pdf_file_path):
+def check_pdf(src_pdf_file_path: Path):
     """
     the purpose of this function is to detect inconsistencies in the given pdf file
     an exception is raised if the pdf is malformed

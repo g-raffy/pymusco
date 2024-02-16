@@ -1,15 +1,18 @@
 from pathlib import Path
 import os
 import json
+from typing import List, Dict, Any
 from .main import StampDesc
 from .main import scan_to_stub
 from .main import stub_to_print
+from .core import TrackId
 from .core import TableOfContents
 from .core import load_commented_json
 from .core import Orchestra
+from .core import ITrackSelector
 from .tssingle import SingleTrackSelector
 
-def dict_to_toc(toc_as_dict, orchestra):
+def dict_to_toc(toc_as_dict: Dict[str, Any], orchestra: Orchestra):
     """
     Parameters
     ----------
@@ -28,7 +31,7 @@ def dict_to_toc(toc_as_dict, orchestra):
     return toc
 
 
-def toc_to_dict(toc):
+def toc_to_dict(toc: TableOfContents) -> Dict[str, Any]:
     """
     Parameters
     ----------
@@ -43,7 +46,7 @@ def toc_to_dict(toc):
     return toc_as_dict
 
 
-def dict_to_stamp_desc(stamp_desc_as_dict, piece_desc_file_path):
+def dict_to_stamp_desc(stamp_desc_as_dict: Dict[str, Any], piece_desc_file_path: Path) -> StampDesc:
     abs_stamp_file_path = None
     stamp_file_path = Path(stamp_desc_as_dict['stamp_image_path'])
     allowed_image_suffixes = ['.pdf', '.png']
@@ -61,7 +64,7 @@ def dict_to_stamp_desc(stamp_desc_as_dict, piece_desc_file_path):
                      ty=stamp_desc_as_dict['ty'])
 
 
-def dict_to_piece(piece_as_dict, orchestra, piece_desc_file_path):
+def dict_to_piece(piece_as_dict: Dict[str, Any], orchestra: Orchestra, piece_desc_file_path: Path) -> 'Piece':
     """
     Parameters
     ----------
@@ -87,7 +90,7 @@ def dict_to_piece(piece_as_dict, orchestra, piece_desc_file_path):
     return piece
 
 
-def piece_to_dict(piece):
+def piece_to_dict(piece: 'Piece') -> Dict[str, Any]:
     """
     Parameters
     ----------
@@ -105,7 +108,7 @@ def piece_to_dict(piece):
     return piece_as_dict
 
 
-def load_piece_description(piece_desc_file_path: Path, orchestra):
+def load_piece_description(piece_desc_file_path: Path, orchestra: Orchestra) -> 'Piece':
     """
 
     Parameters
@@ -120,7 +123,7 @@ def load_piece_description(piece_desc_file_path: Path, orchestra):
     return dict_to_piece(load_commented_json(piece_desc_file_path), orchestra, piece_desc_file_path)
 
 
-def save_piece_description(piece, piece_desc_file_path):
+def save_piece_description(piece: 'Piece', piece_desc_file_path: Path):
     """
     Parameters
     ----------
@@ -136,7 +139,7 @@ def save_piece_description(piece, piece_desc_file_path):
 
 class Vector2(object):
 
-    def __init__(self, x, y):
+    def __init__(self, x: float, y: float):
         assert isinstance(x, float)
         assert isinstance(y, float)
         self.x = x
@@ -144,8 +147,15 @@ class Vector2(object):
 
 
 class Piece(object):
+    uid: int  # unique number identifying a track (eg 42)
+    title: str  # the title of the piece, eg 'alligator alley'
+    orchestra: Orchestra  # the inventory of musical instruments
+    scan_toc: TableOfContents
+    missing_tracks: Dict[TrackId, str]  # stores for each missing track its id and a message indicating the reason why it's missing
+    stamp_descs: List[StampDesc]
+    page_info_line_y_pos: float
 
-    def __init__(self, uid, title, orchestra, scan_toc, missing_tracks=None, stamp_descs=None, page_info_line_y_pos=1.0):
+    def __init__(self, uid: int, title: str, orchestra: Orchestra, scan_toc: TableOfContents, missing_tracks: Dict[TrackId, str] = None, stamp_descs: List[StampDesc] = None, page_info_line_y_pos: float=1.0):
         """
         Parameters
         ----------
@@ -169,7 +179,7 @@ class Piece(object):
         # self.stamp_pos = Vector2(14.0, 4.0)
 
     @property
-    def label(self):
+    def label(self) -> str:
         return f"{self.uid:03d}-{self.title.replace(' ', '-')}"
 
     # def get_stub_toc(self):
@@ -183,8 +193,10 @@ class Piece(object):
 
 
 class CatalogPiece(object):
+    piece: Piece
+    catalog: 'Catalog'
 
-    def __init__(self, piece, catalog):
+    def __init__(self, piece: Piece, catalog: 'Catalog'):
         self.piece = piece
         self.catalog = catalog
 
@@ -213,7 +225,7 @@ class CatalogPiece(object):
     #     stub_toc.shift_page_indices(num_toc_pages)
     #     return stub_toc
 
-    def build_print(self, track_selector, prints_dir=None):
+    def build_print(self, track_selector: ITrackSelector, prints_dir=None):
         if prints_dir is None:
             prints_dir = self.catalog.prints_dir
 
@@ -223,7 +235,7 @@ class CatalogPiece(object):
             track_selector=track_selector,
             orchestra=self.catalog.orchestra)
 
-    def extract_single_track(self, track_id, output_dir=None):
+    def extract_single_track(self, track_id: TrackId, output_dir: Path = None):
         """
         :param str track_id: eg 'bb trumpet 3'
         """
@@ -238,7 +250,7 @@ class CatalogPiece(object):
             track_selector=track_selector,
             orchestra=self.catalog.orchestra)
 
-    def build_all(self, musician_count):
+    def build_all(self, musician_count: Dict[str, int]):
         self.build_stub()
         self.build_print(musician_count)
 
@@ -251,6 +263,7 @@ class Catalog(object):
     stubs_dir: Path
     prints_dir: Path
     orchestra: Orchestra
+    pieces: Dict[int, Piece]
 
     def __init__(self, piece_desc_dir: Path, scans_dir: Path, stubs_dir: Path, prints_dir: Path, orchestra: Orchestra):
         """
@@ -280,8 +293,8 @@ class Catalog(object):
                 piece = load_piece_description(desc_file_path, orchestra)
                 self.add(CatalogPiece(piece, self))
 
-    def add(self, piece):
+    def add(self, piece: Piece):
         self.pieces[piece.uid] = piece
 
-    def get(self, uid):
+    def get(self, uid: int):
         return self.pieces[uid]

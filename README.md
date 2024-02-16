@@ -25,6 +25,11 @@ By making heavy use of digitized sheet music, `pymusco` provides a way to addres
 
 Digitizing original sheet music can be illegal depending on countries and editors. `pymusco` encourages in no way to trespass the law. `pymusco` doesn't have to be used with material subject to copyright.
 
+## how to install
+
+```
+python ./setup.py install
+```
 
 ## how to use
 
