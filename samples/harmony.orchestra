@@ -122,7 +122,7 @@
         { "uid": "bells", "player": "percussionist", "order": 11.100 },
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
         { "uid": "chimes", "player": "percussionist", "order": 11.102 },
-        { "uid": "wind chimes", "player": "percussionist", "order": 11.103 },
+        { "uid": "wind chimes", "player": "percussionist", "order": 11.103 },  // aka metal wind chimes
         { "uid": "triangle", "player": "percussionist", "order": 11.104 },
         { "uid": "small triangle", "player": "percussionist", "order": 11.105 },
         { "uid": "sleigh bells", "player": "percussionist", "order": 11.106 },
@@ -135,6 +135,7 @@
         { "uid": "klaxon", "player": "percussionist", "order": 11.113 },
         { "uid": "brake drum", "player": "percussionist", "order": 11.114, "is_rare": true },
         { "uid": "agogo", "player": "percussionist", "order": 11.115 },  // aka agogô, gongué, gan gan (smaller version)  https://en.wikipedia.org/wiki/Agog%C3%B4
+        { "uid": "bicycle ring", "player": "percussionist", "order": 11.116 },
         { "uid": "wind gong", "player": "percussionist", "order": 11.120},
         { "uid": "dowel stick bundle", "player": "percussionist", "order": 11.121},
         { "uid": "pitched drum", "player": "percussionist", "order": 11.122},
