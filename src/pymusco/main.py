@@ -348,8 +348,6 @@ def scan_to_stub(src_scanned_pdf_file_path: Path, dst_stub_pdf_file_path: Path, 
     scanned_image_file_paths = []
     with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
         pdf_reader = PyPDF2.PdfReader(src_pdf_file)
-        # pdfReader.numPages
-        # 19
         page_index = 0
         for page in pdf_reader.pages:
             print(f'page_index = {page_index}')
@@ -454,7 +452,7 @@ def split_double_pages(src_scanned_pdf_file_path: Path, dst_scanned_pdf_file_pat
     scanned_image_file_paths = []
     with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
         pdf_reader = PyPDF2.PdfReader(src_pdf_file)
-        for page_index in range(pdf_reader.numPages):
+        for page_index in range(len(pdf_reader.pages)):
             print(f'page_index = {page_index}')
             double_page = pdf_reader.pages[page_index]
             image_name = f'page{page_index:03d}'
@@ -503,7 +501,7 @@ def crop_pdf(src_scanned_pdf_file_path: Path, dst_scanned_pdf_file_path: Path, x
     scanned_image_file_paths = []
     with open(src_scanned_pdf_file_path, 'rb') as src_pdf_file:
         pdf_reader = PyPDF2.PdfReader(src_pdf_file)
-        for page_index in range(pdf_reader.numPages):
+        for page_index in range(len(pdf_reader.pages)):
             print(f'page_index = {page_index}')
             page = pdf_reader.pages[page_index]
             image_name = f'page{page_index:03d}'

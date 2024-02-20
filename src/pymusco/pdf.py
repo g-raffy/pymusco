@@ -159,7 +159,7 @@ def find_pdf_page_raster_image(pdf_page: PyPDF2.PageObject) -> PyPDF2.generic.En
     :return PyPDF2.generic.EncodedStreamObject: a pdf node which is supposed to contain an image
     """
     if '/XObject' in pdf_page['/Resources']:
-        x_object = pdf_page['/Resources']['/XObject'].getObject()
+        x_object = pdf_page['/Resources']['/XObject'].get_object()
         for obj in x_object:
             if x_object[obj]['/Subtype'] == '/Image':
                 return x_object[obj]
@@ -240,7 +240,7 @@ def extract_pdf_page_images(pdf_page: PyPDF2.PageObject, image_folder='/tmp'):
     :param PyPDF2.pdf.PageObject pdf_page:
     :param str image_folder:
     """
-    x_object = pdf_page['/Resources']['/XObject'].getObject()
+    x_object = pdf_page['/Resources']['/XObject'].get_object()
 
     for obj in x_object:
         print(type(obj))
@@ -351,9 +351,7 @@ def add_stamp(src_pdf_file_path: Path, dst_pdf_file_path: Path, stamp_file_path:
     pdf_writer = PyPDF2.PdfWriter()
     with open(src_pdf_file_path, 'rb') as src_pdf_file:
         pdf_reader = PyPDF2.PdfReader(src_pdf_file)
-        # pdfReader.numPages
-        # 19
-        for page_index in range(pdf_reader.numPages):
+        for page_index in range(len(pdf_reader.pages)):
             page = pdf_reader.pages[page_index]
             # page.mergePage(watermark)
             page.mergeScaledTranslatedPage(watermark, scale=scale, tx=tx, ty=ty)
@@ -380,11 +378,11 @@ def check_pdf(src_pdf_file_path: Path):
     """
     with open(src_pdf_file_path, 'rb') as src_pdf_file:
         pdf_reader = PyPDF2.PdfReader(src_pdf_file)
-        for page_index in range(pdf_reader.numPages):
+        for page_index in range(len(pdf_reader.pages)):
             print(f'page_index = {page_index}')
             pdf_page = pdf_reader.pages[page_index]
             if '/XObject' in pdf_page['/Resources']:
-                x_object = pdf_page['/Resources']['/XObject'].getObject()
+                x_object = pdf_page['/Resources']['/XObject'].get_object()
                 for obj in x_object:
                     if x_object[obj]['/Subtype'] == '/Image':
                         pdf_stream = x_object[obj]
