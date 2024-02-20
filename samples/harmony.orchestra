@@ -118,6 +118,7 @@
         { "uid": "piccolo snare drum", "player": "percussionist", "order": 11.065 },
         { "uid": "wind machine", "player": "percussionist", "order": 11.066 }, //aka héliophone
         { "uid": "wooden wind chimes", "player": "percussionist", "order": 11.067 },
+        { "uid": "beatring", "player": "percussionist", "order": 11.068 },  // beatring + skin = tambourine
 
         { "uid": "bells", "player": "percussionist", "order": 11.100 },
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
