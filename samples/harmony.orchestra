@@ -137,6 +137,7 @@
         { "uid": "brake drum", "player": "percussionist", "order": 11.114, "is_rare": true },
         { "uid": "agogo", "player": "percussionist", "order": 11.115 },  // aka agogô, gongué, gan gan (smaller version)  https://en.wikipedia.org/wiki/Agog%C3%B4
         { "uid": "bicycle ring", "player": "percussionist", "order": 11.116 },
+        { "uid": "djembe", "player": "percussionist", "order": 11.117 },
         { "uid": "wind gong", "player": "percussionist", "order": 11.120},
         { "uid": "dowel stick bundle", "player": "percussionist", "order": 11.121},
         { "uid": "pitched drum", "player": "percussionist", "order": 11.122},
