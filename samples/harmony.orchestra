@@ -142,6 +142,7 @@
         { "uid": "dowel stick bundle", "player": "percussionist", "order": 11.121},
         { "uid": "pitched drum", "player": "percussionist", "order": 11.122},
         { "uid": "water gong", "player": "percussionist", "order": 11.123, "is_rare":  true},
+        { "uid": "crusher", "player": "percussionist", "order": 11.124, "is_rare":  true}, // Concasseur
 
         { "uid": "mallet percussion", "player": "percussionist", "order": 11.200 },
         { "uid": "xylophone", "player": "percussionist", "order": 11.201 },
