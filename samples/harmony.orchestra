@@ -30,6 +30,7 @@
 
         { "uid": "f horn", "player": "hornist", "order": 7.000 },
         { "uid": "eb horn", "player": "hornist", "order": 7.001, "is_rare": true },
+        { "uid": "bb horn", "player": "hornist", "order": 7.002, "is_rare": true },
 
         { "uid": "c trombone", "player": "trombonist", "order": 8.000 },
         { "uid": "bb trombone", "player": "trombonist", "order": 8.001, "is_rare": true },
@@ -161,6 +162,7 @@
         { "uid": "guard's whistle", "player": "percussionist", "order": 11.403 },
         { "uid": "whistle", "player": "percussionist", "order": 11.404 },
         { "uid": "african hand drum", "player": "percussionist", "order": 11.405, "is_rare": true }, //aka djembe
+        { "uid": "quint toms", "player": "percussionist", "order": 11.406, "is_rare": true },
         { "uid": "traffic lights", "player": "percussionist", "order": 11.500, "is_rare": true },
 
         // not set to rare because david the tuba player can use them, so we want one in the print
