@@ -576,7 +576,7 @@ def get_stub_tracks(src_stub_file_path: Track, orchestra: Orchestra) -> TableOfC
 
         # at this point, linked_page_indirect_object is of type PyPDF2.generic.IndirectObject, with a value such as:
         # IndirectObject(228, 0)
-        print(dir(pdf_reader))
+        # print(dir(pdf_reader))
         linked_page_object = pdf_reader.resolved_objects[(0, linked_page_indirect_object.idnum)]
         # at this point, linked_page_object is of type PyPDF2.generic.DictionaryObject with a value such as :
         # {
