@@ -87,7 +87,7 @@
         { "uid": "finger cymbal tree", "player": "percussionist", "order": 11.037 },  // string of suspended finger cymbals
         { "uid": "meinl spark shaker", "player": "percussionist", "order": 11.038 },  // https://www.soundtravels.co.uk/p-Meinl_Spark_Shaker-2824.aspx
         { "uid": "timbales", "player": "percussionist", "order": 11.039 },  // aka pailas https://en.wikipedia.org/wiki/Timbales
-        { "uid": "sizzle cymbal", "player": "percussionist", "order": 11.040 },  // https://en.wikipedia.org/wiki/Sizzle_cymbal 
+        { "uid": "sizzle cymbal", "player": "percussionist", "order": 11.040 },  // https://en.wikipedia.org/wiki/Sizzle_cymbal
         { "uid": "maracas", "player": "percussionist", "order": 11.041 },
         { "uid": "bodhran", "player": "percussionist", "order": 11.042 },
         { "uid": "chinese cymbal", "player": "percussionist", "order": 11.043 },
@@ -101,13 +101,13 @@
         { "uid": "egg shaker", "player": "percussionist", "order": 11.051 },
         { "uid": "tenor drum", "player": "percussionist", "order": 11.052 },
         { "uid": "sandpaper blocks", "player": "percussionist", "order": 11.053 },
-        { "uid": "suspended cymbal with coin scrape", "player": "percussionist", "order": 11.054 },  // It is a real coin. It is used to scratch across the cymbal grooves to produce a bell - tree effect. Source: Hauer Music, Ohio. 
+        { "uid": "suspended cymbal with coin scrape", "player": "percussionist", "order": 11.054 },  // It is a real coin. It is used to scratch across the cymbal grooves to produce a bell - tree effect. Source: Hauer Music, Ohio.
         { "uid": "ride cymbal", "player": "percussionist", "order": 11.055 },  // Some drummers use a china cymbal, a sizzle cymbal or a specialized tone such as a swish or pang cymbal as a ride cymbal. When playing extremely softly, when using brushes, and when recording, even a thin crash may serve well as a ride cymbal.
         { "uid": "surdo", "player": "percussionist", "order": 11.056 },
         { "uid": "waterphone", "player": "percussionist", "order": 11.057 },  // aka ocean harp or aquasonic waterphone
         { "uid": "china cymbals", "player": "percussionist", "order": 11.058 },  // aka trash cymbal. A distinct type of crash cymbals
         { "uid": "low tom", "player": "percussionist", "order": 11.059 },  // aka floor tom
-        { "uid": "roto toms", "player": "percussionist", "order": 11.060 },  // 
+        { "uid": "roto toms", "player": "percussionist", "order": 11.060 },  //
         // What Is The Difference Between a Roto tom and a Concert Tom?
         // Roto toms are drums without shells that can be tuned by rotating them. Concert toms are single headed toms with shells and they have quite a different sound, because the wooden shell gives concert toms quite a different tone and resonance.
 
@@ -120,11 +120,12 @@
         { "uid": "wind machine", "player": "percussionist", "order": 11.066 }, //aka héliophone
         { "uid": "wooden wind chimes", "player": "percussionist", "order": 11.067 },
         { "uid": "beatring", "player": "percussionist", "order": 11.068 },  // beatring + skin = tambourine
+        { "uid": "thunder sheet", "player": "percussionist", "order": 11.069 },
 
         { "uid": "bells", "player": "percussionist", "order": 11.100 },
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
         { "uid": "chimes", "player": "percussionist", "order": 11.102 },
-        { "uid": "wind chimes", "player": "percussionist", "order": 11.103 },  // aka metal wind chimes
+        { "uid": "wind chimes", "player": "percussionist", "order": 11.103 },  // aka metal wind chimes, aka windbells
         { "uid": "triangle", "player": "percussionist", "order": 11.104 },
         { "uid": "small triangle", "player": "percussionist", "order": 11.105 },
         { "uid": "sleigh bells", "player": "percussionist", "order": 11.106 },
@@ -188,4 +189,3 @@
         { "uid": "voice", "player": "singer", "order": 1.000, "is_rare": true }
     ]
 }
-
