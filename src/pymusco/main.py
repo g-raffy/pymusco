@@ -18,7 +18,7 @@ from .core import Track, ITrackSelector, Orchestra, TableOfContents
 from .pdf import extract_pdf_page_main_image
 from .pdf import extract_pdf_page
 from .core import get_stub_tracks
-from .pdf import check_pdf
+from .pdf import check_pdf, check_pdf_reader
 
 
 def md5(fname):
@@ -359,6 +359,7 @@ def scan_to_stub(src_scanned_pdf_file_path: Path, dst_stub_pdf_file_path: Path, 
             # break
     stamp_descs = stamp_descs if stamp_descs is not None else []
     images_to_pdf(StubContents(image_file_paths=scanned_image_file_paths, toc=toc, title=title, stamp_descs=stamp_descs, page_info_line_y_pos=page_info_line_y_pos), dst_stub_pdf_file_path)
+    check_pdf(dst_stub_pdf_file_path)  # ensure that the generated pdf is supported by pypdf2
 
 
 def stub_to_print(src_stub_file_path: Path, dst_print_file_path: Path, track_selector: ITrackSelector, orchestra: Orchestra):
@@ -370,6 +371,9 @@ def stub_to_print(src_stub_file_path: Path, dst_print_file_path: Path, track_sel
     :param dict(str, int) musician_count: gets the number of musicians for each musical intrument family
     :param TableOfContents or None stub_toc: if defined, gets the start page number for each track in the stub
     """
+
+    check_pdf(src_stub_file_path)
+
     stub_toc = get_stub_tracks(src_stub_file_path, orchestra)
     print(stub_toc)
 
@@ -420,11 +424,11 @@ def stub_to_print(src_stub_file_path: Path, dst_print_file_path: Path, track_sel
                 (first_page_index, last_page_index) = page_range
                 num_copies = range_to_num_copies[page_range]
                 log_file.write(f"{num_copies} copies of {'/'.join(range_to_tracks[page_range])}\n")
-                # print(page_range, num_copies)
+                # print(page_range, num_copies, range_to_tracks[page_range])
                 for copy_index in range(num_copies):  # @UnusedVariable pylint: disable=unused-variable
                     for page_index in range(first_page_index, last_page_index + 1):
                         track_page = stub_pdf.pages[page_index - 1]  # -1 to convert 1-based index into 0-based index
-                        # print('adding page %d' % page_index)
+                        # print(f'adding page {page_index}')
                         print_pdf.add_page(track_page)
 
             log_file.write("\nunprinted tracks :\n\n")

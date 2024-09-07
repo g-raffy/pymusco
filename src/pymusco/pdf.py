@@ -1,5 +1,5 @@
 #!/usr/bin/env python3.8
-from typing import List, Tuple, Any
+from typing import List, Tuple, Any, Dict, Union, Optional
 import struct
 import subprocess
 import os
@@ -11,6 +11,7 @@ from PIL import Image
 import cv2
 import PyPDF2
 from .core import rotate_image
+import json
 
 # Extract images from pdf: http://stackoverflow.com/questions/2693820/extract-images-from-pdf-without-resampling-in-python
 # Extract images coded with CCITTFaxDecode in .net: http://stackoverflow.com/questions/2641770/extracting-image-from-pdf-with-ccittfaxdecode-filter
@@ -370,91 +371,193 @@ def add_stamp(src_pdf_file_path: Path, dst_pdf_file_path: Path, stamp_file_path:
             shutil.copyfile(tmp_dst_pdf_file_path, dst_pdf_file_path)
 
 
+def pdf_object_as_json(src: Union[Dict[str, Any], List[Any], str]) -> Union[Dict[str, Any], List[Any], str]:
+    dst = None
+    if isinstance(src, int):
+        dst = src
+    elif isinstance(src, PyPDF2.PageObject):
+        dst = {}
+        for k, v in src.items():
+            dst[k] = pdf_object_as_json(v)
+    elif isinstance(src, list):
+        dst = []
+        for v in src.items():
+            dst.append(pdf_object_as_json(v))
+    elif isinstance(src, tuple):
+        dst = []
+        for item in src:
+            dst.append(pdf_object_as_json(item))
+    elif isinstance(src, PyPDF2.generic._base.NameObject):  # pylint: disable=protected-access
+        dst = str(src)
+    elif isinstance(src, PyPDF2.generic._base.FloatObject):  # pylint: disable=protected-access
+        dst = float(src)
+    elif isinstance(src, PyPDF2.generic.IndirectObject):
+        ind_object_dict = {}
+        ind_object_dict['idnum'] = src.idnum
+        ind_object_dict['generation'] = src.generation
+        ind_object_dict['pdf'] = str(src.pdf)
+        dst = ind_object_dict
+    else:
+        assert False, f'unhandled type {type(src)}'
+        dst = str(src)
+    return dst
+
+
+def dump_pdf_page(pdf_page: PyPDF2.PageObject, out_json_file_path: Path):
+    assert isinstance(pdf_page, PyPDF2.PageObject)
+    page_as_dict = pdf_object_as_json(pdf_page)
+    # page_as_dict = {}
+    # for k, v in pdf_page.items():
+    #     field_as_dict = {}
+    #     page_as_dict[k] = field_as_dict
+    #     for res_key, res_val in v.items():
+    #         print(f'res_key={res_key}, res_val={res_val}')
+    #         field_as_dict[res_key] = str(res_val)
+    #         assert res_val is not None
+    with open(out_json_file_path, 'w', encoding='utf8') as out_json_file:
+        json.dump(page_as_dict, out_json_file, indent=2)
+
+def check_pdf_data(pdf_data: Any, data_id: str):
+    has_unhandled_type = False
+    value_as_string = ''
+    if isinstance(pdf_data, PyPDF2.generic._data_structures.DictionaryObject):  # pylint: disable=protected-access
+        for k, v in pdf_data.items():
+            check_pdf_data(v, data_id+f'["{k}"]')
+    elif isinstance(pdf_data, PyPDF2.generic._data_structures.ArrayObject):  # pylint: disable=protected-access
+        el_index = 0
+        for v in pdf_data:
+            check_pdf_data(v, data_id+f'[{el_index}]')
+            el_index += 1
+    elif isinstance(pdf_data, PyPDF2.generic._base.IndirectObject):  # pylint: disable=protected-access
+        indirect_object: PyPDF2.generic._base.IndirectObject = pdf_data
+        value_as_string = str(indirect_object)
+        pdf_object = indirect_object.pdf.get_object(pdf_data)
+        assert pdf_object is not None
+    elif isinstance(pdf_data, PyPDF2.generic._base.NameObject):  # pylint: disable=protected-access
+        value_as_string = str(pdf_data)
+    elif isinstance(pdf_data, PyPDF2.generic._base.NumberObject):  # pylint: disable=protected-access
+        value_as_string = str(pdf_data)
+    elif isinstance(pdf_data, PyPDF2.generic._base.FloatObject):  # pylint: disable=protected-access
+        value_as_string = str(pdf_data)
+    elif isinstance(pdf_data, PyPDF2.generic._base.BooleanObject):  # pylint: disable=protected-access
+        value_as_string = str(pdf_data)
+    else:
+        has_unhandled_type = True
+    
+    if has_unhandled_type:
+        assert False, f'unhandled type : {type(pdf_data)} for data {data_id}'
+    else:
+        print(f'checked {data_id}, type={type(pdf_data)}, value={value_as_string}')
+
+def check_pdf_page(pdf_page: PyPDF2.PageObject):
+    assert isinstance(pdf_page, PyPDF2.PageObject)
+
+    # print(f"check_pdf_page: /Resources keys : {pdf_page['/Resources'].keys()}, type={type(pdf_page['/Resources'])}")
+    for resource_type in pdf_page.keys():
+        # print(f'resource_type={resource_type}, type={type(pdf_page[resource_type])}')
+        check_pdf_data(pdf_page[resource_type], f'["{resource_type}"]')
+    if '/XObject' in pdf_page['/Resources']:
+        x_object = pdf_page['/Resources']['/XObject'].get_object()
+        for obj in x_object:
+            if x_object[obj]['/Subtype'] == '/Image':
+                pdf_stream = x_object[obj]
+                assert pdf_stream['/Subtype'] == '/Image', "this function expects the subtype of this encoded_stream_object to be an image"
+                (width, height) = (pdf_stream['/Width'], pdf_stream['/Height'])
+                print(f"filter = {pdf_stream['/Filter']}")
+                if pdf_stream['/Filter'] == '/CCITTFaxDecode':
+                    # File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/PyPDF2/filters.py", line 361, in decodeStreamData
+                    # raise NotImplementedError("unsupported filter %s" % filterType)
+                    # NotImplementedError: unsupported filter /CCITTFaxDecode
+
+                    # The  CCITTFaxDecode filter decodes image data that has been encoded using
+                    # either Group 3 or Group 4 CCITT facsimile (fax) encoding. CCITT encoding is
+                    # designed to achieve efficient compression of monochrome (1 bit per pixel) image
+                    # data at relatively low resolutions, and so is useful only for bitmap image data, not
+                    # for color images, grayscale images, or general data.
+
+                    # K < 0 --- Pure two-dimensional encoding (Group 4)
+                    # K = 0 --- Pure one-dimensional encoding (Group 3, 1-D)
+                    # K > 0 --- Mixed one- and two-dimensional encoding (Group 3, 2-D)
+                    if pdf_stream['/DecodeParms']['/K'] == -1:
+                        ccitt_group = 4
+                    else:
+                        ccitt_group = 3
+                    data = pdf_stream._data  # sorry, getData() does not work for CCITTFaxDecode  pylint: disable=protected-access
+                    img_size = len(data)
+                    tiff_header = tiff_header_for_ccitt(width, height, img_size, ccitt_group)  # pylint: disable=unused-variable
+                else:
+                    try:
+                        data = pdf_stream.getData()
+                        # on corrupt file, gives : raise utils.PdfReadError("Unable to find 'endstream' marker after stream at byte %s." % utils.hexStr(stream.tell()))
+                    except NotImplementedError as e:  # pylint: disable=unused-variable
+                        continue
+                    except AssertionError as e:
+                        _, _, tb = sys.exc_info()
+                        # traceback.print_tb(tb) # Fixed format
+                        tb_info = traceback.extract_tb(tb)
+                        filename, line, func, text = tb_info[-1]  # pylint: disable=unused-variable
+                        # print('assert error on file {} line {} in statement {}'.format(filename, line, text))
+                        if text == 'assert len(data) % rowlength == 0':
+                            # this seems to be a zealous assert that fails even on legitimate pdf output of pdflatex, so ignore it
+                            continue
+                        else:
+                            raise e
+                    print(f'data length : {len(data)}')
+                    num_pixels = width * height
+                    print(width, height, num_pixels)
+                    color_space, indirect_object = pdf_stream['/ColorSpace']  # pylint: disable=unused-variable
+                    print("color_space :", color_space)
+                    if color_space == '/DeviceRGB':
+                        mode = "RGB"
+                    elif color_space == '/ICCBased':
+                        one_bit_per_pixel = False
+                        # guess if the image is stored as one bit per pixel
+                        # ICCBased decoding code written in go here : https://github.com/unidoc/unidoc/blob/master/pdf/model/colorspace.go
+                        assert pdf_stream['/Filter'] == '/FlateDecode', f"don't know how to guess if data is 1 bits per pixel when filter is {pdf_stream['/Filter']}"
+                        bytes_per_line = width / 8
+                        if (width % 8) > 0:
+                            bytes_per_line += 1
+                        expected_packed_image_data_size = bytes_per_line * height  # packed image size supposing image is stored as 1 bit per pixel
+                        if len(data) == expected_packed_image_data_size:
+                            one_bit_per_pixel = True
+
+                        if one_bit_per_pixel:
+                            mode = "1"  # (1-bit pixels, black and white, stored with one pixel per byte)
+                        else:
+                            mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
+                    else:
+                        mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
+                    if pdf_stream['/Filter'] == '/FlateDecode':
+                        img = Image.frombytes(mode, (width, height), data)  # noqa:F841 pylint: disable=unused-variable
+                    elif pdf_stream['/Filter'] == '/DCTDecode':
+                        pass
+                    elif pdf_stream['/Filter'] == '/JPXDecode':
+                        pass
+
+
+def check_pdf_reader(pdf_reader: PyPDF2.PdfReader, dump_dir: Optional[Path] = None):
+    """
+    dump_dir: eg Path('/home/graffy/private/dev/pymusco/tickets/ticket0008')
+    """
+    assert isinstance(pdf_reader, PyPDF2.PdfReader)
+    out_pdf: PyPDF2.PdfWriter = PyPDF2.PdfWriter()
+    for page_index in range(len(pdf_reader.pages)):  # pylint: disable=C0200
+        # print(f'page_index = {page_index}')
+        if  dump_dir is not None:
+            dump_pdf_page(pdf_page, dump_dir / f'page{page_index}.json')
+        pdf_page = pdf_reader.pages[page_index]
+        _pdf_obj: Optional['PyPDF2.PdfObject'] = pdf_page.get_object()
+        check_pdf_page(pdf_page)
+        out_pdf.add_page(pdf_page)  # this operation allows to detect formats not supported by pypdf2 (see [https://github.com/g-raffy/pymusco/issues/8])
+
+
+
 def check_pdf(src_pdf_file_path: Path):
     """
     the purpose of this function is to detect inconsistencies in the given pdf file
     an exception is raised if the pdf is malformed
-    please note that all maformations are not detected yet
+    please note that all malformations are not detected yet
     """
     with open(src_pdf_file_path, 'rb') as src_pdf_file:
         pdf_reader = PyPDF2.PdfReader(src_pdf_file)
-        for page_index in range(len(pdf_reader.pages)):
-            print(f'page_index = {page_index}')
-            pdf_page = pdf_reader.pages[page_index]
-            if '/XObject' in pdf_page['/Resources']:
-                x_object = pdf_page['/Resources']['/XObject'].get_object()
-                for obj in x_object:
-                    if x_object[obj]['/Subtype'] == '/Image':
-                        pdf_stream = x_object[obj]
-                        assert pdf_stream['/Subtype'] == '/Image', "this function expects the subtype of this encoded_stream_object to be an image"
-                        (width, height) = (pdf_stream['/Width'], pdf_stream['/Height'])
-                        print(f"filter = {pdf_stream['/Filter']}")
-                        if pdf_stream['/Filter'] == '/CCITTFaxDecode':
-                            # File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/PyPDF2/filters.py", line 361, in decodeStreamData
-                            # raise NotImplementedError("unsupported filter %s" % filterType)
-                            # NotImplementedError: unsupported filter /CCITTFaxDecode
-
-                            # The  CCITTFaxDecode filter decodes image data that has been encoded using
-                            # either Group 3 or Group 4 CCITT facsimile (fax) encoding. CCITT encoding is
-                            # designed to achieve efficient compression of monochrome (1 bit per pixel) image
-                            # data at relatively low resolutions, and so is useful only for bitmap image data, not
-                            # for color images, grayscale images, or general data.
-
-                            # K < 0 --- Pure two-dimensional encoding (Group 4)
-                            # K = 0 --- Pure one-dimensional encoding (Group 3, 1-D)
-                            # K > 0 --- Mixed one- and two-dimensional encoding (Group 3, 2-D)
-                            if pdf_stream['/DecodeParms']['/K'] == -1:
-                                ccitt_group = 4
-                            else:
-                                ccitt_group = 3
-                            data = pdf_stream._data  # sorry, getData() does not work for CCITTFaxDecode  pylint: disable=protected-access
-                            img_size = len(data)
-                            tiff_header = tiff_header_for_ccitt(width, height, img_size, ccitt_group)  # pylint: disable=unused-variable
-                        else:
-                            try:
-                                data = pdf_stream.getData()
-                                # on corrupt file, gives : raise utils.PdfReadError("Unable to find 'endstream' marker after stream at byte %s." % utils.hexStr(stream.tell()))
-                            except NotImplementedError as e:  # pylint: disable=unused-variable
-                                continue
-                            except AssertionError as e:
-                                _, _, tb = sys.exc_info()
-                                # traceback.print_tb(tb) # Fixed format
-                                tb_info = traceback.extract_tb(tb)
-                                filename, line, func, text = tb_info[-1]  # pylint: disable=unused-variable
-                                # print('assert error on file {} line {} in statement {}'.format(filename, line, text))
-                                if text == 'assert len(data) % rowlength == 0':
-                                    # this seems to be a zealous assert that fails even on legitimate pdf output of pdflatex, so ignore it
-                                    continue
-                                else:
-                                    raise e
-                            print(f'data length : {len(data)}')
-                            num_pixels = width * height
-                            print(width, height, num_pixels)
-                            color_space, indirect_object = pdf_stream['/ColorSpace']  # pylint: disable=unused-variable
-                            print("color_space :", color_space)
-                            if color_space == '/DeviceRGB':
-                                mode = "RGB"
-                            elif color_space == '/ICCBased':
-                                one_bit_per_pixel = False
-                                # guess if the image is stored as one bit per pixel
-                                # ICCBased decoding code written in go here : https://github.com/unidoc/unidoc/blob/master/pdf/model/colorspace.go
-                                assert pdf_stream['/Filter'] == '/FlateDecode', f"don't know how to guess if data is 1 bits per pixel when filter is {pdf_stream['/Filter']}"
-                                bytes_per_line = width / 8
-                                if (width % 8) > 0:
-                                    bytes_per_line += 1
-                                expected_packed_image_data_size = bytes_per_line * height  # packed image size supposing image is stored as 1 bit per pixel
-                                if len(data) == expected_packed_image_data_size:
-                                    one_bit_per_pixel = True
-
-                                if one_bit_per_pixel:
-                                    mode = "1"  # (1-bit pixels, black and white, stored with one pixel per byte)
-                                else:
-                                    mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
-                            else:
-                                mode = "P"  # (8-bit pixels, mapped to any other mode using a color palette)
-                            if pdf_stream['/Filter'] == '/FlateDecode':
-                                img = Image.frombytes(mode, (width, height), data)  # noqa:F841 pylint: disable=unused-variable
-                            elif pdf_stream['/Filter'] == '/DCTDecode':
-                                pass
-                            elif pdf_stream['/Filter'] == '/JPXDecode':
-                                pass
+        check_pdf_reader(pdf_reader)
