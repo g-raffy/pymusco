@@ -165,6 +165,7 @@
         { "uid": "african hand drum", "player": "percussionist", "order": 11.405, "is_rare": true }, //aka djembe
         { "uid": "quint toms", "player": "percussionist", "order": 11.406, "is_rare": true },
         { "uid": "traffic lights", "player": "percussionist", "order": 11.500, "is_rare": true },
+        { "uid": "bird instrument", "player": "percussionist", "order": 11.500, "is_rare": true }, // in french appeau
 
         // not set to rare because david the tuba player can use them, so we want one in the print
         { "uid": "double bass", "player": "bassist", "order": 12.000 },  // other names : Bass, upright bass, string bass, acoustic bass, acoustic string bass, contrabass, contrabass viol, bass viol, standup bass, bull fiddle, doghouse bass and bass fiddle, contrebasse
@@ -186,6 +187,9 @@
         { "uid": "c viola", "player": "violinist", "order": 15.011, "is_rare": true },
         { "uid": "c cello", "player": "violinist", "order": 15.012, "is_rare": true },
 
-        { "uid": "voice", "player": "singer", "order": 1.000, "is_rare": true }
+        { "uid": "voice", "player": "singer", "order": 16.000, "is_rare": true },
+        { "uid": "choir", "player": "singer", "order": 16.001, "is_rare": true },
+
+        { "uid": "fake", "player": "moulineter", "order": 20.000, "is_rare": true }
     ]
 }
