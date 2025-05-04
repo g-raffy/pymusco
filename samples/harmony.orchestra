@@ -138,7 +138,7 @@
         { "uid": "mark tree", "player": "percussionist", "order": 11.110 },  // aka chime tree or bar chimes, https://en.wikipedia.org/wiki/Mark_tree
         { "uid": "bike horn", "player": "percussionist", "order": 11.111 },
         { "uid": "glass chimes", "player": "percussionist", "order": 11.112 },
-        { "uid": "klaxon", "player": "percussionist", "order": 11.113 },
+        { "uid": "klaxon", "player": "percussionist", "order": 11.113 }, // aka bulb horn
         { "uid": "brake drum", "player": "percussionist", "order": 11.114, "is_rare": true },
         { "uid": "agogo", "player": "percussionist", "order": 11.115 },  // aka agogô, gongué, gan gan (smaller version)  https://en.wikipedia.org/wiki/Agog%C3%B4
         { "uid": "bicycle ring", "player": "percussionist", "order": 11.116 },
