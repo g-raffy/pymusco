@@ -260,6 +260,7 @@ class Track():
         self.clef = None
         self.is_solo = False
         self.is_disabled = False
+        self.part_letter = None
         parts = track_id.split(' ')
         instrument_first_part_index = 0
         instrument_last_part_index = len(parts) - 1
@@ -274,6 +275,11 @@ class Track():
         allowed_clefs = ['tc', 'bc']
         if last_part in allowed_clefs:
             self.clef = last_part
+            instrument_last_part_index -= 1
+        last_part = parts[instrument_last_part_index]
+        allowed_parts = ['a', 'b', 'c', 'd']
+        if last_part in allowed_parts:
+            self.part_letter = last_part
             instrument_last_part_index -= 1
         last_part = parts[instrument_last_part_index]
         if last_part.isdigit():
@@ -322,6 +328,8 @@ class Track():
             uid = f'{uid:s} {self.voice:d}'
         if self.clef is not None:
             uid = f'{uid:s} {self.clef:s}'
+        if self.part_letter is not None:
+            uid = f'{uid:s} {self.part_letter:s}'
         if self.is_disabled:
             uid = f'{uid:s} disabled'
         return uid
