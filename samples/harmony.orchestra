@@ -181,6 +181,7 @@
         { "uid": "piano", "player": "pianist", "order": 13.000 },
         { "uid": "synthesizer", "player": "pianist", "order": 13.001 },
         { "uid": "toy piano", "player": "pianist", "order": 13.002 },
+        { "uid": "electric organ", "player": "pianist", "order": 13.003 },
 
         { "uid": "harp", "player": "harpist", "order": 14.000 },
 
@@ -194,6 +195,7 @@
         { "uid": "voice", "player": "singer", "order": 16.000, "is_rare": true },
         { "uid": "choir", "player": "singer", "order": 16.001, "is_rare": true },
 
+        { "uid": "fixed media", "player": "tape recorder", "order": 19.000, "is_rare": true },
         { "uid": "fake", "player": "moulineter", "order": 20.000, "is_rare": true }
     ]
 }
