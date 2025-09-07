@@ -447,6 +447,71 @@ def stub_to_print(src_stub_file_path: Path, dst_print_file_path: Path, track_sel
             print_pdf.write(print_file)
 
 
+def stub_to_individual_parts(src_stub_file_path: Path, dst_folder: Path, orchestra: Orchestra, program_name):
+    """
+    Générate individual parts from stub
+    :param src_stub_file_path:
+    :param dst_folder:
+    :param orchestra:
+    :param program_name: Program name to organize individual folder
+    :return:
+    """
+    check_pdf(src_stub_file_path)
+
+    if dst_folder.suffix == '.pdf':
+        dst_folder = dst_folder.with_suffix('')
+
+    piece_name = src_stub_file_path.stem
+
+    stub_toc = get_stub_tracks(src_stub_file_path, orchestra)
+    tracks_list = stub_toc.get_track_ids()
+    tracks_full = [Track(track_id, orchestra) for track_id in tracks_list]
+
+    dst_folder.mkdir(parents=True, exist_ok=True)
+    print(f'write individual parts to folder {dst_folder}')
+
+    with open(src_stub_file_path, 'rb') as stub_file:
+        stub_pdf = PyPDF2.PdfReader(stub_file)
+
+        percussion_writer = PyPDF2.PdfWriter()
+
+        for track in tracks_full:
+            track_id = track.id
+            player_type = track.instrument.get_player()
+
+            first_page_index = stub_toc.get_tracks_first_page_index([track])
+            last_page_index = stub_toc.get_tracks_last_page_index([track], len(stub_pdf.pages))
+
+            print(f'Processing 1 copies of track {track_id} ({player_type}) pages {first_page_index}-{last_page_index}')
+
+            safe_track_name = track_id.replace(" ", "-")
+            player_folder = dst_folder / player_type / program_name
+            player_folder.mkdir(parents=True, exist_ok=True)
+
+            output_filename = f"{piece_name}_{safe_track_name}.pdf"
+            output_path = player_folder / output_filename
+
+            if player_type == 'percussionist':
+                for page_index in range(first_page_index, last_page_index + 1):
+                    page = stub_pdf.pages[page_index - 1]
+                    percussion_writer.add_page(page)
+            else:
+                output_pdf = PyPDF2.PdfWriter()
+                for page_index in range(first_page_index, last_page_index + 1):
+                    page = stub_pdf.pages[page_index - 1]
+                    output_pdf.add_page(page)
+
+                with open(output_path, 'wb') as out_file:
+                    output_pdf.write(out_file)
+
+        # Fichier unique pour les percussionnistes regroupant toutes les percussions
+        percussion_folder = dst_folder / "percussionist" / program_name
+        percussion_folder.mkdir(parents=True, exist_ok=True)
+        percussion_path = percussion_folder / f"{piece_name}_percussionist.pdf"
+        with open(percussion_path, 'wb') as out_file:
+            percussion_writer.write(out_file)
+
+
 def split_double_pages(src_scanned_pdf_file_path: Path, dst_scanned_pdf_file_path: Path, split_pos: List[float] = [0.5]):  # pylint: disable=dangerous-default-value
     """
     :param list(float) split_pos: where to split the pages (ratio of the width of the double page). If this list contains more than one element, the positions are used sequencially and in a cyclic way

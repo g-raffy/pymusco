@@ -71,6 +71,10 @@ A [scan-pdf](#scan-pdf) is just digitized version of the paper original. It is e
 
 A [stub-pdf](#stub-pdf) is a pdf file which contains a single sheet music for each track, but unlike the scan, also contains a table of contents listing all the tracks it contains.
 
+### invidividuals-pdf
+
+A [invidividuals-pdf](#invidividuals-pdf) is a pdf file which contains a single sheet music for a unique track. When build these pdf are put in a folder for each type of musician.
+
 ### print-pdf
 
 A [print-pdf](#print-pdf) is a pdf file for a musical piece that, as its name suggests, is ready to send for printing on real paper. It contains multiple copies of each track, enough to ensure that each musician has one track assigned.

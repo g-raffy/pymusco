@@ -1,7 +1,7 @@
 {
     "format": "pymusco.orchestra.v1",
     "instruments" : [
-        { "uid": "c piccolo", "player": "piccoloflutist", "order": 1.000 },
+        { "uid": "c piccolo", "player": "flutist", "order": 1.000 },
         { "uid": "c flute", "player": "flutist", "order": 1.001 },
         { "uid": "g alto flute", "player": "flutist", "order": 1.002, "is_rare": true },
         { "uid": "db piccolo", "player": "piccoloflutist", "order": 1.003, "is_rare": true },
@@ -12,14 +12,14 @@
         { "uid": "eb clarinet", "player": "clarinetist", "order": 4.000 },  // aka Eb sopranino clarinet or eb piccolo clarniet (https://en.wikipedia.org/wiki/E-flat_clarinet)
         { "uid": "eb alto clarinet", "player": "clarinetist", "order": 4.001, "is_rare": true },
         { "uid": "bb clarinet", "player": "clarinetist", "order": 4.002 },  // aka Bb soprano clarinet, most common clarinet
-        { "uid": "bb bass clarinet", "player": "bassclarinetist", "order": 4.003 },
+        { "uid": "bb bass clarinet", "player": "clarinetist", "order": 4.003 },
         { "uid": "eb contra-alto clarinet", "player": "clarinetist", "order": 4.004, "is_rare": true },  // aka eb contrabass clarinet (https://en.wikipedia.org/wiki/Contra-alto_clarinet : As it is pitched between the bass clarinet and the B♭ contrabass clarinet, the contra-alto clarinet is the great bass member of the clarinet family)
         { "uid": "bb contrabass clarinet", "player": "clarinetist", "order": 4.005, "is_rare": true },
 
         { "uid": "bb soprano saxophone", "player": "saxophonist", "order": 5.000 },
-        { "uid": "eb alto saxophone", "player": "altosaxophonist", "order": 5.001 },
-        { "uid": "bb tenor saxophone", "player": "tenorsaxophonist", "order": 5.002 },
-        { "uid": "eb baritone saxophone", "player": "baritonesaxophonist", "order": 5.003 },
+        { "uid": "eb alto saxophone", "player": "saxophonist", "order": 5.001 },
+        { "uid": "bb tenor saxophone", "player": "saxophonist", "order": 5.002 },
+        { "uid": "eb baritone saxophone", "player": "saxophonist", "order": 5.003 },
         { "uid": "bb bass saxophone", "player": "saxophonist", "order": 5.004, "is_rare": true },
 
         { "uid": "bb trumpet", "player": "trumpetist", "order": 6.000 },
@@ -44,12 +44,12 @@
 
         { "uid": "c tuba", "player": "tubist", "order": 10.000 },  // actually a f tuba but players read c parts
         { "uid": "c bass", "player": "tubist", "order": 10.002 },
-        { "uid": "bb bass", "player": "bbtubist", "order": 10.003 },
+        { "uid": "bb bass", "player": "tubist", "order": 10.003 },
         { "uid": "eb bass", "player": "tubist", "order": 10.004, "is_rare": true },
         { "uid": "bb tuba", "player": "tubist", "order": 10.005 },
         { "uid": "eb tuba", "player": "tubist", "order": 10.006 },
-        { "uid": "bb contrabass tuba", "player": "bbtubist", "order": 10.007 },
-        { "uid": "eb contrabass tuba", "player": "bbtubist", "order": 10.008 },
+        { "uid": "bb contrabass tuba", "player": "tubist", "order": 10.007 },
+        { "uid": "eb contrabass tuba", "player": "tubist", "order": 10.008 },
 
         { "uid": "drum set", "player": "percussionist", "order": 11.001 },
         { "uid": "clash cymbals", "player": "percussionist", "order": 11.002 },  // aka concert cymbals, cymbales frappees : https://en.wikipedia.org/wiki/Clash_cymbals

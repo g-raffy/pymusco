@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 import json
 from typing import List, Dict, Any
-from .main import StampDesc
+from .main import StampDesc, stub_to_individual_parts
 from .main import scan_to_stub
 from .main import stub_to_print
 from .core import TrackId
@@ -235,6 +235,15 @@ class CatalogPiece(object):
             track_selector=track_selector,
             orchestra=self.catalog.orchestra)
 
+    def build_individuals(self, program_name):
+
+        stub_to_individual_parts(
+            src_stub_file_path=self.catalog.stubs_dir / (self.piece.label + '.pdf'),
+            dst_folder=self.catalog.individual_dir,
+            orchestra=self.catalog.orchestra,
+            program_name=program_name
+        )
+
     def extract_single_track(self, track_id: TrackId, output_dir: Path = None):
         """
         :param str track_id: eg 'bb trumpet 3'
@@ -261,11 +270,12 @@ class Catalog(object):
     piece_desc_dir: Path
     scans_dir: Path
     stubs_dir: Path
+    individual_dir: Path
     prints_dir: Path
     orchestra: Orchestra
     pieces: Dict[int, Piece]
 
-    def __init__(self, piece_desc_dir: Path, scans_dir: Path, stubs_dir: Path, prints_dir: Path, orchestra: Orchestra):
+    def __init__(self, piece_desc_dir: Path, scans_dir: Path, stubs_dir: Path, individual_dir: Path, prints_dir: Path, orchestra: Orchestra):
         """
         Parammeters
         -----------
@@ -283,6 +293,7 @@ class Catalog(object):
         self.piece_desc_dir = piece_desc_dir
         self.scans_dir = scans_dir
         self.stubs_dir = stubs_dir
+        self.individual_dir = individual_dir
         self.prints_dir = prints_dir
         self.orchestra = orchestra
 
