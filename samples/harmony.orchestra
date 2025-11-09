@@ -124,6 +124,7 @@
         { "uid": "wooden wind chimes", "player": "percussionist", "order": 11.067 },
         { "uid": "beatring", "player": "percussionist", "order": 11.068 },  // beatring + skin = tambourine
         { "uid": "thunder sheet", "player": "percussionist", "order": 11.069 },
+        { "uid": "marching machine", "player": "percussionist", "order": 11.070 },
 
         { "uid": "bells", "player": "percussionist", "order": 11.100 },
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
@@ -194,6 +195,10 @@
 
         { "uid": "voice", "player": "singer", "order": 16.000, "is_rare": true },
         { "uid": "choir", "player": "singer", "order": 16.001, "is_rare": true },
+        { "uid": "soprano voice", "player": "singer", "order": 16.002, "is_rare": true },
+        { "uid": "alto voice", "player": "singer", "order": 16.002, "is_rare": true },
+        { "uid": "tenor voice", "player": "singer", "order": 16.002, "is_rare": true },
+        { "uid": "bass voice", "player": "singer", "order": 16.002, "is_rare": true },
 
         { "uid": "fixed media", "player": "tape recorder", "order": 19.000, "is_rare": true },
         { "uid": "fake", "player": "moulineter", "order": 20.000, "is_rare": true }
