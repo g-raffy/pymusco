@@ -187,11 +187,11 @@
         { "uid": "harp", "player": "harpist", "order": 14.000 },
 
         { "uid": "bb violin", "player": "violinist", "order": 15.000, "is_rare": true },
-        { "uid": "bb viola", "player": "violinist", "order": 15.001, "is_rare": true },
-        { "uid": "bb cello", "player": "violinist", "order": 15.002, "is_rare": true },
+        { "uid": "bb viola", "player": "violist", "order": 15.001, "is_rare": true },
+        { "uid": "bb cello", "player": "cellist", "order": 15.002, "is_rare": true },
         { "uid": "c violin", "player": "violinist", "order": 15.010, "is_rare": true },
-        { "uid": "c viola", "player": "violinist", "order": 15.011, "is_rare": true },
-        { "uid": "c cello", "player": "violinist", "order": 15.012, "is_rare": true },
+        { "uid": "c viola", "player": "violist", "order": 15.011, "is_rare": true },
+        { "uid": "c cello", "player": "cellist", "order": 15.012, "is_rare": true },
 
         { "uid": "voice", "player": "singer", "order": 16.000, "is_rare": true },
         { "uid": "choir", "player": "singer", "order": 16.001, "is_rare": true },
