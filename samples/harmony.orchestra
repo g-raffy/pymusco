@@ -125,6 +125,7 @@
         { "uid": "beatring", "player": "percussionist", "order": 11.068 },  // beatring + skin = tambourine
         { "uid": "thunder sheet", "player": "percussionist", "order": 11.069 },
         { "uid": "marching machine", "player": "percussionist", "order": 11.070 },
+        { "uid": "tonal bass drum", "player": "percussionist", "order": 11.071 },
 
         { "uid": "bells", "player": "percussionist", "order": 11.100 },
         { "uid": "bell tree", "player": "percussionist", "order": 11.101 },
