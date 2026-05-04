@@ -202,6 +202,15 @@
         { "uid": "tenor voice", "player": "singer", "order": 16.002, "is_rare": true },
         { "uid": "bass voice", "player": "singer", "order": 16.002, "is_rare": true },
 
+        { "uid": "c part", "player": "musician", "order": 17.000, "is_rare": true },
+        { "uid": "bb part", "player": "musician", "order": 17.001, "is_rare": true },
+        { "uid": "eb part", "player": "musician", "order": 17.002, "is_rare": true },
+        { "uid": "f part", "player": "musician", "order": 17.003, "is_rare": true },
+        { "uid": "c super part", "player": "musician", "order": 17.010, "is_rare": true },
+        { "uid": "bb super part", "player": "musician", "order": 17.011, "is_rare": true },
+        { "uid": "eb super part", "player": "musician", "order": 17.012, "is_rare": true },
+        { "uid": "f super part", "player": "musician", "order": 17.013, "is_rare": true },
+
         { "uid": "fixed media", "player": "tape recorder", "order": 19.000, "is_rare": true },
         { "uid": "fake", "player": "moulineter", "order": 20.000, "is_rare": true }
     ]
