@@ -174,6 +174,7 @@
         { "uid": "traffic lights", "player": "percussionist", "order": 11.500, "is_rare": true },
         { "uid": "bird instrument", "player": "percussionist", "order": 11.501, "is_rare": true }, // in french appeau
         { "uid": "washboard", "player": "percussionist", "order": 11.502, "is_rare": true }, // in french planche à laver ou frottoir
+        { "uid": "darbouka", "player": "percussionist", "order": 11.503, "is_rare": true }, // in french planche à laver ou frottoir
 
         // not set to rare because david the tuba player can use them, so we want one in the print
         { "uid": "double bass", "player": "bassist", "order": 12.000 },  // other names : Bass, upright bass, string bass, acoustic bass, acoustic string bass, contrabass, contrabass viol, bass viol, standup bass, bull fiddle, doghouse bass and bass fiddle, contrebasse
