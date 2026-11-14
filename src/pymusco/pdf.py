@@ -229,11 +229,47 @@ def extract_pdf_page(pdf_page: PyPDF2.PageObject, image_dir: Path, image_name: s
     :return Path: the saved image file path with file extension
     """
     saved_image_file_path = (image_dir / image_name).with_suffix('.pdf')
+    prune_unused_xobjects(pdf_page)
     with open(saved_image_file_path, 'wb') as pdf_file:
         dst_pdf = PyPDF2.PdfWriter()
         dst_pdf.add_page(pdf_page)
         dst_pdf.write(pdf_file)
     return saved_image_file_path
+
+
+def prune_unused_xobjects(pdf_page: PyPDF2.PageObject):
+    """
+    Removes from the page resources the XObjects (images, forms) that are not drawn by the page contents.
+
+    Some pdf producers share one /Resources dictionary listing the images of all pages. Without pruning, writing a page
+    on its own copies every image of the document, which makes the output size explode (nb_pages x document size).
+    The shared resources object is not modified: the page gets its own copy.
+    """
+    resources = pdf_page.get('/Resources')
+    if resources is None:
+        return
+    resources = resources.get_object()
+    if '/XObject' not in resources:
+        return
+    xobjects = resources['/XObject'].get_object()
+    contents = pdf_page.get_contents()
+    if contents is None:
+        return
+    if not isinstance(contents, PyPDF2.generic.ContentStream):
+        contents = PyPDF2.generic.ContentStream(contents, pdf_page.pdf)
+    used_names = set()
+    for operands, operator in contents.operations:
+        if operator == b'Do' and len(operands) > 0:
+            used_names.add(str(operands[0]))
+    pruned_xobjects = PyPDF2.generic.DictionaryObject()
+    for name in xobjects:
+        if str(name) in used_names:
+            pruned_xobjects[PyPDF2.generic.NameObject(name)] = xobjects.raw_get(name)
+    pruned_resources = PyPDF2.generic.DictionaryObject()
+    for key in resources:
+        pruned_resources[PyPDF2.generic.NameObject(key)] = resources.raw_get(key)
+    pruned_resources[PyPDF2.generic.NameObject('/XObject')] = pruned_xobjects
+    pdf_page[PyPDF2.generic.NameObject('/Resources')] = pruned_resources
 
 
 def extract_pdf_page_images(pdf_page: PyPDF2.PageObject, image_folder='/tmp'):
