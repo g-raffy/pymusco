@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 import json
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 from .main import StampDesc, stub_to_individual_parts
 from .main import scan_to_stub
 from .main import stub_to_print
@@ -147,7 +147,7 @@ class Vector2(object):
 
 
 class Piece(object):
-    uid: int  # unique number identifying a track (eg 42)
+    uid: Union[int, float]  # unique number identifying a track (eg 42 or 42.5)
     title: str  # the title of the piece, eg 'alligator alley'
     orchestra: Orchestra  # the inventory of musical instruments
     scan_toc: TableOfContents
@@ -180,7 +180,16 @@ class Piece(object):
 
     @property
     def label(self) -> str:
-        return f"{self.uid:03d}-{self.title.replace(' ', '-')}"
+        uid = self.uid
+        if isinstance(uid, float) and uid.is_integer():
+            uid = int(uid)
+        if isinstance(uid, int):
+            uid_str = f"{uid:03d}"
+        else:
+            # e.g. 12.5 -> "012.5"
+            integer_part, _, decimal_part = str(uid).partition('.')
+            uid_str = f"{int(integer_part):03d}.{decimal_part}"
+        return f"{uid_str}-{self.title.replace(' ', '-')}"
 
     # def get_stub_toc(self):
     #     """
@@ -207,8 +216,8 @@ class CatalogPiece(object):
     def build_stub(self):
 
         scan_to_stub(
-            src_scanned_pdf_file_path=(self.catalog.scans_dir / self.piece.label).with_suffix('.pdf'),
-            dst_stub_pdf_file_path=(self.catalog.stubs_dir / self.piece.label).with_suffix('.pdf'),
+            src_scanned_pdf_file_path=self.catalog.scans_dir / (self.piece.label + '.pdf'),
+            dst_stub_pdf_file_path=self.catalog.stubs_dir / (self.piece.label + '.pdf'),
             toc=self.piece.scan_toc,
             title=self.piece.label,
             orchestra=self.catalog.orchestra,
