@@ -78,7 +78,7 @@
         { "uid": "tam-tam", "player": "percussionist", "order": 11.023 },  // https://en.wikipedia.org/wiki/Gong#Chau_gong_(Tam-tam)
         { "uid": "whip", "player": "percussionist", "order": 11.024 },
         { "uid": "slap stick", "player": "percussionist", "order": 11.025 },
-        { "uid": "cabasa", "player": "percussionist", "order": 11.026 },  // aka cabaza
+        { "uid": "cabasa", "player": "percussionist", "order": 11.026 },  // aka cabaza, shekere
         { "uid": "crotales", "player": "percussionist", "order": 11.027 },  // https://en.wikipedia.org/wiki/Crotales
         { "uid": "finger cymbals", "player": "percussionist", "order": 11.028 },  // https://en.wikipedia.org/wiki/Zill (sagattes, sagates, ou zil )
         { "uid": "rumberas", "player": "percussionist", "order": 11.029 },
@@ -154,6 +154,7 @@
         { "uid": "water gong", "player": "percussionist", "order": 11.123, "is_rare":  true},
         { "uid": "crusher", "player": "percussionist", "order": 11.124, "is_rare":  true}, // Concasseur
         { "uid": "chinese drum", "player": "percussionist", "order": 11.125, "is_rare":  true}, // Dagu
+        { "uid": "crystal glasses", "player": "percussionist", "order": 11.126, "is_rare":  true}, // Dagu
 
         { "uid": "mallet percussion", "player": "percussionist", "order": 11.200 },
         { "uid": "xylophone", "player": "percussionist", "order": 11.201 },
